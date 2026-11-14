@@ -10,6 +10,7 @@ export type Action =
   | { type: 'toggleLayer'; id: string }
   | { type: 'setOpacity'; id: string; opacity: number }
   | { type: 'select'; at: LngLat | null }
+  | { type: 'pin'; at: LngLat | null }
   | { type: 'addStop'; stop: Stop; index?: number }
   | { type: 'moveStop'; id: string; at: LngLat }
   | { type: 'removeStop'; id: string }
@@ -38,6 +39,7 @@ export function initialState(): MarswalkState {
     mode: 'explore',
     layers,
     selected: null,
+    pinned: null,
     stops: [baseStop()],
     roundTrip: true,
     routeOption: 'safest',
@@ -80,6 +82,10 @@ export function reducer(state: MarswalkState, action: Action): MarswalkState {
     case 'select':
       if (action.at && !isLngLat(action.at)) return state
       return { ...state, selected: action.at }
+
+    case 'pin':
+      if (action.at && !isLngLat(action.at)) return state
+      return { ...state, pinned: action.at }
 
     case 'addStop': {
       const { stop } = action

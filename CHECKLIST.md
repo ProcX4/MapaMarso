@@ -91,7 +91,7 @@ Infrared and mineral maps.
 - [x] Estimated return as a clock time, e.g. "16:42 LMST" (PS §3 example): "Back at base about 16:42 LMST" in EVA, at the base's longitude, from the real current time plus the walk back
 - [x] Route-deviation warning in EVA (PS §2.3): "OFF ROUTE · 89 m from the planned path" past 30 m (A14). The simulated position is always on the route, so a "Simulated drift off the route" slider moves it to the right to try the warning
 - [x] Route export to a file (PS §16): *Export route* in the planner downloads a GeoJSON of the walked path (with elevations) and the stops, on this device only; saving to Supabase works too
-- [ ] Site comparison (PS §16)
+- [x] Site comparison (PS §16): *Pin to compare* on the site card; click another point (or search a name) and the card shows both side by side: place, elevation, slope, terrain band, distance and bearing apart, height difference
 - [x] Search: all 2,055 IAU-adopted Mars names (P6), loaded when you start typing, accents ignored, zoom chosen from the feature's size; the landing site's NASA name is kept and marked as not IAU
 
 ### Frontend rules (FS §8, §10, definition of done)

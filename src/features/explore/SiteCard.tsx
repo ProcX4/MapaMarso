@@ -14,6 +14,7 @@ import { daylightText, sunElevation } from '../../data/daylight'
 import type { StopKind } from '../../state/types'
 import { MAP_PLAN } from '../../lib/missionPaths'
 import { RoverPhotos } from './RoverPhotos'
+import { CompareSites } from './CompareSites'
 
 const NEARBY_M = 500
 
@@ -99,6 +100,8 @@ export function SiteCard() {
           <ProvenanceTag category="derived" note={`Closest ground of ${SLOPE_BANDS.find((b) => b.token === 'hazard')!.min}° or more within ${formatDistance(NEARBY_HAZARD_M)}, from the ${source ?? 'elevation model'}`} />
         </dd>
       </dl>
+
+      <CompareSites at={at} />
 
       <RoverPhotos at={at} />
 
