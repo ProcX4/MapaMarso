@@ -3,7 +3,7 @@
 **Scope: three layers only: Topographic, Optical and Spectral.** Every other layer the specs mention (geologic units, historical rover traverse) is out of scope (§7).
 **Team:** Jim (Topographic, in progress) · Shin (Optical, Security, leads the demo) · Daril (Spectral) · Jastini (Decisions and docs) · everyone (App-wide). §1–§3 are the three layers; §10 is the Todo list from `docs/Todo (1–3).png`.
 
-Tasks come from the four spec documents and are ticked where the current build (v0.5.2) meets them.
+Tasks come from the four spec documents and are ticked where the current build (v0.5.3) meets them.
 Sources: **GS** = [Gen Spec.md](Gen%20Spec.md) · **PS** = [docs/MAPA_Marswalk_Product_Specification.md](docs/MAPA_Marswalk_Product_Specification.md) · **FS** = [Frontend Spec.md](Frontend%20Spec.md) · **SS** = [Security Spec.md](Security%20Spec.md).
 Details of each stand-in are in [placeholders.md](placeholders.md); what changed is in [changes.md](changes.md).
 
@@ -74,13 +74,14 @@ Infrared and mineral maps.
 - [x] TES thermal inertia, high-calcium pyroxene, plagioclase, sheet silicates and glass (PS §4.2 thermal properties, §4.3 composition)
 - [x] TES dust cover index, dust cover index over relief, and surface albedo: global and coarse (about 3.5 and 7.4 km/px), from Mars Trek (v0.5.1)
 - [x] Provenance for each
+- [x] Zoom hint with a "Zoom to Jezero Crater" button on the layers that draw only when zoomed in (THEMIS, CTX, HiRISE) (v0.5.3)
 
 ### To do
 - [ ] **CRISM mineralogy layer** (GS Layer 3, GS Data "Mineralogy"). Trek's CRISM/OMEGA hydrous-mineral map serves no tiles; needs another source
 - [ ] **Science targets:** fill `public/data/science-targets.geojson` with real CRISM targets, each with a citable reason (P5); then replace the `TBD` product in the registry and in `docs/data-sources.md`
 - [ ] **Science opportunity cards** come alive once targets exist (built: `ScienceOpportunity.tsx`, detour time, reason) (GS, PS §7)
 - [ ] **Site card mineral / hydration rows**, shown only where the data supports them (PS §5)
-- [ ] **Legends for the TES maps:** they have none yet, so the colours can't be read
+- [x] **Legends for the TES maps:** a colour bar with low and high labels under each (v0.5.3). The labels are words, not numbers; Trek publishes no value range
 
 ## 4. App-wide (not a layer) · Everyone
 

@@ -4,9 +4,11 @@ import { useDatasets, useRoute } from '../../hooks/useDerived'
 import { TERRAIN_NOTE, type TerrainGrid } from '../../data/terrain'
 import type { SafePathState } from '../../hooks/useSafePath'
 import { GROUPS, LAYERS, provenanceLine, type LayerDef } from '../../map/layers/registry'
+import { SITE } from '../../config/site'
 import { Switch } from '../../components/Switch'
 import { useMapView } from '../../hooks/useMapView'
 import { flyTo, type MapViewInfo } from '../../map/mapControl'
+import type { LngLat } from '../../state/types'
 import { Slider } from '../../components/Slider'
 import { Icon } from '../../components/Icon'
 import { PlaceholderTag, ProvenanceTag } from '../../components/ProvenanceTag'
@@ -39,19 +41,29 @@ function layerStatus(def: LayerDef, path: PathInfo, targets: LoadStatus, reach: 
   return 'ready'
 }
 
-type ViewHint = { text: string; goTo?: NonNullable<LayerDef['coverage']>['goTo'] }
+type HintAction = { label: string; at: LngLat; zoom: number }
+type ViewHint = { text: string; actions: HintAction[] }
 
-/** Why a layer that's switched on can't be seen in the view right now, and what to do about it */
+/** Why a layer that's switched on can't be seen in the view right now, and buttons that fix it */
 function viewHint(def: LayerDef, view: MapViewInfo): ViewHint | null {
   if (!view) return null
   const bbox = def.coverage?.bbox
   const [lon, lat] = view.center
   if (bbox && (lon < bbox[0] || lon > bbox[2] || lat < bbox[1] || lat > bbox[3])) {
-    return { text: 'Not in this part of Mars: it only covers one area.', goTo: def.coverage?.goTo }
+    return { text: 'Not in this part of Mars: it only covers one area.', actions: def.coverage?.goTo ? [def.coverage.goTo] : [] }
   }
-  // minZoom is exclusive: the layer draws from minZoom + 1
-  if (def.minZoom !== undefined && view.zoom <= def.minZoom) return { text: 'Zoomed out too far to show it: zoom in closer.' }
-  if (def.kind === 'xyz' && def.maxZoom !== undefined && view.zoom > def.maxZoom + 3) return { text: 'Too blurry this close: zoom out to read it.' }
+  // minZoom is exclusive: the layer draws from minZoom + 1. Zoom in where you are, or go to the demo site
+  if (def.minZoom !== undefined && view.zoom <= def.minZoom) {
+    const zoom = def.minZoom + 1
+    return {
+      text: 'Zoomed out too far to show it: zoom in closer.',
+      actions: [
+        { label: 'Zoom in here', at: view.center, zoom },
+        { label: `Zoom to ${SITE.name}`, at: SITE.center, zoom: Math.max(SITE.zoom, zoom) },
+      ],
+    }
+  }
+  if (def.kind === 'xyz' && def.maxZoom !== undefined && view.zoom > def.maxZoom + 3) return { text: 'Too blurry this close: zoom out to read it.', actions: [] }
   return null
 }
 
@@ -70,6 +82,8 @@ function LayerRow({ def, path, view }: { def: LayerDef; path: PathInfo; view: Ma
   const status = layerStatus(def, path, data.targets.status, data.reach.status)
   const topographic = def.id === 'slope' || def.id === 'route'
   const routing = def.id === 'route' ? ROUTING_TEXT[path.routing] : null
+  // Switched on but not visible from here (too far out, too close, or another part of Mars): say why, rather than
+  // leave a switch that seems to do nothing
   const hint = layer.visible ? viewHint(def, view) : null
   const source = provenanceLine(def)
   return (
@@ -83,11 +97,11 @@ function LayerRow({ def, path, view }: { def: LayerDef; path: PathInfo; view: Ma
       {hint && (
         <p className="layer-hint" role="status">
           {hint.text}
-          {hint.goTo && (
-            <button type="button" className="layer-hint-go" onClick={() => flyTo(hint.goTo!.at, hint.goTo!.zoom)}>
-              {hint.goTo.label}
+          {hint.actions.map((a) => (
+            <button key={a.label} type="button" className="layer-hint-go" onClick={() => flyTo(a.at, a.zoom)}>
+              {a.label}
             </button>
-          )}
+          ))}
         </p>
       )}
       {layer.visible && (
@@ -100,6 +114,15 @@ function LayerRow({ def, path, view }: { def: LayerDef; path: PathInfo; view: Ma
             valueText={`${Math.round(layer.opacity * 100)}%`}
             onChange={(opacity) => dispatch({ type: 'setOpacity', id: def.id, opacity })}
           />
+          {def.ramp && (
+            <div className="layer-ramp">
+              <span className="ramp-bar" style={{ background: `linear-gradient(to right, ${def.ramp.stops.join(', ')})` }} aria-hidden />
+              <span className="ramp-ends">
+                <span>{def.ramp.low}</span>
+                <span>{def.ramp.high}</span>
+              </span>
+            </div>
+          )}
           {def.legend && (status === 'ready' || def.kind === 'xyz') && (
             <ul className="layer-legend">
               {def.legend.map((l) => (
