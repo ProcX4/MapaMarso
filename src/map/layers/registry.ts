@@ -1,5 +1,5 @@
 import type { Category } from '../../state/types'
-import { TREK_LAYERS, type TrekLayerId } from '../../config/trekLayers'
+import { ESRI_LAYERS, TREK_LAYERS, type EsriLayerId, type TrekLayerId } from '../../config/trekLayers'
 import { SLOPE_BANDS } from '../../config/assumptions'
 
 /** Map colours for deep ground (the slope bands use the caution / hazard / alert tokens) */
@@ -18,11 +18,20 @@ export type LayerDef = {
     product?: string // dataset / product ID
     resolution?: string // "463 m/px"
     derivedFrom?: string // "Calculated from HiRISE DTM"
+    producer?: string // who made the product, and who hosts the tiles
+    dates?: string // when the images were taken / the product made
+    credit?: string // attribution the producer asks for; also the map's attribution
+    licence?: string
+    url?: string // upstream service
   }
   defaultVisible: boolean
   defaultOpacity: number
-  minZoom?: number // e.g. HiRISE only when zoomed in
+  minZoom?: number // e.g. HiRISE only when zoomed in (exclusive: shows from minZoom + 1)
   maxZoom?: number // deepest zoom the source has tiles for; deeper is upscaled
+  /** A layer that covers only part of Mars: the panel says where, and the map asks for no tiles outside bbox */
+  coverage?: { note: string; bbox?: [west: number, south: number, east: number, north: number] }
+  /** Walking-scale imagery: drawn above the other imagery, which it only replaces once zoomed in past minZoom */
+  walkScale?: boolean
   legend?: { label: string; color: string }[]
   /** Set while the layer's data is a stand-in; shown as a PLACEHOLDER tag. See placeholders.md. */
   placeholder?: string
@@ -35,6 +44,7 @@ export const GROUPS: { id: LayerDef['group']; label: string; note: string }[] = 
 ]
 
 const trek = (id: TrekLayerId) => ({ kind: 'xyz' as const, source: id, maxZoom: TREK_LAYERS[id].maxZoom })
+const esri = (id: EsriLayerId) => ({ kind: 'xyz' as const, source: id, maxZoom: ESRI_LAYERS[id].maxZoom })
 
 /** Every layer MAPA knows about, all covering the whole planet. The layer panel, provenance page and map all read this list. */
 export const LAYERS: LayerDef[] = [
@@ -119,6 +129,58 @@ export const LAYERS: LayerDef[] = [
     defaultVisible: false,
     defaultOpacity: 1,
   },
+  // Walking scale: on by default, but each only appears once zoomed in past where the colour mosaics blur
+  {
+    id: 'ctx',
+    name: 'MRO CTX mosaic (~5 m/px)',
+    group: 'optical',
+    ...esri('OnMars_CTX'),
+    category: 'observed',
+    provenance: {
+      instrument: 'Context Camera (CTX)',
+      mission: 'Mars Reconnaissance Orbiter',
+      product: 'CTX global mosaic beta01, uncontrolled (Mars Trek: CTX_beta01_uncontrolled_5m_Caltech)',
+      resolution: '5 m/px',
+      producer: 'The Murray Lab, Caltech; tiles hosted by Esri (Astro OnMars/CTX)',
+      dates: 'CTX images from 2006 on; beta01 mosaic 2020',
+      credit: 'NASA/JPL/MSSS/The Caltech Murray Lab/Esri',
+      licence: 'Free use for all purposes, with credit (The Murray Lab)',
+      url: 'https://astro.arcgis.com/arcgis/rest/services/OnMars/CTX/MapServer',
+    },
+    defaultVisible: true,
+    defaultOpacity: 1,
+    // Shows from zoom 10 (~40 m/px), where the 232 m/px Viking mosaic is already blurred
+    minZoom: 9,
+    coverage: { note: 'Whole planet bar the poles; uncontrolled, so it can sit a little off the other layers. Shows from zoom 10.' },
+    walkScale: true,
+  },
+  {
+    id: 'hirise',
+    name: 'MRO HiRISE (25 cm/px, Jezero only)',
+    group: 'optical',
+    ...trek('JEZ_hirise_soc_006_orthoMosaic_25cm_Eqc_latTs0_lon0_first_dd'),
+    category: 'observed',
+    provenance: {
+      instrument: 'HiRISE',
+      mission: 'Mars Reconnaissance Orbiter',
+      product: 'JEZ_hirise_soc_006_orthoMosaic_25cm (Mars Trek: MRO HiRISE, Jezero Mosaic, Controlled)',
+      resolution: '25 cm/px',
+      producer: 'USGS Astrogeology, for Mars 2020 Terrain-Relative Navigation; tiles by NASA Mars Trek',
+      dates: 'HiRISE images up to 2020; mosaic 2020',
+      credit: 'NASA/JPL/University of Arizona/USGS',
+      licence: 'Public domain (NASA / USGS), credit requested',
+      url: 'https://trek.nasa.gov/tiles/Mars/EQ/JEZ_hirise_soc_006_orthoMosaic_25cm_Eqc_latTs0_lon0_first_dd/1.0.0/WMTSCapabilities.xml',
+    },
+    defaultVisible: true,
+    defaultOpacity: 1,
+    // Shows from zoom 12 (~10 m/px), above CTX
+    minZoom: 11,
+    coverage: {
+      note: 'Jezero landing area only (77.22–77.58°E, 18.31–18.67°N); elsewhere CTX shows. Shows from zoom 12.',
+      bbox: [77.2229331, 18.3067994, 77.583964, 18.669315],
+    },
+    walkScale: true,
+  },
   // ---------- Spectral ----------
   {
     id: 'themis-day-ir',
@@ -192,6 +254,30 @@ function tes(id: string, name: string, product: TrekLayerId, resolution?: string
     defaultOpacity: 0.7,
   }
 }
+
+/** A data source shown on the provenance page: every layer, plus the sources that aren't map layers */
+export type DataSource = Pick<LayerDef, 'id' | 'name' | 'group' | 'category' | 'provenance' | 'placeholder' | 'coverage'>
+
+/** Sources used outside the map layers, in the same provenance format */
+export const OTHER_SOURCES: DataSource[] = [
+  {
+    id: 'rover-photos',
+    name: 'Rover photos at waypoints (Perseverance)',
+    group: 'optical',
+    category: 'observed',
+    provenance: {
+      instrument: 'Mastcam-Z, Navcam, front Hazcam (left eye, full frames only)',
+      mission: 'Mars 2020 Perseverance',
+      product: 'Raw images feed (mars.nasa.gov), matched to the rover stop nearest the point (MMGIS M20_waypoints.json)',
+      producer: 'NASA/JPL-Caltech; Mastcam-Z by Arizona State University',
+      dates: 'Sol 0 (18 Feb 2021) to the latest downlink',
+      credit: 'NASA/JPL-Caltech; Mastcam-Z: NASA/JPL-Caltech/ASU',
+      licence: 'NASA images: not copyrighted; credit requested',
+      url: 'https://mars.nasa.gov/mars2020/multimedia/raw-images/',
+    },
+    coverage: { note: 'Only near where Perseverance has stopped, within 250 m' },
+  },
+]
 
 export const layerDef = (id: string) => LAYERS.find((l) => l.id === id)
 

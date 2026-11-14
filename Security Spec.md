@@ -154,7 +154,7 @@ Validate on the client for a good experience, **and again in the database / prox
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Content-Security-Policy", "value": "default-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; worker-src 'self' blob:; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; img-src 'self' data: blob: https://mars.nasa.gov; connect-src 'self' https://*.supabase.co wss://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; worker-src 'self' blob:; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" },
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
@@ -167,7 +167,8 @@ Validate on the client for a good experience, **and again in the database / prox
 Notes:
 - `style-src 'unsafe-inline'` is needed because OpenLayers positions overlays with inline styles.
 - `worker-src blob:` is needed if geotiff.js or the slope worker is loaded as a blob.
-- Because tiles go through our proxy, `img-src` doesn't need `trek.nasa.gov`. If a layer loads directly from another host, add **that exact host**, not a wildcard.
+- Because tiles go through our proxy, `img-src` doesn't need `trek.nasa.gov` or `astro.arcgis.com`. If a layer loads directly from another host, add **that exact host**, not a wildcard.
+- `img-src https://mars.nasa.gov`: the Perseverance photos in the site card load straight from NASA's raw-image host (`/api/rover-photos` only passes on links under `https://mars.nasa.gov/mars2020-raw-images/`), with no referrer.
 - Self-hosting the two fonts removes the Google Fonts entries.
 - **Test the CSP in `npm run preview` before deploying.** A wrong CSP shows a blank map; check the browser console for "Refused to load".
 

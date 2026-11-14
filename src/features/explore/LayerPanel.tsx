@@ -83,6 +83,7 @@ function LayerRow({ def, path }: { def: LayerDef; path: PathInfo }) {
       {status === 'no-route' && def.id === 'route' && <p className="layer-status">Plan a route of two stops or more, or pick a mission</p>}
       {routing && <p className="layer-status">{routing}</p>}
       {topographic && path.terrain && <p className="layer-status">Terrain: {TERRAIN_NOTE[path.terrain.source]}</p>}
+      {def.coverage && <p className="layer-status">{def.coverage.note}</p>}
       <p className="provenance-line">
         {provenanceLine(def)} {def.placeholder && <PlaceholderTag note={def.placeholder} />}
       </p>

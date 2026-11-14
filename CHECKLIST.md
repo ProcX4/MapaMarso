@@ -47,9 +47,22 @@ The surface in visible light.
 - [x] MGS MOC colour atlas, whole planet
 - [x] Provenance for both
 
+- [x] **Walking-scale imagery** (GS Data, PS §11, P3), on by default, drawn above the other imagery once zoomed in:
+  - **MRO CTX mosaic, ~5 m/px, whole planet** from zoom 10: the Murray Lab (Caltech) global beta01 mosaic, from Esri's `astro.arcgis.com/arcgis/rest/services/OnMars/CTX/MapServer` (equirectangular Mars 2000, wkid 104971, 512 px tiles, levels 0–12; level 12 = 5.1 m/px; `Access-Control-Allow-Origin: *`). Credit: NASA/JPL/MSSS/The Caltech Murray Lab/Esri. Uncontrolled, so it can sit slightly off the other layers.
+  - **MRO HiRISE, 25 cm/px, Jezero landing area only** (77.22–77.58°E, 18.31–18.67°N) from zoom 12: USGS's controlled Mars 2020 TRN orthomosaic on Mars Trek (`JEZ_hirise_soc_006_orthoMosaic_25cm…`, tiles at zooms 10–17). Credit: NASA/JPL/University of Arizona/USGS. Elsewhere CTX shows.
+  - Both go through `api/tiles.ts` (the Esri host is allow-listed for that one service path only), with provenance in the registry and the coverage in the layer panel.
+  - Why Esri for CTX: Trek's catalogue entry for the global mosaic (`CTX_beta01_uncontrolled_5m_Caltech`) is only a pointer. Its WMTSCapabilities template is the Esri URL, and Trek's own path `trek.nasa.gov/tiles/Mars/EQ/CTX_beta01_uncontrolled_5m_Caltech/1.0.0/default/default028mm/9/203/732.png` answers `404` (text/html, 196 bytes). Esri serves real tiles in the same grid as Trek (checked 2026-11-15 over Jezero, levels 3–12; 13 and deeper answer 400). CDS HiPS (HEALPix) and USGS COGs weren't needed.
+  - `npm run check-upstreams` fetches one CTX and one HiRISE tile over Jezero.
+- [x] **Rover point-of-view photos at waypoints**: "what you'll see when you arrive" (GS)
+  - The site card shows up to 8 Perseverance photos (Mastcam-Z, then Navcam, then front Hazcam; full frames only, one per exposure, spread round the compass and labelled "looking NE" etc.). Open one for a larger view. "See all raw images" (`SITE.rawImagesUrl`) stays as the fallback.
+  - How it finds them (`api/rover-photos.ts`): the rover stop nearest the point within 250 m, from NASA's `mmgis-maps/M20/Layers/json/M20_waypoints.json` (site, drive, sol, lon/lat); then the raw-image feed for the sols the rover was there (`condition_N=<sol>:sol:gte|lte`, `search=MCZ_LEFT|NAVCAM_LEFT|FRONT_HAZCAM_LEFT_A`, `extended=sample_type::full,`), keeping the images with that site and drive. The feed ignores site/drive conditions, so they're matched on the server. The `N0030000`-style token in filenames is the same site/drive.
+  - Cached: a stop the rover has left for a day in the browser and a month at the edge; the latest stop for ten minutes. Sample responses in `scripts/fixtures/`.
+  - The CSP now allows images from `https://mars.nasa.gov` (Security Spec §3), where the photos load from.
+
 ### To do
-- [ ] **Walking-scale imagery:** a HiRISE or CTX layer (GS Data, PS §11, P3). Trek's global CTX (Caltech) and HiRISE mosaics are listed in its catalogue but serve no tiles; find a source that does, allow-list it in `api/tiles.ts`, add it to the registry
-- [ ] **Rover point-of-view photos at waypoints**: "what you'll see when you arrive" (GS; only a raw-image link today, `SITE.rawImagesUrl`)
+- [ ] **Check by hand in a deployed preview:** the CTX/HiRISE tiles and rover photos with the production CSP, and that CTX lines up with the other layers closely enough at Jezero
+- [ ] **Offline demo:** `npm run prefetch-tiles` doesn't fetch CTX or HiRISE (HiRISE alone would be millions of tiles at full zoom); decide whether to pre-fetch a small walking area round the base
+- [ ] **Esri terms:** confirm Esri's terms allow proxying the public OnMars service (the Murray Lab allows free use with credit)
 
 ## 3. Spectral · Daril
 
@@ -195,7 +208,7 @@ Each unticked `- [ ]` box and each "TBD" in the spec documents, in the order it 
 - [ ] Science opportunity cards ("hydrated minerals 420 m off route, +11 min detour") · *Spectral: needs target data*
 - [ ] Traverse safety envelope (how far you can go and still return in time) · *Topographic*
 - [x] EVA mode
-- [ ] Rover point-of-view photos at waypoints · *Optical*
+- [x] Rover point-of-view photos at waypoints · *Optical* (site card, Perseverance stops within 250 m)
 - [ ] Space weather / radiation panel · *app-wide*
 
 ### Gen Spec.md · TBD

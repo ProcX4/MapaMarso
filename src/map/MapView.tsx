@@ -78,8 +78,11 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
 
   // Create once
   useEffect(() => {
-    // Imagery at the bottom in list order, then the overlays drawn from data (hazards, targets) above all of it
-    const imagery = LAYERS.filter((d) => d.kind === 'xyz' || d.kind === 'wmts')
+    // Imagery at the bottom in list order, then the overlays drawn from data (hazards, targets) above all of it.
+    // Walking-scale imagery (CTX, HiRISE) goes on top of the other imagery: it only shows zoomed right in, where
+    // the coarser maps are blurred.
+    const raster = LAYERS.filter((d) => d.kind === 'xyz' || d.kind === 'wmts')
+    const imagery = [...raster.filter((d) => !d.walkScale), ...raster.filter((d) => d.walkScale)]
     LAYERS.forEach((def) => {
       const layer = createLayer(def)
       const i = imagery.indexOf(def)
