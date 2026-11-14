@@ -21,7 +21,7 @@ import { routeStops } from '../../globe/missionRoute'
 import { readFlag, writeFlag } from '../../lib/storage'
 import type { MissionStatus } from '../../services/missions'
 import { clearWarpArrival, isWarpArrival } from '../../lib/warp'
-import { byOwner, GLOBE_2D, GLOBE_3D, GLOBE_PLAN, go, MAP_EVA, MAP_PLAN, mapModeOf, missionMapIdPath, missionMapPath, type OwnerFilter } from '../../lib/missionPaths'
+import { byOwner, GLOBE_2D, GLOBE_3D, backTo, GLOBE_PLAN, go, MAP_EVA, MAP_PLAN, mapModeOf, missionMapIdPath, missionMapPath, type OwnerFilter } from '../../lib/missionPaths'
 import { MapView } from '../../map/MapView'
 import { fitTo, flyTo, showArea } from '../../map/mapControl'
 import type { PlanetRoute as MapRoute } from '../../map/planetLayers'
@@ -138,6 +138,15 @@ export function GlobePage() {
   const [layers, setLayers] = useState<GlobeLayers>({ labels: true, orbits: true, grid: true, terminator: false, orbiters: false, moons: true })
   const [resetKey, setResetKey] = useState(0)
   const [toolsOpen, setToolsOpen] = useState(false)
+  // The 2D map addresses visited, so Back from EVA or the planner returns where you came from (a mission's view,
+  // the planner or the map) rather than always to the planner. Going to the one before the last pops it.
+  const [trail, setTrail] = useState<string[]>([])
+  if (flat && !newMission && trail[trail.length - 1] !== hash) {
+    setTrail(trail[trail.length - 2] === hash ? trail.slice(0, -1) : [...trail, hash].slice(-20))
+  }
+  const previous = trail.length > 1 ? backTo(trail[trail.length - 2]) : null
+  // Without a trail (opened straight from a link), EVA goes back to the planner and the planner to the map
+  const back = previous ?? backTo(mapMode === 'eva' ? MAP_PLAN : GLOBE_2D)
   // Every panel cleared off the screen for an unobstructed view (the button at the bottom left, or H)
   const [uiHidden, setUiHidden] = useState(false)
   const [tourOpen, setTourOpen] = useState(false)
@@ -490,8 +499,8 @@ export function GlobePage() {
   // The 2D map: the missions' routes, then MAPA's site tools (the planner and EVA open over the same map)
   const mapTools: Tool[] = [
     ...(exploring ? [{ id: 'routes', label: 'All routes', icon: 'route' as const, on: allRoutes, onClick: () => setAllRoutes((a) => !a) }] : []),
-    { id: 'plan', label: 'Plan Marswalk', icon: 'plan', on: mapMode === 'plan', onClick: () => go(mapMode === 'plan' ? GLOBE_2D : MAP_PLAN) },
-    { id: 'eva', label: 'EVA', icon: 'eva', on: mapMode === 'eva', onClick: () => go(mapMode === 'eva' ? GLOBE_2D : MAP_EVA) },
+    { id: 'plan', label: 'Plan Marswalk', icon: 'plan', on: mapMode === 'plan', onClick: () => go(mapMode === 'plan' ? back.hash : MAP_PLAN) },
+    { id: 'eva', label: 'EVA', icon: 'eva', on: mapMode === 'eva', onClick: () => go(mapMode === 'eva' ? back.hash : MAP_EVA) },
     { id: 'site', label: 'Recentre on site', icon: 'target', onClick: () => flyTo(SITE.center, SITE.zoom) },
     { id: 'fit', label: 'Fit route', icon: 'reset', onClick: () => fitTo(walkRoute.order.map((s) => s.at)) },
     ...(mapMode === 'plan' ? [{ id: 'new', label: 'New route', icon: 'plus' as const, onClick: () => dispatch({ type: 'newRoute' }) }] : []),
@@ -586,7 +595,7 @@ export function GlobePage() {
           {exploring && <LayerPanel button={false} open={layersShown} onOpenChange={setLayersOpen} blocked={!!(site || mission || moonId)} missionPath={missionSafe} />}
           {exploring && <Search />}
           {mapMode === 'plan' && <LayerPanel />}
-          {mapMode === 'plan' && <PlanPanel />}
+          {mapMode === 'plan' && <PlanPanel back={previous} />}
           {/* A saved mission: the planner's map and layers, with its summary, crew and log in place of the steps */}
           {mapMode === 'mission' && <LayerPanel />}
           {mapMode === 'mission' && <MissionPanel />}
@@ -596,7 +605,7 @@ export function GlobePage() {
             </section>
           )}
           {mapMode !== 'eva' && !site && !mission && !moonId && <SiteCard />}
-          {mapMode === 'eva' && <EvaView />}
+          {mapMode === 'eva' && <EvaView back={back} />}
         </>
       )}
 

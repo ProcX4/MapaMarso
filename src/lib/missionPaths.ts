@@ -26,6 +26,14 @@ export const planPath = (code: string) => `${MAP_PLAN}/${code}`
 export const missionMapPath = (code: string) => `${MAP_MISSION}/${code}`
 export const missionMapIdPath = (id: string) => `${MAP_MISSION}/m/${id}`
 
+/** A way back across the 2D map's tools: where to, and what the button says */
+export type BackTo = { hash: string; label: string }
+export function backTo(hash: string): BackTo {
+  const mode = mapModeOf(hash)
+  const label = mode === 'mission' ? 'Back to mission' : mode === 'plan' ? 'Back to plan' : mode === 'eva' ? 'Back to EVA' : 'Back to map'
+  return { hash, label }
+}
+
 /** Which of the 2D map's tools an address opens: site analysis, the Marswalk planner, EVA or a saved mission. */
 export function mapModeOf(hash: string): Mode {
   if (hash.startsWith(`${MAP_MISSION}/`)) return 'mission'
