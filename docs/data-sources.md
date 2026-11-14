@@ -34,6 +34,8 @@ Layer IDs come from the Mars Trek catalogue (`https://trek.nasa.gov/mars/TrekSer
 
 Tile grid for all Trek EQ layers verified against `WMTSCapabilities.xml` on 2026-11-14: TopLeftCorner `-180 90`, 256 px tiles, level 0 = 2 × 1 tiles. Deepest zoom with tiles at Jezero checked by requesting tiles directly.
 
+CTX terms (researched 2026-11-15): the Esri service reports `copyrightText` "Source: NASA/JPL/MSSS/Caltech Murray Lab/Esri" and `accessInformation` "None". The Murray Lab's mosaic is described by third-party catalogues as free to use with credit. The service serves the preliminary **beta01** mosaic. No separate Esri terms for the public OnMars service were found: still to confirm (CHECKLIST §2).
+
 Offline copies of the Trek tiles around the demo site live in `public/tiles/` (`npm run prefetch-tiles`).
 
 ## Globe and flat map (from the MapaMars idea bank)

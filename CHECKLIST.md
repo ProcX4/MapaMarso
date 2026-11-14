@@ -62,8 +62,8 @@ The surface in visible light.
 
 ### To do
 - [ ] **Check by hand in a deployed preview:** the CTX/HiRISE tiles and rover photos with the production CSP, and that CTX lines up with the other layers closely enough at Jezero
-- [ ] **Offline demo:** `npm run prefetch-tiles` doesn't fetch CTX or HiRISE (HiRISE alone would be millions of tiles at full zoom); decide whether to pre-fetch a small walking area round the base
-- [ ] **Esri terms:** confirm Esri's terms allow proxying the public OnMars service (the Murray Lab allows free use with credit)
+- [ ] **Offline demo:** `npm run prefetch-tiles` doesn't fetch CTX or HiRISE (HiRISE alone would be millions of tiles at full zoom); decide whether to pre-fetch a small walking area round the base. Sizing worked out 2026-11-15: a 4 km square round the base needs only a handful of CTX tiles per level (a 512 px CTX tile at level 12 covers about 2.6 km), so CTX is cheap to keep; HiRISE is the costly one (a 256 px tile at zoom 17 covers about 80 m, so 4 km square is over 2,000 tiles there, or about 500 at zoom 16). Suggest: CTX for the base area, HiRISE only to zoom 15 within 1 km. Needs a decision, then an extension to the prefetch script
+- [ ] **Esri terms:** researched 2026-11-15, not settled. The service itself says `accessInformation: None` and `copyrightText: Source: NASA/JPL/MSSS/Caltech Murray Lab/Esri`; the Murray Lab's mosaic is free to use with credit (found by search; the page itself was not opened here). No separate Esri terms for the public OnMars service turned up, so this stays open for someone to read Esri's terms of use or ask. Also note the service is the preliminary **beta01** mosaic, and the Murray Lab has a later V01
 
 ## 3. Spectral · Daril
 
