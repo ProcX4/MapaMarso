@@ -72,7 +72,8 @@
   transform: translateX(-50%);
 }
 /* Planning: just above the profile card, right of the map's tool buttons, so nothing overlaps */
-.is-plan .map-guide { left: calc(var(--panel-w) + 100px); bottom: 268px; transform: none; }
+.is-plan .map-guide,
+.is-mission .map-guide { left: calc(var(--panel-w) + 100px); bottom: 268px; transform: none; }
 .map-guide p { margin: 0; }
 .map-guide-kicker { margin-bottom: 4px !important; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ok); }
 .map-guide strong { color: var(--white); font-weight: 500; }

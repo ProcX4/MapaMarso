@@ -160,3 +160,35 @@
 
 /* All / Other users / Mine sit at the left, under the Open / Completed tabs */
 .browse-owner { justify-content: flex-start; margin-top: 14px; }
+
+/* ---------- A saved mission on the 2D map (MissionPanel, in the planner's left panel) ---------- */
+/* Like the planner panel, but the parts are its summary, crew and log, under two big buttons */
+.mission-panel .back-link { display: inline-block; margin-bottom: 10px; font-size: 13px; }
+.mission-panel .planner-head h1 { font-size: 22px; }
+.mission-copy { cursor: pointer; color: var(--white); background: none; font-family: var(--mono); }
+.mission-copy:hover { border-color: var(--white); }
+.mission-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.mission-go { display: flex; flex-wrap: wrap; gap: 8px; }
+.mission-go .button,
+.mission-go .button-outline { display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 1 1 140px; }
+.mission-go .button:disabled { opacity: 0.4; cursor: not-allowed; }
+.mission-tabs { justify-content: flex-start; }
+.mission-tab-count { margin-left: 6px; font-family: var(--mono); font-size: 11px; opacity: 0.7; }
+.mission-summary { display: flex; flex-direction: column; gap: 14px; }
+/* Four numbers in a 2 × 2 grid */
+.mission-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; }
+.mission-stats > div { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+.mission-stats dt { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-2); }
+.mission-stats dd { margin: 4px 0 0; font-size: 18px; }
+.mission-stops { position: relative; display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.mission-stops::before { content: ''; position: absolute; top: 14px; bottom: 14px; left: 11px; border-left: 1px dashed var(--line); }
+.mission-stops li { position: relative; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.mission-stops .stop-pick { margin-top: 0; }
+.mission-stop-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.mission-stop-leg { flex: none; font-size: 12px; }
+.mission-dates { margin: 0; }
+.mission-dates dt, .mission-dates dd { font-size: 13px; }
+.mission-panel .crew,
+.mission-panel .mission-log-panel { margin-top: 0; padding-top: 0; border-top: 0; }
+.mission-panel .mission-log-panel h2 { display: none; }
+.mission-lead { margin-top: 0; padding-bottom: 16px; }

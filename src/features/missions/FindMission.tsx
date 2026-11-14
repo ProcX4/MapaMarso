@@ -3,7 +3,7 @@ import { CodeInput } from '../../components/CodeInput'
 import { formatCode, sanitizeCode } from '../../lib/missionCode'
 import type { User } from '../../services/auth'
 import { browseMissions, fetchJoinedMissions, fetchMyMissions, type Mission, type MissionStatus } from '../../services/missions'
-import { byOwner, go, missionIdPath, missionPath, OWNER_FILTERS, type OwnerFilter } from '../../lib/missionPaths'
+import { byOwner, go, missionMapIdPath, missionMapPath, missionPath, OWNER_FILTERS, type OwnerFilter } from '../../lib/missionPaths'
 
 /* The missions hub: open by code, your missions, and browse everyone's (from MapaMars). */
 
@@ -57,7 +57,7 @@ export function FindMission({ user, initialCode, problem, notice, onDismissNotic
 
   const open = (code: string) => {
     onDismissNotice()
-    go(missionPath(code))
+    go(missionMapPath(code))
   }
 
   const submit = (e: FormEvent) => {
@@ -118,7 +118,7 @@ export function FindMission({ user, initialCode, problem, notice, onDismissNotic
             title="Missions you lead"
             state={mine}
             empty="You haven't created any missions yet."
-            href={(m) => (m.code ? missionPath(m.code) : missionIdPath(m.id))}
+            href={(m) => (m.code ? missionMapPath(m.code) : missionMapIdPath(m.id))}
             showCode
             showStatus
           />
@@ -126,7 +126,7 @@ export function FindMission({ user, initialCode, problem, notice, onDismissNotic
             title="Missions you've joined"
             state={joined}
             empty="You haven't joined any missions yet. Ask a mission's lead for its code."
-            href={(m) => (m.code ? missionPath(m.code) : missionIdPath(m.id))}
+            href={(m) => (m.code ? missionMapPath(m.code) : missionMapIdPath(m.id))}
             showCode
             showStatus
             showAuthor
@@ -170,7 +170,7 @@ export function FindMission({ user, initialCode, problem, notice, onDismissNotic
                   ? 'No public open missions right now.'
                   : 'No completed missions yet.'
           }
-          href={(m) => missionIdPath(m.id)}
+          href={(m) => missionMapIdPath(m.id)}
           showAuthor
         />
       </section>

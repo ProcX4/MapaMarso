@@ -8,7 +8,7 @@ export type Stop = { id: string; kind: StopKind; name: string; at: LngLat; note?
 
 export type LayerState = { id: string; visible: boolean; opacity: number }
 
-export type Mode = 'explore' | 'plan' | 'eva'
+export type Mode = 'explore' | 'plan' | 'eva' | 'mission'
 
 /** Which A* route the plan follows: round all hard ground, or only round impassable ground */
 export type RouteOption = 'safest' | 'direct'

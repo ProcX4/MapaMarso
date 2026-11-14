@@ -1,7 +1,8 @@
 /* ---------- Planning a Marswalk, full screen (the MapaMars planner) ---------- */
 
 /* The map fills the window; the planner floats on the left in its own scrolling panel */
-.app.mode-plan { --panel-w: min(400px, calc(100vw - 32px)); }
+.app.mode-plan,
+.app.mode-mission { --panel-w: min(400px, calc(100vw - 32px)); }
 
 .planner-panel {
   position: absolute;
@@ -138,14 +139,17 @@
 .profile-cursor { stroke: var(--ok); stroke-width: 1; stroke-dasharray: 3 3; }
 .profile-empty { fill: var(--gray-2); font-size: 12px; }
 
-/* In Plan mode the layers column stops above the profile */
-.mode-plan .layers-hud { bottom: 230px; }
-.mode-plan .info-card { max-height: calc(100% - 360px); }
+/* In Plan mode (and on a saved mission) the layers column stops above the profile */
+.mode-plan .layers-hud,
+.mode-mission .layers-hud { bottom: 230px; }
+.mode-plan .info-card,
+.mode-mission .info-card { max-height: calc(100% - 360px); }
 
 @media (max-width: 720px) {
   .planner-panel { top: auto; left: 0; right: 0; bottom: 150px; width: auto; max-height: 45%; border-radius: 14px 14px 0 0; }
   .plan-bottom { left: 0; right: 0; bottom: 0; width: auto; height: 170px; border-radius: 0; }
-  .mode-plan .info-card { bottom: 160px; }
+  .mode-plan .info-card,
+  .mode-mission .info-card { bottom: 160px; }
 }
 
 /* How the route was found: a quiet note while it works, a warning if legs had to stay straight */

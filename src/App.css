@@ -338,8 +338,9 @@
   transition: opacity 260ms ease calc(var(--i) * 35ms), transform 380ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--i) * 35ms), background 150ms, color 150ms, border-color 150ms;
 }
 .tool.is-on { color: var(--black); background: var(--white); border-color: var(--white); }
-/* In Plan mode the tools sit above the elevation profile */
-.mode-plan .tool-dock { bottom: 272px; left: calc(var(--panel-w) + 40px); }
+/* In Plan mode, and on a saved mission, the tools sit above the elevation profile */
+.mode-plan .tool-dock,
+.mode-mission .tool-dock { bottom: 272px; left: calc(var(--panel-w) + 40px); }
 
 /* Interface hidden: every panel, card and button fade away, leaving the map and the one button that
    brings everything back */
@@ -420,7 +421,8 @@
   /* In a row with the tools button, so the dock stays one button tall under the info card */
   .tool-dock-side { flex-direction: row; margin-left: 0; }
   .tool-tray { overflow-x: auto; }
-  .mode-plan .tool-dock { display: none; }
+  .mode-plan .tool-dock,
+  .mode-mission .tool-dock { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

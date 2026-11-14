@@ -10,18 +10,25 @@ import type { Mode } from '../state/types'
 // #/globe/2d              the 2D map: the whole planet on NASA's layers, with site analysis (Explore)
 // #/globe/2d/plan[/CODE]  the same map with the Marswalk planner open (and a saved mission's route)
 // #/globe/2d/eva          the same map following the planned route on foot
+// #/globe/2d/mission/CODE the same map showing a saved mission: its summary, crew and log (or /m/<id>)
 // #/globe/new             plan a new mission on the flat map, full screen
 export const GLOBE_3D = '#/globe'
 export const GLOBE_2D = '#/globe/2d'
 export const MAP_PLAN = '#/globe/2d/plan'
 export const MAP_EVA = '#/globe/2d/eva'
+export const MAP_MISSION = '#/globe/2d/mission'
 export const GLOBE_PLAN = '#/globe/new'
 
 /** Where a saved Marswalk opens: the 2D map with its route in the planner. */
 export const planPath = (code: string) => `${MAP_PLAN}/${code}`
 
-/** Which of the 2D map's tools an address opens: site analysis, the Marswalk planner or EVA. */
+/** Where a saved mission is viewed: the 2D map with its route, by code, or by id from the browse list. */
+export const missionMapPath = (code: string) => `${MAP_MISSION}/${code}`
+export const missionMapIdPath = (id: string) => `${MAP_MISSION}/m/${id}`
+
+/** Which of the 2D map's tools an address opens: site analysis, the Marswalk planner, EVA or a saved mission. */
 export function mapModeOf(hash: string): Mode {
+  if (hash.startsWith(`${MAP_MISSION}/`)) return 'mission'
   if (hash === MAP_PLAN || hash.startsWith(`${MAP_PLAN}/`)) return 'plan'
   if (hash === MAP_EVA) return 'eva'
   return 'explore'

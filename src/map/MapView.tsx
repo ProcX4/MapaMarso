@@ -141,7 +141,7 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
       onMoveStop: (id, at) => dispatch({ type: 'moveStop', id, at }),
       onPointer: (_at, pixel) => {
         const { route: r, setHover: set, mode } = latest.current
-        if (!pixel || mode !== 'plan' || r.profile.length < 2) return set(null)
+        if (!pixel || (mode !== 'plan' && mode !== 'mission') || r.profile.length < 2) return set(null)
         let best: LngLat | null = null
         let bestPx = HOVER_PX
         for (const p of r.profile) {
@@ -259,7 +259,7 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
       src.addFeature(f)
     }
     if (state.selected && state.mode !== 'eva') add(state.selected, cursorStyle('rgba(255,255,255,0.9)'))
-    if (hover && state.mode === 'plan') add(hover, cursorStyle(cssVar('ok')))
+    if (hover && (state.mode === 'plan' || state.mode === 'mission')) add(hover, cursorStyle(cssVar('ok')))
     if (state.mode === 'eva') {
       const at = state.evaPosition ?? pointAlong(route.profile, 0)?.at
       if (at) add(at, evaPositionStyle())
