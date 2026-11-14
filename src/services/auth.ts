@@ -69,14 +69,19 @@ export async function signUp(email: string, username: string, password: string):
     options: { data: { username }, emailRedirectTo: `${window.location.origin}${window.location.pathname}` },
   })
   if (error) {
-    // Sending the confirmation email can be slow enough that the reply never reaches the browser,
-    // even though the account was created. If the new username now exists, treat it as success.
+    // The reply can be lost even though the account was created. If the new username now exists, treat it as
+    // success: sign straight in, which only fails if the project still asks for the email to be confirmed.
     const lostReply = error.name === 'AuthRetryableFetchError' || error.message.toLowerCase().includes('failed to fetch')
-    if (lostReply && (await usernameTaken(username).catch(() => false))) return { needsConfirmation: true }
+    if (lostReply && (await usernameTaken(username).catch(() => false))) {
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+      return { needsConfirmation: !!signInError }
+    }
     fail(error)
   }
   // With email confirmation on, Supabase hides whether the email already exists by returning a user with no identities
   if (data.user && data.user.identities?.length === 0) throw new Error('An account with that email already exists. Try signing in.')
+  // With "Confirm email" off in Supabase (Authentication -> Sign In / Providers -> Email), sign-up returns a
+  // session and the account is signed in at once; no link is sent
   return { needsConfirmation: !data.session }
 }
 
