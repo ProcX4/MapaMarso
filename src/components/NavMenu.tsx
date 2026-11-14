@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { Icon } from './Icon'
 import { useAuth } from '../hooks/useAuth'
 import { isSpaceSoundOn, onSpaceSoundChange, setSpaceSound } from '../lib/spaceSound'
+import { setDebugZoom, useDebugZoom } from '../lib/debugZoom'
 
 export type NavPage = { hash: string; label: string; icon: string; hint: string }
 
@@ -20,6 +21,7 @@ function useSpaceSoundOn() {
 export function NavMenu({ pages, current }: { pages: NavPage[]; current: string }) {
   const { available, user, loading } = useAuth()
   const soundOn = useSpaceSoundOn()
+  const debugZoom = useDebugZoom()
   // The page the menu was opened on: arriving on any other page (a link, Back) leaves it closed
   const [openOn, setOpenOn] = useState<string | null>(null)
   const open = openOn === current
@@ -67,6 +69,14 @@ export function NavMenu({ pages, current }: { pages: NavPage[]; current: string 
               <span>
                 Space sound
                 <small>{soundOn ? 'On · a quiet ambience' : 'Off'}</small>
+              </span>
+              <span className="nav-switch" aria-hidden="true" />
+            </button>
+            <button type="button" className={`nav-drawer-sound${debugZoom ? ' is-on' : ''}`} role="switch" aria-checked={debugZoom} onClick={() => setDebugZoom(!debugZoom)}>
+              <Icon name="target" />
+              <span>
+                Debug: zoom points
+                <small>{debugZoom ? 'On · the 2D map shows its zoom and where the photos start' : 'Off'}</small>
               </span>
               <span className="nav-switch" aria-hidden="true" />
             </button>
