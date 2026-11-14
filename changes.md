@@ -21,6 +21,57 @@ Entry template:
 
 ---
 
+## 2026-11-14 · v0.2.0 · Idea bank (MapaMars) merged: design, Mars time, accounts and saved missions
+
+Brought the useful parts of the team's idea bank, [S-Urchin/MapaMars](https://github.com/S-Urchin/MapaMars), into MAPA. Code was rewritten into MAPA's own modules and adapted to its structure (not copied in as separate reference files).
+
+**Changed: design (MapaMars look throughout)**
+- The map now fills the whole window and the menu bar floats over it (no bar, no blur), as on the MapaMars globe page.
+- Mode switch as a segmented pill; ☰ opens the MapaMars slide-in menu with line icons, page hints, the space-sound switch and sign-in.
+- Live clock top left: Philippine time, Mars time (MTC), sol, and local time + daylight at the demo site.
+- Layers moved into a slide-out panel opened from a **Layers** button next to the ☰; it makes way for the site card in the same corner.
+- Site card restyled as the MapaMars info card (kicker, title, facts, round close button, slide-in).
+- Plan mode is the MapaMars full-screen planner: panel on the left, stops in walking order joined by a dashed line, names edited in place, move/remove on hover, Round trip / One way segmented control, pinned summary footer. The elevation profile sits along the bottom to its right.
+- Tools dock bottom left (Recentre on site, Fit route, New route) with the **guided tour** and **clear view** (H / Esc) buttons above it.
+- Guided tour (ring + card, Back / Next / Skip) with steps for Explore, Plan and EVA, following the Gen Spec demo story.
+- About page rebuilt in the MapaMars home layout: hero, four numbered features, "Right now at Jezero Crater" stats, then values legend, assumptions, data sources, privacy and credits.
+- Form styles from MapaMars: inputs, segmented choices, password show/hide, `_ _ _ - _ _ _` code boxes, outline and link buttons.
+
+**Added: code from the idea bank**
+- Mars time (`data/mars.ts`: `marsClock`, local mean solar time, Earth–Mars light time) and PHT/MTC formatting (`lib/format.ts`).
+- Sun position (`data/marsSun.ts`, the Sun part of MapaMars `marsSky.ts`) and daylight (`data/daylight.ts`: Sun elevation, day/twilight/night, new `minutesToSunset`).
+- EVA uses daylight: the simulated walk starts at the real current time; new alerts for "Sun is down", "Sunset before you can get back" and "under an hour of daylight to spare". Site card shows daylight at the clicked point.
+- Ambient space sound (`lib/spaceSound.ts`, generated in the browser, on by default, remembered) and `readFlag`/`writeFlag` (`lib/storage.ts`), `useNow`.
+- Accounts (`services/auth.ts`, `state/AuthProvider.tsx`, `features/account/AccountPage.tsx` at `#/account`): sign up with username + strong password, sign in with email or username, sign out, email confirmation.
+- Saved missions (`services/missions.ts`, `features/plan/SaveMission.tsx`, `features/plan/useMissionFromCode.ts`): save a route with an `ABC-123` code (suggested or typed), public or code-only, optional EVA date and objective; open any mission at `#/plan/ABC-123`; the author can update or delete it, anyone else saves their own copy. Account page lists your missions and opens one by code.
+- `supabase/schema.sql`: the MapaMars schema unchanged table-for-table (so both apps can share one project), with a MAPA header explaining the mapping. RLS on every table.
+- `Launch.ps1` (Windows launcher), `docs/MAPA_Marswalk_Product_Specification.md` (the product spec listed in the Gen Spec's reuse table).
+- Reducer actions `renameStop`, `loadRoute`, `setMission`, `newRoute`; `mission` in state.
+
+**Spec deviations**
+- Stop limit lowered from 25 to **12** (base + 10 between + end): what a saved mission can hold in the shared schema. Still within Security Spec §5 ("e.g. 25").
+- Added `src/services/` (Supabase calls) and `src/state/AuthProvider.tsx`, which the Frontend Spec folder list doesn't have; they follow the MapaMars layout.
+- Reducer gained four actions beyond the Frontend Spec §4 list (above).
+- The map no longer sits under a separate top bar: the bar floats over it (MapaMars design).
+
+**Left in the idea bank (not brought over)**
+- 3D globe, orbiters, moons, landing-site 3D scenes, hyperspace transition: out of scope per the Gen Spec.
+- MapaMars 2D map (`MarsMap2D.tsx`), `nasaData.ts`, `mapView.ts`: replaced by the OpenLayers map and layer registry.
+- Crew joining, mission log entries, browsing public missions, realtime updates: the schema supports them, but MAPA has no UI for them yet.
+
+**Fixed**
+- A round trip whose base had no name would have been rejected by the database (end name ≠ start name); the end now always reuses the start's name.
+
+**Verified**
+- `npm run lint` clean, `npm run build` passes, `npm audit` 0 vulnerabilities.
+- Sun position: subsolar latitude 0.02° at the 2024-11-12 equinox and 25.19° at the 2025-05-29 solstice (expected 0° and 25.2°); peak Sun at Jezero at 12.4 h LMST.
+- Mission conversion: a route survives save → load with stop kinds, names and order; round trips store their start as the end; empty stop names get "Stop n"; more than 10 stops between start and end is refused on a round trip.
+- Earlier route, slope, format and GeoTIFF checks still pass.
+- Headless Chrome screenshots of Explore, Plan, `#/plan/ABC-123`, EVA, About and Account render in the new design.
+
+**Not verified**
+- Anything against a live Supabase project (sign-up, save, open by code). The local build has no `.env.local`, so those features show their "not set up" state. See placeholders.md D4 for the setup steps.
+
 ## 2026-11-14 · v0.1.2 · Fix tile proxy crash on Vercel
 
 **Fixed**

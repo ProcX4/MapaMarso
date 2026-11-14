@@ -1,4 +1,4 @@
-import type { LayerState, LngLat, MarswalkState, Mode, Stop } from './types'
+import type { LayerState, LngLat, MarswalkState, Mode, OpenMission, Stop } from './types'
 import { LAYERS } from '../map/layers/registry'
 import { EVA, LIMITS, WALKING } from '../config/assumptions'
 import { SITE } from '../config/site'
@@ -16,6 +16,10 @@ export type Action =
   | { type: 'reorderStops'; from: number; to: number }
   | { type: 'setRoundTrip'; value: boolean }
   | { type: 'setEvaPosition'; at: LngLat }
+  | { type: 'renameStop'; id: string; name: string }
+  | { type: 'loadRoute'; stops: Stop[]; roundTrip: boolean; mission: OpenMission | null }
+  | { type: 'setMission'; mission: OpenMission | null }
+  | { type: 'newRoute' }
 
 export const LAYER_PREFS_KEY = 'mapa.layers'
 
@@ -33,12 +37,26 @@ export function initialState(): MarswalkState {
     mode: 'explore',
     layers,
     selected: null,
-    stops: [{ id: 'base', kind: 'base', name: SITE.baseName, at: SITE.base }],
+    stops: [baseStop()],
     roundTrip: true,
     walkingSpeedKmh: clamp(WALKING.speedKmh, LIMITS.speedKmh),
     maxEvaHours: clamp(EVA.maxHours, LIMITS.evaHours),
     evaPosition: null,
+    mission: null,
   }
+}
+
+const baseStop = (): Stop => ({ id: 'base', kind: 'base', name: SITE.baseName, at: SITE.base })
+
+/** Stops from outside (a saved mission): valid coordinates, clean names, base first, within the limit. */
+function cleanStops(stops: Stop[]): Stop[] | null {
+  const [base, ...rest] = stops
+  if (!base || !stops.every((s) => isLngLat(s.at))) return null
+  const name = (s: Stop) => cleanText(s.name, LIMITS.nameLength) || 'Stop'
+  return [
+    { id: 'base', kind: 'base', name: name(base), at: base.at },
+    ...rest.slice(0, LIMITS.maxStops - 1).map((s) => ({ ...s, kind: s.kind === 'base' ? ('waypoint' as const) : s.kind, name: name(s) })),
+  ]
 }
 
 /** The one place state changes. Invalid input is ignored rather than stored. */
@@ -100,5 +118,22 @@ export function reducer(state: MarswalkState, action: Action): MarswalkState {
     case 'setEvaPosition':
       if (!isLngLat(action.at)) return state
       return { ...state, evaPosition: action.at }
+
+    case 'renameStop': {
+      const name = cleanText(action.name, LIMITS.nameLength)
+      return { ...state, stops: state.stops.map((s) => (s.id === action.id ? { ...s, name } : s)) }
+    }
+
+    case 'loadRoute': {
+      const stops = cleanStops(action.stops)
+      if (!stops) return state
+      return { ...state, stops, roundTrip: action.roundTrip, mission: action.mission, selected: null, evaPosition: null }
+    }
+
+    case 'setMission':
+      return { ...state, mission: action.mission }
+
+    case 'newRoute':
+      return { ...state, stops: [baseStop()], roundTrip: true, mission: null, evaPosition: null }
   }
 }

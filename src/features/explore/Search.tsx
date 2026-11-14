@@ -3,6 +3,7 @@ import { GAZETTEER } from '../../config/site'
 import { flyTo } from '../../map/mapControl'
 import { useMarswalk } from '../../hooks/useMarswalk'
 import { cleanText } from '../../lib/validate'
+import { Icon } from '../../components/Icon'
 
 /** Place-name search over the site's gazetteer subset → fly there and open the site card. */
 export function Search() {
@@ -14,20 +15,22 @@ export function Search() {
 
   return (
     <div className="explore-search">
-      <label className="visually-hidden" htmlFor={`${listId}-input`}>Search place names</label>
-      <input
-        id={`${listId}-input`}
-        className="search-input"
-        type="search"
-        placeholder="Search places"
-        value={q}
-        maxLength={60}
-        autoComplete="off"
-        aria-controls={listId}
-        onChange={(e) => setQ(e.target.value)}
-      />
+      <label className="hud-search">
+        <Icon name="search" size={15} />
+        <span className="visually-hidden">Search place names</span>
+        <input
+          type="search"
+          placeholder="Search places"
+          value={q}
+          maxLength={60}
+          autoComplete="off"
+          aria-controls={listId}
+          onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => e.key === 'Escape' && setQ('')}
+        />
+      </label>
       {hits.length > 0 && (
-        <ul id={listId} className="panel search-results">
+        <ul id={listId} className="hud-panel is-open search-results">
           {hits.map((p) => (
             <li key={p.name}>
               <button

@@ -4,6 +4,7 @@ import { useRoute } from '../../hooks/useDerived'
 import { nextStop, pointAlong, walkMinutes } from '../../data/route'
 import { distanceM } from '../../data/mars'
 import { centerOn } from '../../map/mapControl'
+import { daylightText, minutesToSunset, sunElevation } from '../../data/daylight'
 import { Button } from '../../components/Button'
 import { Slider } from '../../components/Slider'
 import { formatDistance } from '../../lib/format'
@@ -23,6 +24,8 @@ export function EvaView() {
   const route = useRoute()
   const [alongM, setAlongM] = useState(0)
   const [returning, setReturning] = useState(false)
+  // The simulated walk starts now, so daylight is real: the Sun keeps moving as the crew walks
+  const [startMs] = useState(() => Date.now())
   const total = route.totalM
 
   const here = useMemo(() => pointAlong(route.profile, alongM), [route.profile, alongM])
@@ -58,6 +61,9 @@ export function EvaView() {
   const toBaseM = distanceM(here.at, base.at)
   const toBaseMin = walkMinutes(toBaseM, 0, state.walkingSpeedKmh)
   const leftMin = state.maxEvaHours * 60 - elapsedMin
+  const simMs = startMs + elapsedMin * 60_000
+  const sun = sunElevation(here.at, simMs)
+  const sunsetMin = minutesToSunset(here.at, simMs)
   const hazardAhead = route.hazards.find((h) => h.toM >= alongM && h.fromM <= alongM + 200) ?? null
 
   const jumpToNext = (kind?: 'science') => {
@@ -72,9 +78,9 @@ export function EvaView() {
     <div className="eva">
       <div className="eva-top">
         <p className="eva-sim">
-          <span className="live-dot" aria-hidden /> SIMULATION · position along planned route
+          <span className="live-dot" aria-hidden /> SIMULATION · position along planned route · {daylightText(sun)}
         </p>
-        <HazardAlert returnMin={toBaseMin} leftMin={leftMin} hazard={hazardAhead} hazardStartsInM={hazardAhead ? Math.max(0, hazardAhead.fromM - alongM) : null} />
+        <HazardAlert returnMin={toBaseMin} leftMin={leftMin} sunUp={sun >= 0} sunsetMin={sunsetMin} hazard={hazardAhead} hazardStartsInM={hazardAhead ? Math.max(0, hazardAhead.fromM - alongM) : null} />
       </div>
 
       <div className="eva-facts">

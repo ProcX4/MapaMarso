@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { useMarswalk } from '../../hooks/useMarswalk'
 import { useDatasets } from '../../hooks/useDerived'
 import { GROUPS, LAYERS, provenanceLine, type LayerDef } from '../../map/layers/registry'
-import { Panel } from '../../components/Panel'
 import { Switch } from '../../components/Switch'
 import { Slider } from '../../components/Slider'
+import { Icon } from '../../components/Icon'
 import { PlaceholderTag, ProvenanceTag } from '../../components/ProvenanceTag'
 import type { LoadStatus } from '../../state/derivedContexts'
 
@@ -59,30 +59,41 @@ function LayerRow({ def }: { def: LayerDef }) {
   )
 }
 
+/**
+ * Layers, top right under the menu (the MapaMars Missions-panel pattern): a button that slides the list
+ * out. The list makes way for the site card, which opens in the same corner.
+ */
 export function LayerPanel() {
-  // Collapsed by default on narrow screens so the map stays visible.
+  const { state } = useMarswalk()
+  // Open by default on wide screens, so first-time visitors see the NASA layers straight away
   const [open, setOpen] = useState(() => !window.matchMedia('(max-width: 720px)').matches)
+  const shown = open && !state.selected
+  const visible = state.layers.filter((l) => l.visible).length
+
   return (
-    <Panel
-      title="Layers"
-      className={`explore-layers ${open ? 'is-open' : 'is-collapsed'}`}
-      actions={
-        <button type="button" className="icon-button" aria-expanded={open} aria-label={open ? 'Collapse layers' : 'Expand layers'} onClick={() => setOpen(!open)}>
-          {open ? '−' : '+'}
-        </button>
-      }
-    >
-      {open &&
-        GROUPS.map((g) => (
-          <div key={g.id} className="layer-group">
-            <h3 className="kicker">{g.label}</h3>
-            <ul>
-              {LAYERS.filter((l) => l.group === g.id).map((def) => (
-                <LayerRow key={def.id} def={def} />
-              ))}
-            </ul>
-          </div>
-        ))}
-    </Panel>
+    <div className="layers-hud">
+      <button type="button" className={`hud-link layers-link${shown ? ' is-open' : ''}`} aria-expanded={shown} aria-controls="layers-panel" onClick={() => setOpen(!shown)}>
+        <Icon name="layers" size={17} />
+        Layers
+      </button>
+      <section id="layers-panel" className={`hud-panel layers-panel${shown ? ' is-open' : ''}`} aria-label="Layers" inert={!shown}>
+        <div className="hud-panel-head">
+          <span>NASA layers</span>
+          <span className="hud-count">{visible}/{LAYERS.length} on</span>
+        </div>
+        <div className="hud-panel-body">
+          {GROUPS.map((g) => (
+            <div key={g.id} className="layer-group">
+              <h3 className="layer-group-head">{g.label}</h3>
+              <ul>
+                {LAYERS.filter((l) => l.group === g.id).map((def) => (
+                  <LayerRow key={def.id} def={def} />
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
   )
 }

@@ -31,7 +31,8 @@ export const PROFILE_STEP_M = 10
 
 /** Input limits (Security Spec §5). */
 export const LIMITS = {
-  maxStops: 25,
+  /** Base + up to 10 stops between + an end: what a saved mission can hold (supabase/schema.sql). */
+  maxStops: 12,
   nameLength: 80,
   noteLength: 500,
   speedKmh: [0.5, 5] as const,

@@ -16,6 +16,19 @@ export type MarswalkState = {
   walkingSpeedKmh: number // assumption, shown as ESTIMATED
   maxEvaHours: number // assumption for the return threshold
   evaPosition: LngLat | null // simulated position in EVA mode
+  mission: OpenMission | null // the saved mission this route was opened from, if any
+}
+
+/** Details of a saved mission kept alongside its route (Supabase; see services/missions.ts). */
+export type OpenMission = {
+  id: string
+  code: string | null
+  ownerId: string
+  commander: string
+  name: string
+  objective: string
+  date: string
+  visibility: 'public' | 'unlisted'
 }
 
 export type Category = 'observed' | 'derived' | 'estimated'

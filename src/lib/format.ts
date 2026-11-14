@@ -38,3 +38,22 @@ export const formatSignedM = (m: number) => (m > 0 ? `+${formatM(m)}` : formatM(
 export const formatBearing = (deg: number) => `${String(Math.round(((deg % 360) + 360) % 360)).padStart(3, '0')}°`
 
 export const NO_DATA = 'No data'
+
+/** Decimal hours → "14:05:09" (Mars clock times). */
+export function formatHours(h: number) {
+  const total = Math.floor(h * 3600)
+  const hh = Math.floor(total / 3600)
+  const mm = Math.floor((total % 3600) / 60)
+  const ss = total % 60
+  return [hh, mm, ss].map((n) => String(n).padStart(2, '0')).join(':')
+}
+
+const PH_TIME = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit',
+  hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
+})
+
+/** Philippine Standard Time (UTC+8), e.g. "2026-09-30 22:05:16 PHT". */
+export function formatPhTime(ms: number) {
+  return PH_TIME.format(ms).replace(',', '') + ' PHT'
+}
