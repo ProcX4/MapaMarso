@@ -32,3 +32,6 @@ export type OpenMission = {
 }
 
 export type Category = 'observed' | 'derived' | 'estimated'
+
+/** A point as {lat, lon} (planetocentric, east-positive), the shape the globe and flat map use. */
+export type LatLon = { lat: number; lon: number }

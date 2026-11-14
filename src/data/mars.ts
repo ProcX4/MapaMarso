@@ -59,3 +59,46 @@ export function metresPerDegree(lat: number) {
   const perLat = MARS_RADIUS_M * rad
   return { lon: perLat * Math.cos(lat * rad), lat: perLat }
 }
+
+/* ---------- Landing sites and landmarks (from MapaMars) ---------- */
+
+type SiteStatus = 'ACTIVE' | 'ENDED' | 'RETIRED'
+
+export type LandingSite = {
+  id: string
+  mission: string
+  location: string
+  lat: number // planetocentric, degrees north
+  lon: number // degrees east, -180..180
+  landed: number
+  status: SiteStatus
+  note: string
+}
+
+export const landingSites: LandingSite[] = [
+  { id: 'm2020', mission: 'Perseverance', location: 'Jezero Crater', lat: 18.44, lon: 77.45, landed: 2021, status: 'ACTIVE', note: 'Caching rock cores from an ancient river delta for future sample return.' },
+  { id: 'msl', mission: 'Curiosity', location: 'Gale Crater', lat: -4.59, lon: 137.44, landed: 2012, status: 'ACTIVE', note: 'Climbing the layered slopes of Mount Sharp to read Mars’ climate history.' },
+  { id: 'insight', mission: 'InSight', location: 'Elysium Planitia', lat: 4.5, lon: 135.62, landed: 2018, status: 'RETIRED', note: 'Seismometer recorded over 1,300 marsquakes before power loss in 2022.' },
+  { id: 'mer-b', mission: 'Opportunity', location: 'Meridiani Planum', lat: -1.95, lon: -5.53, landed: 2004, status: 'ENDED', note: 'Planned for 90 sols, drove 45 km over nearly 15 years.' },
+  { id: 'mer-a', mission: 'Spirit', location: 'Gusev Crater', lat: -14.57, lon: 175.47, landed: 2004, status: 'ENDED', note: 'Found silica deposits pointing to past hot springs.' },
+  { id: 'phx', mission: 'Phoenix', location: 'Vastitas Borealis', lat: 68.22, lon: -125.75, landed: 2008, status: 'ENDED', note: 'Scraped up and confirmed water ice just below the arctic soil.' },
+  { id: 'mpf', mission: 'Pathfinder', location: 'Ares Vallis', lat: 19.13, lon: -33.22, landed: 1997, status: 'ENDED', note: 'Delivered Sojourner, the first rover to drive on another planet.' },
+  { id: 'vl1', mission: 'Viking 1', location: 'Chryse Planitia', lat: 22.27, lon: -47.95, landed: 1976, status: 'ENDED', note: 'First successful US Mars landing; returned the first surface panoramas.' },
+]
+
+// Well-known places to aim a logged mission at
+export const landmarks: { name: string; lat: number; lon: number }[] = [
+  { name: 'Olympus Mons', lat: 18.65, lon: -133.8 },
+  { name: 'Valles Marineris', lat: -13.9, lon: -59.2 },
+  { name: 'Hellas Planitia', lat: -42.4, lon: 70.5 },
+  { name: 'Elysium Mons', lat: 24.8, lon: 146.9 },
+  { name: 'Utopia Planitia', lat: 46.7, lon: 117.5 },
+  { name: 'North polar cap', lat: 85, lon: 0 },
+  { name: 'South polar cap', lat: -85, lon: 0 },
+]
+
+/** Mean radius of Mars in km. */
+export const MARS_RADIUS_KM = MARS_RADIUS_M / 1000
+
+/** Straight-line (great-circle) distance across the surface, in km, for {lat, lon} points. Same sphere as distanceM. */
+export const marsDistanceKm = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) => distanceM([a.lon, a.lat], [b.lon, b.lat]) / 1000

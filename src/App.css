@@ -23,6 +23,8 @@
 .nav > * { pointer-events: auto; }
 /* Pages without the map get the solid bar */
 .page-about .nav,
+.page-home .nav,
+.page-missions .nav,
 .page-account .nav { background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
 .nav-brand { color: var(--white); text-decoration: none; font-weight: 600; letter-spacing: 0.2em; font-size: 14px; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8); }
 

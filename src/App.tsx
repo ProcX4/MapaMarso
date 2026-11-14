@@ -21,8 +21,11 @@ import './App.css'
 const EvaView = lazy(() => import('./features/eva/EvaView').then((m) => ({ default: m.EvaView })))
 const AboutPage = lazy(() => import('./features/provenance/AboutPage').then((m) => ({ default: m.AboutPage })))
 const AccountPage = lazy(() => import('./features/account/AccountPage').then((m) => ({ default: m.AccountPage })))
+const HomePage = lazy(() => import('./features/home/HomePage').then((m) => ({ default: m.HomePage })))
+const GlobePage = lazy(() => import('./features/globe/GlobePage').then((m) => ({ default: m.GlobePage })))
+const MissionsPage = lazy(() => import('./features/missions/MissionsPage').then((m) => ({ default: m.MissionsPage })))
 
-type Page = 'map' | 'about' | 'account'
+type Page = 'map' | 'about' | 'account' | 'home' | 'globe' | 'missions'
 type Route = { mode: Mode; page: Page; hash: string }
 
 function parse(hash: string): Route {
@@ -30,6 +33,9 @@ function parse(hash: string): Route {
   if (hash === '#/eva') return { mode: 'eva', page: 'map', hash: '#/eva' }
   if (hash === '#/about') return { mode: 'explore', page: 'about', hash: '#/about' }
   if (hash === '#/account') return { mode: 'explore', page: 'account', hash: '#/account' }
+  if (hash === '#/home') return { mode: 'explore', page: 'home', hash: '#/home' }
+  if (hash === '#/globe' || hash.startsWith('#/globe/')) return { mode: 'explore', page: 'globe', hash: '#/globe' }
+  if (hash === '#/missions' || hash.startsWith('#/missions/')) return { mode: 'explore', page: 'missions', hash: '#/missions' }
   return { mode: 'explore', page: 'map', hash: '#/' }
 }
 
@@ -40,9 +46,12 @@ const MODES: { mode: Mode; label: string; href: string }[] = [
 ]
 
 const PAGES: NavPage[] = [
+  { hash: '#/home', label: 'Home', icon: 'home', hint: 'Back to the home screen' },
+  { hash: '#/globe', label: 'Globe', icon: 'globe', hint: 'Mars in 3D, its moons, orbiters and landing sites' },
   { hash: '#/', label: 'Explore', icon: 'explore', hint: 'NASA layers and site analysis' },
   { hash: '#/plan', label: 'Plan Marswalk', icon: 'plan', hint: 'Route, profile, hazards and science stops' },
   { hash: '#/eva', label: 'EVA', icon: 'eva', hint: 'Follow the route on foot' },
+  { hash: '#/missions', label: 'Missions', icon: 'missions', hint: 'Browse missions, yours and everyone else’s' },
   { hash: '#/about', label: 'About & data', icon: 'about', hint: 'Where every layer comes from' },
 ]
 
@@ -130,6 +139,9 @@ export default function App() {
           {onMap && route.mode === 'eva' && <EvaView />}
           {route.page === 'about' && <AboutPage />}
           {route.page === 'account' && <AccountPage />}
+          {route.page === 'home' && <HomePage />}
+          {route.page === 'globe' && <GlobePage />}
+          {route.page === 'missions' && <MissionsPage />}
         </Suspense>
       </div>
       {tourOpen && onMap && <Tour key={route.mode} steps={tourSteps(route.mode)} onClose={closeTour} />}
