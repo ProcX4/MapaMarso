@@ -87,7 +87,9 @@ export function AboutPage() {
         <p className="about-text">
           Without an account, nothing about you leaves your browser; layer toggles and the sound setting are kept in local storage. With an
           account, MAPA stores your email (private), your username (shown on missions you save) and the missions themselves. Delete a mission from
-          your account page. EVA mode uses a simulated position; MAPA never asks for your device's location.
+          your account page. There is no delete-account button yet: to delete your whole account, ask the team that runs this site. Deleting the
+          account removes your profile, your saved missions, your crew memberships and your mission entries. EVA mode uses a simulated position;
+          MAPA never asks for your device's location.
         </p>
 
         <h2 className="kicker">Credits</h2>
