@@ -78,10 +78,15 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
 
   // Create once
   useEffect(() => {
-    // Imagery at the bottom: opaque base maps first, then the see-through ones (elevation colour, roughness, TES)
-    // so they show over whichever base is on; then the overlays drawn from data (hazards, envelope, targets) on top
+    // Imagery at the bottom: opaque base maps first, then walking-scale imagery (CTX, HiRISE; only shows zoomed right
+    // in, where the coarser maps are blurred), then the see-through ones (elevation colour, roughness, TES) so they
+    // show over whichever base is on; then the overlays drawn from data (hazards, envelope, targets) on top
     const tiles = LAYERS.filter((d) => d.kind === 'xyz' || d.kind === 'wmts')
-    const imagery = [...tiles.filter((d) => d.defaultOpacity >= 1), ...tiles.filter((d) => d.defaultOpacity < 1)]
+    const imagery = [
+      ...tiles.filter((d) => !d.walkScale && d.defaultOpacity >= 1),
+      ...tiles.filter((d) => d.walkScale),
+      ...tiles.filter((d) => !d.walkScale && d.defaultOpacity < 1),
+    ]
     LAYERS.forEach((def) => {
       const layer = createLayer(def)
       const i = imagery.indexOf(def)

@@ -21,7 +21,7 @@ Entry template:
 
 ---
 
-## 2026-11-15 · v0.5.1 · Topographic: route options, safety envelope, roughness, safer return
+## 2026-11-15 · v0.5.2 · Topographic: route options, safety envelope, roughness, safer return
 
 **Added**
 - **Route options:** every route is found two ways, *Safest* (round steep and deep ground, avoiding climbs) and *Most direct* (round impassable ground only), compared side by side in the planner with distance, time, max slope and distance over 10°. Pick one and the map, stats, profile and EVA follow it; the other is drawn dashed on the map.
@@ -48,6 +48,24 @@ Entry template:
 
 **Not verified**
 - A* on a real saved mission (still no missions in the database).
+
+---
+
+## 2026-11-15 · v0.5.1 · Three more TES layers under Spectral
+
+**Added**
+- Spectral group: **Dust cover index (TES)**, **Dust cover index over relief (TES)** and **Surface albedo (TES)**, all from Mars Trek, all observed. The two dust layers show the same index (Ruff & Christensen 2002), the first as the raw map and the second over shaded relief. The layer panel now lists 15 layers (it listed 12): 3 Topographic, 2 Optical and 10 Spectral.
+- The three layer IDs (`TES_Dust`, `tes_ruffdust`, `Mars_MGS_TES_Albedo_mosaic_global_7410m`) are on the tile proxy's allow-list, and each has a row in `docs/data-sources.md`.
+
+**Changed**
+- The Spectral group's one-line description now says "Infrared, mineral, dust and albedo maps".
+
+**Notes**
+- All three are global and coarse (about 3.5 and 7.4 km/px; Trek has tiles to zoom 1, or 2 for the dust-over-relief map), like the other TES layers, so they show regional context, not walking-scale detail. They are drawn half see-through over the others.
+- Found by checking the layers listed on the USGS PGM data sources page and the Mars Trek catalogue. Layers that serve no tiles, or that cover other regions (CRISM hydrous minerals, the CRISM indicator maps), were left out.
+
+**Spec deviations**
+- None.
 
 ---
 
