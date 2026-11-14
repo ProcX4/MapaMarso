@@ -66,3 +66,22 @@ export function evaPositionStyle() {
     image: new Circle({ radius: 12, fill: new Fill({ color: '#000' }), stroke: new Stroke({ color: '#fff', width: 4 }) }),
   })
 }
+
+/** Debug: zoom points marks: a dashed outline round an area-only photo layer, and a pin where rover photos begin */
+export function debugMarkStyle(feature: FeatureLike) {
+  const label = new Text({
+    text: String(feature.get('label') ?? ''),
+    font: FONT,
+    textAlign: 'left',
+    offsetX: 12,
+    fill: new Fill({ color: cssVar('info') }),
+    stroke: new Stroke({ color: '#000', width: 3 }),
+    overflow: true,
+  })
+  if (feature.get('kind') === 'rover') {
+    return new Style({ image: new Circle({ radius: 6, fill: new Fill({ color: cssVar('ok') }), stroke: new Stroke({ color: '#000', width: 2 }) }), text: label })
+  }
+  label.setPlacement('point')
+  return new Style({ stroke: new Stroke({ color: cssVar('info'), width: 2, lineDash: [8, 6] }), text: label })
+}
+

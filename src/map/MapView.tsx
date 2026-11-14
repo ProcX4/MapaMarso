@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import Map from 'ol/Map'
 import View from 'ol/View'
 import Feature from 'ol/Feature'
-import { LineString, Point } from 'ol/geom'
+import { LineString, Point, Polygon } from 'ol/geom'
 import VectorLayer from 'ol/layer/Vector'
 import ImageLayer from 'ol/layer/Image'
 import VectorSource from 'ol/source/Vector'
@@ -25,6 +25,9 @@ import type { SafePath } from '../data/safePath'
 import { pointAlong } from '../data/route'
 import { SITE } from '../config/site'
 import type { LngLat, Stop } from '../state/types'
+import { useDebugZoom } from '../lib/debugZoom'
+import { ZoomDebug } from './ZoomDebug'
+import { debugMarkStyle } from './styles'
 import './map.css'
 
 const HOVER_PX = 12
@@ -61,6 +64,9 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
   const layers = useRef<Record<string, BaseLayer>>({})
   const stopsLayer = useRef(new VectorLayer({ source: new VectorSource(), style: stopStyle, zIndex: 20 }))
   const markerLayer = useRef(new VectorLayer({ source: new VectorSource(), zIndex: 30 }))
+  // Debug: zoom points (☰ menu): where the area-only photo layers are, and where the rover photos start
+  const debugLayer = useRef(new VectorLayer({ source: new VectorSource({ features: debugMarks() }), style: debugMarkStyle, zIndex: 45, visible: false }))
+  const debugZoom = useDebugZoom()
   const missionLayer = useRef(new VectorLayer({ source: new VectorSource(), style: routeStyle, zIndex: 18 }))
   const nightLayer = useRef(new VectorLayer({ source: new VectorSource(), style: daylightStyle, zIndex: 17, updateWhileInteracting: true }))
   const translate = useRef<Translate | null>(null)
@@ -97,7 +103,7 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
 
     const m = new Map({
       target: el.current!,
-      layers: [planetBackdrop(), ...Object.values(layers.current), nightLayer.current, missionLayer.current, stopsLayer.current, markerLayer.current],
+      layers: [planetBackdrop(), ...Object.values(layers.current), nightLayer.current, missionLayer.current, stopsLayer.current, markerLayer.current, debugLayer.current],
       view: new View({
         projection: marsProjection,
         center: SITE.center,
@@ -262,5 +268,29 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
     }
   }, [state.selected, state.mode, state.evaPosition, hover, route.profile])
 
-  return <div ref={el} className="map" tabIndex={0} aria-label="Map of Mars with NASA layers and the demo site. Arrow keys pan, plus and minus zoom." />
+  useEffect(() => {
+    debugLayer.current.setVisible(debugZoom)
+  }, [debugZoom])
+
+  return (
+    <>
+      <div ref={el} className="map" tabIndex={0} aria-label="Map of Mars with NASA layers and the demo site. Arrow keys pan, plus and minus zoom." />
+      {debugZoom && <ZoomDebug />}
+    </>
+  )
 }
+
+/** Debug marks: an outline of every photo layer that covers only one area, and the rover's first stop */
+function debugMarks() {
+  const out: Feature[] = []
+  for (const def of LAYERS) {
+    const bbox = def.coverage?.bbox
+    if (def.group !== 'optical' || !bbox) continue
+    const [w, s, e, n] = bbox
+    const start = def.minZoom !== undefined ? def.minZoom + 1 : 0
+    out.push(new Feature({ geometry: new Polygon([[[w, s], [e, s], [e, n], [w, n], [w, s]]]), kind: 'area', label: `${def.name.split(' (')[0]} photos · zoom ${start}+` }))
+  }
+  out.push(new Feature({ geometry: new Point(SITE.base), kind: 'rover', label: 'Rover photos: click near the rover track' }))
+  return out
+}
+

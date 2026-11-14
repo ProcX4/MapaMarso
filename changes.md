@@ -21,6 +21,20 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.5 · Debug: zoom points
+
+**Added**
+- **Debug: zoom points**, a switch in the ☰ menu (off by default, remembered per browser; `src/lib/debugZoom.ts`). With it on, the 2D map shows:
+  - a panel at the top centre with the zoom level, about how much ground one screen pixel covers, and which photo layer is drawing now;
+  - a ladder of the Optical photo layers with the zoom each starts at and is sharpest at (colour mosaics up to 6–7, CTX from 10, HiRISE from 12 at Jezero), the current one highlighted, and a **Go** button on each that zooms there (or flies to Jezero for HiRISE). The ladder reads the layer registry, so it follows any change to the layers (`src/map/ZoomDebug.tsx`);
+  - on the map, a dashed outline of the HiRISE area labelled "zoom 12+", and a pin at the landing site where the rover photos start.
+
+**Verified (headless Chrome)**
+- Off by default; on from the menu; remembered after a reload; off hides the panel and marks. No page errors.
+- Zoom 2: "≈ 10.4 km per screen pixel", colour backdrop drawing, HiRISE marked not in this area. HiRISE Go: zoom 14 at Jezero, "≈ 3 m per screen pixel", HiRISE drawing. Zoomed out to 11: "≈ 20 m", CTX drawing.
+
+---
+
 ## 2026-11-15 · v0.5.4 · Plain-language layer instructions; zoom for rover photos
 
 **Changed: the layer panel explains itself**
