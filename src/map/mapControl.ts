@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from 'react'
 import type Map from 'ol/Map'
 import type { LatLon, LngLat } from '../state/types'
 
@@ -7,9 +8,29 @@ import type { LatLon, LngLat } from '../state/types'
  */
 
 let current: Map | null = null
+const zoomListeners = new Set<() => void>()
+const notifyZoom = () => zoomListeners.forEach((l) => l())
 
 export function registerMap(map: Map | null) {
+  current?.getView().un('change:resolution', notifyZoom)
   current = map
+  current?.getView().on('change:resolution', notifyZoom)
+  notifyZoom()
+}
+
+/**
+ * True while the view is zoomed out too far for a layer with this `minZoom` to draw
+ * (OpenLayers draws a layer only above its minZoom). Returns a boolean, so the panel
+ * re-renders only when the layer appears or disappears, not on every frame of a zoom.
+ */
+export function useBelowMinZoom(minZoom: number | undefined) {
+  return useSyncExternalStore(
+    (onChange) => {
+      zoomListeners.add(onChange)
+      return () => void zoomListeners.delete(onChange)
+    },
+    () => minZoom !== undefined && currentZoom() <= minZoom,
+  )
 }
 
 /** Instant recentre, for following a moving position. */
