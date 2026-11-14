@@ -25,19 +25,21 @@ Last updated: 2026-11-14 (v0.3.0, full idea bank merged)
 
 | # | Placeholder | Current state | Where | Done when |
 |---|---|---|---|---|
-| P1 | **Site elevation model (DTM)** | **File missing.** App shows "No data" for elevation, gain/loss, max slope, difficulty | `public/data/site-dtm.tif`; provenance in `src/map/layers/registry.ts` (`site-dtm`: product/resolution `TBD`) | A HiRISE or CTX DTM for the site is added as a **single-band Cloud-Optimized GeoTIFF, metres, in plain lon/lat degrees** (Mars 2000 geographic, e.g. `gdalwarp -t_srs "+proj=longlat +a=3396190 +b=3376200 +no_defs" -of COG`), cropped to the walking area. Registry `product`/`resolution` filled, `placeholder` removed |
-| P2 | **Slope layer** | Code done (Horn method in a Web Worker) but has nothing to compute until P1 lands | `src/data/slope.ts`, `slope.worker.ts` | After P1: spot-check MAPA slope against `gdaldem slope` on the same file, then remove `placeholder` from the `slope` registry entry |
-| P3 | **Surface imagery** | THEMIS Day IR 100 m/px global mosaic from Mars Trek (regional, not walking scale) | `src/map/layers/registry.ts` → `themis-day-ir` | A HiRISE or CTX mosaic of the site is added (Trek layer if one exists for the site and is allow-listed in `src/config/trekLayers.ts`, otherwise a local tile set or COG) |
-| P4 | **Geologic units** | `public/data/geology.geojson` is an **empty FeatureCollection** | `public/data/geology.geojson`; registry `geology` (`product: TBD`) | Polygons for the site with properties `unit`, `name`, `description` (crop of USGS SIM 3292 or a published local Jezero map) |
+| P1 | ~~**Site elevation model (DTM)**~~ | **Done 2026-11-15.** USGS Mars 2020 CTX DTM of Jezero, 20 m/px (`JEZ_ctx_B_soc_008_DTM_MOLAtopography_DeltaGeoid_20m_Eqc_latTs0_lon0.tif`, 1596×1512, equirectangular metres on the Mars sphere, read as degrees by `src/data/elevation.ts`). Outside it, the global MOLA DEM (463 m/px) through `api/elevation.ts` | `public/data/site-dtm.tif`; `src/data/terrain.ts` | — |
+| P2 | **Slope and depth** | Done: worked out by the A* worker for the ground round each route (Horn slope, depth below a 600 m box mean). Still to do: spot-check against `gdaldem slope` on the same file | `src/data/pathfind.worker.ts` | Spot-checked |
+| P3 | **Surface imagery at walking scale** | Global Trek layers only (THEMIS 100 m/px is the sharpest). The global CTX (Caltech) and HiRISE mosaics are in the Trek catalogue but serve no tiles from the standard EQ tile endpoint | `src/map/layers/registry.ts` | A CTX or HiRISE layer is found that Trek serves as tiles (or a local tile set), allow-listed in `api/tiles.ts` and added under Optical |
+| P4 | ~~**Geologic units**~~ | Removed 2026-11-15: the layers are now Topographic, Optical and Spectral only; the empty `geology.geojson` and the site card's Geology row are gone | — | — |
 | P5 | **Science targets** | `public/data/science-targets.geojson` is an **empty FeatureCollection** | `public/data/science-targets.geojson`; registry `science-targets` | Points with properties `name`, `reason` (e.g. "CRISM hydrated signature"), `source`. Every target needs a real, citable reason |
 | P6 | **Place names (gazetteer)** | 2 hand-typed entries: "Jezero" (77.58°E, 18.38°N) and "Octavia E. Butler Landing" | `src/config/site.ts` → `GAZETTEER` | Replaced with verified IAU gazetteer names inside the site |
-| P7 | **Thermal (THEMIS) / mineralogy (CRISM) map layers** | Not in the layer registry yet (only CRISM-sourced *targets* are planned) | `src/map/layers/registry.ts` | Added if they help the demo story, with full provenance |
+| P7 | ~~**Thermal / mineralogy map layers**~~ | Done 2026-11-15: Spectral group (THEMIS day and night IR, TES thermal inertia, pyroxene, plagioclase, sheet silicates). CRISM/OMEGA hydrous detections are in the Trek catalogue but serve no tiles | `src/map/layers/registry.ts` | — |
 | P8 | **Rover traverse layer** | Not started (stretch goal) | — | Perseverance traverse from PDS added as a `route`-group vector layer |
 | P9 | **Data sources record** | Only the three Trek layers are recorded | `docs/data-sources.md` | Every layer in use has product ID, resolution, URL and licence |
 | P11 | **Landing-site close-ups** | Only Viking 1 (`vl1`) has a 3D close-up, with procedural terrain around NASA's lander model | `src/data/siteScenes.ts` | Add scenes for other sites (e.g. Perseverance at Jezero) if the demo needs them |
-| P10 | **Elevation layer styling** | Plain grey ramp (low = dark, high = white) from the in-memory grid | `src/map/MapView.tsx` (site-dtm effect) | Decide on a hillshade or colour ramp once real data is in |
+| P10 | ~~**Elevation layer styling**~~ | Done 2026-11-15: elevation is shown as Trek's MOLA + HRSC colour hillshade; the grey DTM layer was removed | — | — |
 
 ## 3. Assumptions (all ESTIMATED, none validated)
+
+- **A* route costs** (`src/config/assumptions.ts` → `PATHFINDING`): impassable at 25°, extra cost in the 10–15° and 15–25° bands, "deep" ground 15–60 m below the ground within 600 m steered round and never entered past 60 m, 3.3 flat metres per metre climbed. Tuned by eye on Jezero and Valles Marineris; not validated for a suited astronaut.
 
 All in `src/config/assumptions.ts` unless noted. Shown in the UI on hover of every ESTIMATED tag and on the About page.
 

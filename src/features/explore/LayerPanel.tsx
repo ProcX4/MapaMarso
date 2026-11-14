@@ -1,27 +1,55 @@
 import { useState } from 'react'
 import { useMarswalk } from '../../hooks/useMarswalk'
-import { useDatasets } from '../../hooks/useDerived'
+import { useDatasets, useRoute } from '../../hooks/useDerived'
+import { TERRAIN_NOTE, type TerrainGrid } from '../../data/terrain'
+import type { SafePathState } from '../../hooks/useSafePath'
 import { GROUPS, LAYERS, provenanceLine, type LayerDef } from '../../map/layers/registry'
 import { Switch } from '../../components/Switch'
 import { Slider } from '../../components/Slider'
 import { Icon } from '../../components/Icon'
 import { PlaceholderTag, ProvenanceTag } from '../../components/ProvenanceTag'
-import type { LoadStatus } from '../../state/derivedContexts'
+import type { LoadStatus, Routing } from '../../state/derivedContexts'
+
+/** Where the topographic rows get their news: the selected mission's safe path, or else the planned route's */
+type PathInfo = { status: LoadStatus | 'no-route'; routing: Routing; terrain: TerrainGrid | null }
+
+function usePathInfo(missionPath: SafePathState | null | undefined): PathInfo {
+  const data = useDatasets()
+  const route = useRoute()
+  if (missionPath && missionPath.status !== 'idle') {
+    const v = missionPath.value
+    const routing: Routing =
+      missionPath.status === 'error' ? 'unavailable'
+      : missionPath.status === 'loading' || !v ? 'finding'
+      : v.legs.every((l) => l.status === 'safe') ? 'safe'
+      : 'partial'
+    return { status: v ? 'ready' : missionPath.status === 'error' ? 'missing' : 'loading', routing, terrain: v?.terrain ?? null }
+  }
+  if (!route.legs.length) return { status: 'no-route', routing: 'none', terrain: null }
+  return { status: data.hazard.status, routing: route.routing, terrain: data.dtm.value }
+}
 
 /** Which dataset feeds a layer, so the panel can say "No data loaded" honestly. */
-function useLayerStatus(def: LayerDef): LoadStatus {
-  const data = useDatasets()
-  if (def.id === 'site-dtm') return data.dtm.status
-  if (def.id === 'slope') return data.slope.status
-  if (def.id === 'geology') return data.geology.status
-  if (def.id === 'science-targets') return data.targets.status
+function layerStatus(def: LayerDef, path: PathInfo, targets: LoadStatus): LoadStatus | 'no-route' {
+  if (def.id === 'slope' || def.id === 'route') return path.status
+  if (def.id === 'science-targets') return targets
   return 'ready'
 }
 
-function LayerRow({ def }: { def: LayerDef }) {
+const ROUTING_TEXT: Record<Routing, string | null> = {
+  none: null,
+  finding: 'Finding a safe path…',
+  safe: 'Safe path found round steep and deep ground',
+  partial: 'Some legs have no safe way through: shown as straight lines',
+  unavailable: 'No elevation data here: legs shown as straight lines',
+}
+
+function LayerRow({ def, path }: { def: LayerDef; path: PathInfo }) {
   const { state, dispatch } = useMarswalk()
   const layer = state.layers.find((l) => l.id === def.id)!
-  const status = useLayerStatus(def)
+  const status = layerStatus(def, path, useDatasets().targets.status)
+  const topographic = def.id === 'slope' || def.id === 'route'
+  const routing = def.id === 'route' ? ROUTING_TEXT[path.routing] : null
   return (
     <li className="layer-row">
       <div className="layer-row-head">
@@ -39,7 +67,7 @@ function LayerRow({ def }: { def: LayerDef }) {
             valueText={`${Math.round(layer.opacity * 100)}%`}
             onChange={(opacity) => dispatch({ type: 'setOpacity', id: def.id, opacity })}
           />
-          {def.legend && status === 'ready' && (
+          {def.legend && (status === 'ready' || def.kind === 'xyz') && (
             <ul className="layer-legend">
               {def.legend.map((l) => (
                 <li key={l.label}>
@@ -50,8 +78,11 @@ function LayerRow({ def }: { def: LayerDef }) {
           )}
         </div>
       )}
-      {status === 'loading' && <p className="layer-status">Loading…</p>}
+      {status === 'loading' && !routing && <p className="layer-status">Loading…</p>}
       {status === 'missing' && <p className="layer-status">No data loaded</p>}
+      {status === 'no-route' && def.id === 'route' && <p className="layer-status">Plan a route of two stops or more, or pick a mission</p>}
+      {routing && <p className="layer-status">{routing}</p>}
+      {topographic && path.terrain && <p className="layer-status">Terrain: {TERRAIN_NOTE[path.terrain.source]}</p>}
       <p className="provenance-line">
         {provenanceLine(def)} {def.placeholder && <PlaceholderTag note={def.placeholder} />}
       </p>
@@ -67,6 +98,8 @@ type PanelProps = {
   button?: boolean
   /** Another card has the corner, so the list stays tucked away */
   blocked?: boolean
+  /** The safe path of the mission picked on the map, which the Topographic rows then describe */
+  missionPath?: SafePathState | null
 }
 
 /** The Layers button, lit while the list is out. */
@@ -83,8 +116,9 @@ export function LayersButton({ open, onClick }: { open: boolean; onClick: () => 
  * Layers, top right under the menu (the MapaMars Missions-panel pattern): a button that slides the list
  * out. The list makes way for the site card, which opens in the same corner.
  */
-export function LayerPanel({ open: openProp, onOpenChange, button = true, blocked = false }: PanelProps) {
+export function LayerPanel({ open: openProp, onOpenChange, button = true, blocked = false, missionPath }: PanelProps) {
   const { state } = useMarswalk()
+  const path = usePathInfo(missionPath)
   // Open by default on wide screens, so first-time visitors see the NASA layers straight away
   const [ownOpen, setOwnOpen] = useState(() => !window.matchMedia('(max-width: 720px)').matches)
   const open = openProp ?? ownOpen
@@ -104,9 +138,10 @@ export function LayerPanel({ open: openProp, onOpenChange, button = true, blocke
           {GROUPS.map((g) => (
             <div key={g.id} className="layer-group">
               <h3 className="layer-group-head">{g.label}</h3>
+              <p className="layer-group-note">{g.note}</p>
               <ul>
                 {LAYERS.filter((l) => l.group === g.id).map((def) => (
-                  <LayerRow key={def.id} def={def} />
+                  <LayerRow key={def.id} def={def} path={path} />
                 ))}
               </ul>
             </div>

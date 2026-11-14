@@ -14,13 +14,23 @@
  * Shared by this proxy and the layer registry, so a layer can't be shown unless the
  * proxy will also serve it.
  *
- * maxZoom: deepest zoom the layer has tiles for at the demo site (checked 2026-11-14
+ * maxZoom: deepest zoom the layer has tiles for at the demo site (checked 2026-11-15
  * against the Trek tile endpoint); beyond it, OpenLayers upscales the last level.
+ * All of them cover the whole planet.
  */
 export const TREK_LAYERS = {
-  Mars_MGS_MOLA_ClrShade_merge_global_463m: { ext: 'jpg', maxZoom: 7 },
+  // Topographic
+  Mars_MOLA_blend200ppx_HRSC_ClrShade_clon0dd_200mpp_lzw: { ext: 'jpg', maxZoom: 8 },
+  // Optical
   Mars_Viking_MDIM21_ClrMosaic_global_232m: { ext: 'jpg', maxZoom: 7 },
+  msss_atlas_simp_clon: { ext: 'png', maxZoom: 6 },
+  // Spectral
   THEMIS_DayIR_ControlledMosaics_100m_v2_oct2018: { ext: 'png', maxZoom: 9 },
+  THEMIS_NightIR_ControlledMosaics_100m_v2_oct2018: { ext: 'png', maxZoom: 9 },
+  TES_Thermal_Inertia: { ext: 'png', maxZoom: 1 },
+  TES_Clinopyroxene: { ext: 'png', maxZoom: 1 },
+  TES_Plagioclase: { ext: 'png', maxZoom: 1 },
+  TES_Glass_Clay: { ext: 'png', maxZoom: 1 },
 } as const satisfies Record<string, { ext: 'jpg' | 'png'; maxZoom: number }>
 
 export type TrekLayerId = keyof typeof TREK_LAYERS

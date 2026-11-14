@@ -90,7 +90,7 @@ export function ElevationProfile() {
     <div className="plan-profile">
       <div className="plan-profile-head">
         <h2 className="kicker">Elevation profile</h2>
-        <ProvenanceTag category="derived" note="Sampled every 10 m along straight legs from the site DTM" />
+        <ProvenanceTag category="derived" note="Sampled every 10 m along the A* safe path, from the Jezero CTX DTM at the site or MOLA elsewhere" />
         {hp && (
           <span className="plan-profile-readout num">
             {formatDistance(hp.distM)} · {hp.elevM !== null ? formatM(hp.elevM) : NO_DATA} · {hp.slopeDeg !== null ? formatSlope(hp.slopeDeg) : NO_DATA}

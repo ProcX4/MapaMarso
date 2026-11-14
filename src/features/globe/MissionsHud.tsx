@@ -150,11 +150,13 @@ type CardProps = {
   at: number
   /** Describes `at` when it isn't now, e.g. "in 3 h 15 min" */
   atLabel?: string
+  /** How the A* safe path for the route is going, e.g. its length and the elevation it was found on */
+  pathNote?: string
   onClose: () => void
 }
 
 /** Brief background for a mission picked on the globe or from the list, with day or night at each stop. */
-export function MissionCard({ mission: m, at, atLabel, onClose }: CardProps) {
+export function MissionCard({ mission: m, at, atLabel, pathNote, onClose }: CardProps) {
   const sun = sunAt(at)
   const round = m.tripType === 'round'
   const stops = [
@@ -193,10 +195,20 @@ export function MissionCard({ mission: m, at, atLabel, onClose }: CardProps) {
           )
         })}
       </ol>
-      {m.date && (
+      {(m.date || pathNote) && (
         <dl className="info-card-facts">
-          <dt>Planned date</dt>
-          <dd>{m.date}</dd>
+          {m.date && (
+            <>
+              <dt>Planned date</dt>
+              <dd>{m.date}</dd>
+            </>
+          )}
+          {pathNote && (
+            <>
+              <dt>Safe path</dt>
+              <dd>{pathNote}</dd>
+            </>
+          )}
         </dl>
       )}
       {m.objective && <p className="info-card-text">{m.objective}</p>}

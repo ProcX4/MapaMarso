@@ -10,8 +10,8 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const UPSTREAM = 'https://trek.nasa.gov/tiles/Mars/EQ'
+// The demo site's default layers: the colour backdrop and the surface imagery
 const LAYERS = {
-  Mars_MGS_MOLA_ClrShade_merge_global_463m: { ext: 'jpg', maxZoom: 7 },
   Mars_Viking_MDIM21_ClrMosaic_global_232m: { ext: 'jpg', maxZoom: 7 },
   THEMIS_DayIR_ControlledMosaics_100m_v2_oct2018: { ext: 'png', maxZoom: 9 },
 }

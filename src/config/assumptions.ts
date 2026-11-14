@@ -26,6 +26,30 @@ export const SLOPE_BANDS = [
 
 export type SlopeBand = (typeof SLOPE_BANDS)[number]
 
+/**
+ * The A* route finder (Topographic layers): how much it dislikes steep and deep ground. A path costs its length
+ * in metres, times a penalty on harder ground, plus a cost for every metre climbed.
+ */
+export const PATHFINDING = {
+  /** Ground this steep or steeper is never crossed (the "Treat as impassable" slope band) */
+  maxSlopeDeg: 25,
+  /** Extra cost per metre walked, on top of 1, in each slope band below the limit */
+  slopePenalty: { caution: 1, hazard: 4 },
+  /** "Deep" ground sits below the average of the ground around it (pits, channels, small craters), within this radius */
+  depthRadiusM: 600,
+  /** From this depth the path starts to steer round it... */
+  depthSoftM: 15,
+  /** ...and from this depth it never goes in */
+  depthMaxM: 60,
+  /** Extra cost per metre walked at the deepest ground it still enters */
+  depthPenalty: 4,
+  /** Each metre climbed costs as much as this many metres on the flat (from WALKING: 2 km/h, +1 min per 10 m) */
+  climbM: 3.3,
+  /** Around each leg, how far beyond the straight line the search may wander, as a share of the leg's length */
+  searchMargin: 0.6,
+  minSearchMarginM: 1500,
+}
+
 /** Sampling step along the route for the elevation profile. */
 export const PROFILE_STEP_M = 10
 

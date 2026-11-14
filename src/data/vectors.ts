@@ -5,11 +5,10 @@ import type { LngLat } from '../state/types'
 import { marsProjection } from '../map/projection'
 
 /*
- * Small vector datasets served from public/data/ (geology units, science targets).
+ * Small vector datasets served from public/data/ (science targets).
  * Coordinates are lon/lat degrees on Mars; there is no reprojection.
  */
 
-export type GeologyUnit = { unit: string; name: string; description?: string }
 export type ScienceTarget = { id: string; name: string; reason: string; at: LngLat; source?: string }
 
 const format = new GeoJSON({ dataProjection: marsProjection, featureProjection: marsProjection })
@@ -19,14 +18,6 @@ export async function loadFeatures(url: string): Promise<Feature<Geometry>[]> {
   const res = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) })
   if (!res.ok) throw new Error(`${url}: ${res.status}`)
   return format.readFeatures(await res.json()) as Feature<Geometry>[]
-}
-
-/** Geologic unit polygon containing a point, if any. */
-export function geologyAt(features: Feature<Geometry>[], at: LngLat): GeologyUnit | null {
-  const hit = features.find((f) => f.getGeometry()?.intersectsCoordinate(at))
-  if (!hit) return null
-  const p = hit.getProperties()
-  return { unit: String(p.unit ?? '?'), name: String(p.name ?? 'Unnamed unit'), description: p.description ? String(p.description) : undefined }
 }
 
 export function toScienceTargets(features: Feature<Geometry>[]): ScienceTarget[] {

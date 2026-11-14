@@ -2,6 +2,7 @@ import react from '@vitejs/plugin-react'
 import { defineConfig, type Connect, type Plugin } from 'vite'
 import { GET as tiles } from './api/tiles.ts'
 import { GET as horizons } from './api/horizons.ts'
+import { GET as elevation } from './api/elevation.ts'
 
 type Handler = (request: Request) => Promise<Response>
 
@@ -23,6 +24,6 @@ function apiRoute(path: string, handler: Handler): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), apiRoute('/api/tiles', tiles), apiRoute('/api/horizons', horizons)],
+  plugins: [react(), apiRoute('/api/tiles', tiles), apiRoute('/api/horizons', horizons), apiRoute('/api/elevation', elevation)],
   worker: { format: 'es' },
 })

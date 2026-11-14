@@ -27,6 +27,11 @@ import { fitTo, flyTo, showArea } from '../../map/mapControl'
 import type { PlanetRoute as MapRoute } from '../../map/planetLayers'
 import { useMarswalk } from '../../hooks/useMarswalk'
 import { useRoute } from '../../hooks/useDerived'
+import { useSafePath, type SafePathState } from '../../hooks/useSafePath'
+import { TERRAIN_NOTE } from '../../data/terrain'
+import { distanceM } from '../../data/mars'
+import { formatKm } from '../../lib/format'
+import type { LngLat } from '../../state/types'
 import { SITE } from '../../config/site'
 import { LayerPanel, LayersButton } from '../explore/LayerPanel'
 import { SiteCard } from '../explore/SiteCard'
@@ -96,6 +101,20 @@ const MISSIONS_OPEN_KEY = 'mapa.globe.missionsOpen'
 const CATALOG_OPEN_KEY = 'mapa.globe.catalogOpen'
 // On a phone the two side panels would cover each other, and the globe: only one opens at a time
 const narrow = () => window.matchMedia('(max-width: 720px)').matches
+
+const samePoint = (a: LngLat, b: LngLat) => Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[1] - b[1]) < 1e-6
+
+/** The mission card's line on its A* safe path */
+function missionPathNote(safe: SafePathState, line: LngLat[] | null) {
+  if (safe.status === 'idle') return undefined
+  if (safe.status === 'error') return 'No elevation data to route by: drawn as straight lines'
+  if (!line || !safe.value) return 'Finding a way round steep and deep ground…'
+  let m = 0
+  for (let i = 1; i < line.length; i++) m += distanceM(line[i - 1], line[i])
+  const stuck = safe.value.legs.filter((l) => l.status !== 'safe').length
+  const how = stuck ? `${stuck} leg${stuck > 1 ? 's' : ''} with no safe way through (straight)` : 'round steep and deep ground'
+  return `${formatKm(m / 1000)} on foot, ${how} · ${TERRAIN_NOTE[safe.value.terrain.source]}`
+}
 
 export function GlobePage() {
   const { user, loading: authLoading } = useAuth()
@@ -227,12 +246,34 @@ export function GlobePage() {
     return { markers, routes, mapRoutes, fullMapRoutes }
   }, [missionList, selectedId, allRoutes])
 
+  // A picked mission's route is walked by its A* safe path, round steep and deep ground (the Topographic layers)
+  const missionPoints = useMemo(() => {
+    const r = selectedId ? fullMapRoutes.get(selectedId) : undefined
+    if (!r || r.points.length < 2) return null
+    const pts = r.points.map((p): LngLat => [p.lon, p.lat])
+    return r.closed ? [...pts, pts[0]] : pts
+  }, [selectedId, fullMapRoutes])
+  const missionSafe = useSafePath(missionPoints)
+  // The last path found stays up while the next is worked out: only use it if it joins this mission's stops
+  const safeLine = useMemo(() => {
+    const legs = missionSafe.value?.legs
+    if (!legs || !missionPoints || legs.length !== missionPoints.length - 1) return null
+    const joins = legs.every((l, i) => samePoint(l.path[0], missionPoints[i]) && samePoint(l.path[l.path.length - 1], missionPoints[i + 1]))
+    return joins ? legs.flatMap((l, i) => (i ? l.path.slice(1) : l.path)) : null
+  }, [missionSafe.value, missionPoints])
+  const pathNote = missionPathNote(missionSafe, safeLine)
+
   // On the 2D map a picked landing site shows as a marker too
   const siteRoutes = useMemo(() => {
+    const withPath = safeLine ? mapRoutes.map((r) => (r.key === selectedId ? { ...r, path: safeLine } : r)) : mapRoutes
     const s = landingSites.find((l) => l.id === selectedId)
-    if (!s) return mapRoutes
-    return [...mapRoutes, { key: s.id, points: [{ key: s.id, lat: s.lat, lon: s.lon, badge: '', label: s.mission, variant: 'end' as const }] }]
-  }, [mapRoutes, selectedId])
+    if (!s) return withPath
+    return [...withPath, { key: s.id, points: [{ key: s.id, lat: s.lat, lon: s.lon, badge: '', label: s.mission, variant: 'end' as const }] }]
+  }, [mapRoutes, selectedId, safeLine])
+  const globeRoutes = useMemo(
+    () => (safeLine ? routes.map((r) => (r.id === selectedId ? { ...r, points: safeLine.map(([lon, lat]) => ({ lat, lon })) } : r)) : routes),
+    [routes, selectedId, safeLine],
+  )
 
   useEffect(() => {
     if (!preparing) return
@@ -476,7 +517,7 @@ export function GlobePage() {
         {/* The globe stays loaded under the close-up (paused), ready to zoom back out */}
         <Globe
           sites={markers}
-          routes={routes}
+          routes={globeRoutes}
           selectedId={selectedId}
           layers={layers}
           onSelect={select}
@@ -543,7 +584,7 @@ export function GlobePage() {
 
       {flat && !planning && (
         <div className={`flat-view is-${mapMode}`}>
-          <MapView routes={siteRoutes} selectedRoute={mission ? selectedId : null} onSelectRoute={select} onPick={closeCard} sunAt={nightAt} />
+          <MapView routes={siteRoutes} selectedRoute={mission ? selectedId : null} onSelectRoute={select} onPick={closeCard} sunAt={nightAt} missionPath={safeLine ? missionSafe.value : null} />
         </div>
       )}
 
@@ -555,7 +596,7 @@ export function GlobePage() {
       {/* MAPA's tools on the 2D map: the NASA layers and site analysis while exploring, the planner, or EVA */}
       {landed && flat && !planning && (
         <>
-          {exploring && <LayerPanel button={false} open={layersShown} onOpenChange={setLayersOpen} blocked={!!(site || mission || moonId)} />}
+          {exploring && <LayerPanel button={false} open={layersShown} onOpenChange={setLayersOpen} blocked={!!(site || mission || moonId)} missionPath={missionSafe} />}
           {exploring && <Search />}
           {mapMode === 'plan' && <LayerPanel />}
           {mapMode === 'plan' && <PlanPanel />}
@@ -631,7 +672,7 @@ export function GlobePage() {
           onClose={closeCard}
         />
       ) : mission ? (
-        <MissionCard key={mission.id} mission={mission} at={nightAt} atLabel={atLabel} onClose={closeCard} />
+        <MissionCard key={mission.id} mission={mission} at={nightAt} atLabel={atLabel} pathNote={pathNote} onClose={closeCard} />
       ) : moonId ? (
         <MoonCard key={moonId} id={moonId} onClose={closeCard} />
       ) : orbiterId && !inSite && !flat ? (

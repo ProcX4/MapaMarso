@@ -2,13 +2,12 @@ import { fromUrl, type GeoTIFFImage } from 'geotiff'
 import type { LngLat } from '../state/types'
 
 /*
- * Elevation comes from a Cloud-Optimized GeoTIFF of the demo site, in metres, in plain
- * lon/lat degrees (Mars 2000 geographic). Picture tiles only hold colours; this holds numbers.
+ * Elevation of the demo site, in metres: the USGS Mars 2020 CTX DTM of Jezero (20 m/px), a GeoTIFF in lon/lat
+ * degrees or in equirectangular metres on the Mars sphere. Picture tiles only hold colours; this holds numbers.
+ * Everywhere else on Mars, see terrain.ts (the global MOLA DEM).
  *
- * Two ways in:
- *  - elevationAt: one exact pixel from the full-resolution file (site card).
- *  - loadDtmGrid: the whole site, downsampled to at most GRID_MAX px a side, kept in memory
- *    for the profile, the slope worker and the elevation layer.
+ * loadDtmGrid reads the whole site, downsampled to at most GRID_MAX px a side, and keeps it in memory
+ * for the route finder, the profile and the site card.
  */
 
 export const DTM_URL = '/data/site-dtm.tif'
@@ -33,18 +32,13 @@ function image() {
 
 function bboxOf(img: GeoTIFFImage): DtmGrid['bbox'] {
   const [a, b, c, d] = img.getBoundingBox()
+  const keys = img.getGeoKeys() as Record<string, number> | null
+  // USGS products often come in equirectangular metres on the Mars sphere, centred on 0°: a plain scale to degrees
+  if (keys?.ProjCoordTransGeoKey === 17 && !keys.ProjCenterLongGeoKey && !keys.ProjStdParallel1GeoKey) {
+    const deg = 180 / (Math.PI * (keys.GeogSemiMajorAxisGeoKey || 3396190))
+    return [a * deg, b * deg, c * deg, d * deg]
+  }
   return [a, b, c, d]
-}
-
-/** Elevation in metres at a point, or null outside the DTM / on no-data pixels. */
-export async function elevationAt([lon, lat]: LngLat): Promise<number | null> {
-  const img = await image()
-  const [minX, minY, maxX, maxY] = bboxOf(img)
-  if (lon < minX || lon >= maxX || lat <= minY || lat > maxY) return null
-  const x = Math.floor(((lon - minX) / (maxX - minX)) * img.getWidth())
-  const y = Math.floor(((maxY - lat) / (maxY - minY)) * img.getHeight())
-  const [band] = (await img.readRasters({ window: [x, y, x + 1, y + 1], samples: [0] })) as unknown as ArrayLike<number>[]
-  return clean(band[0], img.getGDALNoData())
 }
 
 let gridPromise: Promise<DtmGrid> | null = null

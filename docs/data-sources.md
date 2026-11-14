@@ -6,13 +6,25 @@ NASA data is used under NASA's media and data guidelines: https://www.nasa.gov/n
 
 | Layer (registry id) | Product ID | Instrument / mission | Resolution | Source URL | Licence | Category | Status |
 |---|---|---|---|---|---|---|---|
-| Surface imagery (`themis-day-ir`) | `THEMIS_DayIR_ControlledMosaics_100m_v2_oct2018` | THEMIS · Mars Odyssey | 100 m/px (tiles to zoom 9) | https://trek.nasa.gov/tiles/Mars/EQ/THEMIS_DayIR_ControlledMosaics_100m_v2_oct2018/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use (placeholder for site mosaic) |
-| Colour context (`viking-color`) | `Mars_Viking_MDIM21_ClrMosaic_global_232m` | Viking Orbiter cameras · Viking 1 & 2 | 232 m/px (tiles to zoom 7) | https://trek.nasa.gov/tiles/Mars/EQ/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use |
-| Elevation context (`mola-shade`) | `Mars_MGS_MOLA_ClrShade_merge_global_463m` | MOLA · Mars Global Surveyor | 463 m/px (tiles to zoom 7) | https://trek.nasa.gov/tiles/Mars/EQ/Mars_MGS_MOLA_ClrShade_merge_global_463m/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use |
-| Elevation (`site-dtm`) | TBD | HiRISE or CTX stereo · MRO | TBD | TBD | TBD | Observed | **Missing** |
-| Slope (`slope`) | — | Derived from `site-dtm` (Horn method) | Same as DTM | — | — | Derived | Waiting on DTM |
-| Geologic units (`geology`) | TBD (SIM 3292 crop or local map) | USGS | TBD | TBD | TBD | Observed | **Empty file** |
+| **Topographic** | | | | | | | |
+| Elevation, colour hillshade (`elevation-color`) | `Mars_MOLA_blend200ppx_HRSC_ClrShade_clon0dd_200mpp_lzw` | MOLA + HRSC · MGS + Mars Express | 200 m/px (tiles to zoom 8) | https://trek.nasa.gov/tiles/Mars/EQ/Mars_MOLA_blend200ppx_HRSC_ClrShade_clon0dd_200mpp_lzw/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use |
+| Elevation, Jezero (route finder, profile, site card) | `JEZ_ctx_B_soc_008_DTM_MOLAtopography_DeltaGeoid_20m_Eqc_latTs0_lon0` | CTX stereo · MRO (USGS Mars 2020 TRN) | 20 m/px | https://planetarymaps.usgs.gov/mosaic/mars2020_trn/CTX/JEZ_ctx_B_soc_008_DTM_MOLAtopography_DeltaGeoid_20m_Eqc_latTs0_lon0.tif | USGS, public domain | Observed | In use (`public/data/site-dtm.tif`) |
+| Elevation, global (route finder, profile, site card) | `Mars_MGS_MOLA_DEM_mosaic_global_463m` | MOLA · Mars Global Surveyor | 463 m/px | https://planetarymaps.usgs.gov/mosaic/Mars_MGS_MOLA_DEM_mosaic_global_463m.tif (read by `api/elevation.ts`) | USGS, public domain | Observed | In use |
+| Steep and deep ground (`slope`) | — | Derived from the elevation above (Horn slope, depth below a 600 m box mean) | Same as the elevation used | — | — | Derived | In use |
+| Safe path (`route`) | — | A* over the same grid (`src/data/pathfind.worker.ts`) | Same as the elevation used | — | — | Derived | In use |
+| **Optical** | | | | | | | |
+| Colour mosaic (`viking-color`) | `Mars_Viking_MDIM21_ClrMosaic_global_232m` | Viking Orbiter cameras · Viking 1 & 2 | 232 m/px (tiles to zoom 7) | https://trek.nasa.gov/tiles/Mars/EQ/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use |
+| Colour atlas (`moc-color`) | `msss_atlas_simp_clon` | MOC wide angle · Mars Global Surveyor | tiles to zoom 6 | https://trek.nasa.gov/tiles/Mars/EQ/msss_atlas_simp_clon/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use |
+| **Spectral** | | | | | | | |
+| Daytime infrared (`themis-day-ir`) | `THEMIS_DayIR_ControlledMosaics_100m_v2_oct2018` | THEMIS · Mars Odyssey | 100 m/px (tiles to zoom 9) | https://trek.nasa.gov/tiles/Mars/EQ/THEMIS_DayIR_ControlledMosaics_100m_v2_oct2018/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use |
+| Night-time infrared (`themis-night-ir`) | `THEMIS_NightIR_ControlledMosaics_100m_v2_oct2018` | THEMIS · Mars Odyssey | 100 m/px (tiles to zoom 9) | https://trek.nasa.gov/tiles/Mars/EQ/THEMIS_NightIR_ControlledMosaics_100m_v2_oct2018/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use |
+| Thermal inertia (`tes-thermal-inertia`) | `TES_Thermal_Inertia` | TES · Mars Global Surveyor | tiles to zoom 1 | https://trek.nasa.gov/tiles/Mars/EQ/TES_Thermal_Inertia/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use |
+| High-calcium pyroxene (`tes-pyroxene`) | `TES_Clinopyroxene` | TES · Mars Global Surveyor | tiles to zoom 1 | https://trek.nasa.gov/tiles/Mars/EQ/TES_Clinopyroxene/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use |
+| Plagioclase (`tes-plagioclase`) | `TES_Plagioclase` | TES · Mars Global Surveyor | tiles to zoom 1 | https://trek.nasa.gov/tiles/Mars/EQ/TES_Plagioclase/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use |
+| Sheet silicates and glass (`tes-sheet-silicates`) | `TES_Glass_Clay` | TES · Mars Global Surveyor | tiles to zoom 1 | https://trek.nasa.gov/tiles/Mars/EQ/TES_Glass_Clay/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use |
 | Science targets (`science-targets`) | TBD (CRISM detections) | CRISM · MRO | — | TBD | TBD | Observed | **Empty file** |
+
+Layer IDs come from the Mars Trek catalogue (`https://trek.nasa.gov/mars/TrekServices/ws/index/eq/searchItems`, field `productLabel`), checked 2026-11-15. The global CTX and HiRISE mosaics and the CRISM/OMEGA hydrous mineral map are listed there but serve no tiles from the EQ tile endpoint.
 
 Tile grid for all Trek EQ layers verified against `WMTSCapabilities.xml` on 2026-11-14: TopLeftCorner `-180 90`, 256 px tiles, level 0 = 2 × 1 tiles. Deepest zoom with tiles at Jezero checked by requesting tiles directly.
 
