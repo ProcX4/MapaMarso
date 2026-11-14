@@ -49,5 +49,6 @@ Offline copies of the Trek tiles around the demo site live in `public/tiles/` (`
 | MRO, Odyssey, TGO models | NASA 3D Resources; NASA Visualization Technology Applications and Development | NASA, public | Observed |
 | Mars Express, Hope | Stand-in shapes of their real size (no published model) | Labelled on their cards | Estimated |
 | Stars | Yale Bright Star Catalogue, 5th ed. (Hoffleit & Warren 1991) | Public | Observed |
+| Surface radiation (planner's Radiation panel) | MSL RAD at Gale crater: galactic cosmic ray dose equivalent 0.67 mSv/day, Aug 2012 to Jun 2013; Hassler et al., *Science* 2014 ("Mars' Surface Radiation Environment Measured with the Mars Science Laboratory's Curiosity Rover") | Published paper; NASA mission data | Estimated (measured elsewhere, inside a rover, near solar maximum) |
 | Landing sites | Published landing coordinates (`src/data/mars.ts`) | Public | Observed |
 | Viking 1 close-up terrain | Procedural ground around the real lander and trench positions | MAPA/MapaMars | Estimated |

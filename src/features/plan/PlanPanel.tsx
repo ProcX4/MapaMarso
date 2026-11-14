@@ -9,6 +9,7 @@ import { ScienceOpportunity } from './ScienceOpportunity'
 import { ElevationProfile } from './ElevationProfile'
 import { SaveMission } from './SaveMission'
 import { ExportRoute } from './ExportRoute'
+import { RadiationEstimate } from './RadiationEstimate'
 import { useMissionFromCode } from './useMissionFromCode'
 import './plan.css'
 
@@ -39,6 +40,7 @@ export function PlanPanel() {
         <RouteStats />
         <RouteOptions />
         <ReturnEstimate />
+        <RadiationEstimate />
         <ScienceOpportunity />
         <ExportRoute />
         <SaveMission key={m?.id ?? 'new'} />
