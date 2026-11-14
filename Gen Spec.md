@@ -87,14 +87,14 @@ Build in this order. Each item should work end to end before starting the next.
 
 | Layer | Instrument / mission | Type | Status |
 |---|---|---|---|
-| Surface imagery | HiRISE or CTX, Mars Reconnaissance Orbiter | Observed | ☐ |
-| Elevation | HiRISE/CTX elevation model (site); MOLA, Mars Global Surveyor (context) | Observed | ☐ |
-| Slope | Calculated from elevation | Derived | ☐ |
-| Geology | USGS Geologic Map of Mars (SIM 3292) or a local map | Observed | ☐ |
-| Mineralogy | CRISM, Mars Reconnaissance Orbiter | Observed | ☐ |
-| Thermal | THEMIS, Mars Odyssey | Observed | ☐ |
-| Rover traverse | Perseverance / Curiosity (PDS) | Observed | ☐ |
-| Walk duration, return time | Distance + slope + assumed walking speed | Estimated | ☐ |
+| Surface imagery | HiRISE or CTX, Mars Reconnaissance Orbiter | Observed | ☑ CTX (whole planet) and HiRISE (Jezero) |
+| Elevation | HiRISE/CTX elevation model (site); MOLA, Mars Global Surveyor (context) | Observed | ☑ |
+| Slope | Calculated from elevation | Derived | ☑ |
+| Geology | USGS Geologic Map of Mars (SIM 3292) or a local map | Observed | Out of scope (see Deviations) |
+| Mineralogy | CRISM, Mars Reconnaissance Orbiter | Observed | ◐ TES mineral maps and Perseverance sample sites are in; CRISM is still to add |
+| Thermal | THEMIS, Mars Odyssey | Observed | ☑ |
+| Rover traverse | Perseverance / Curiosity (PDS) | Observed | Out of scope (see Deviations) |
+| Walk duration, return time | Distance + slope + assumed walking speed | Estimated | ☑ |
 
 For each layer, record the **product ID, resolution, source URL, and licence** in `docs/data-sources.md` once it is in use.
 
@@ -236,13 +236,22 @@ Colour is never decorative. The interface is black and white, and an accent appe
 
 ## Tech stack
 
-React + TypeScript + Vite · map rendering: _TBD (current 2D canvas, Leaflet, or OpenLayers)_ · optional Supabase for saved missions · deploy on Vercel.
+React + TypeScript + Vite · map rendering: OpenLayers (the 2D map; the 3D globe is three.js) · optional Supabase for saved missions · deploy on Vercel.
 
 ```bash
 npm install
 npm run dev      # http://localhost:5173
 npm run build
 ```
+
+## Deviations from this spec
+
+What the build does differently, and why (also recorded in `changes.md`):
+
+- **Three layer groups, not geology.** The layers are Topographic, Optical and Spectral. The team narrowed the scope to these three, so the geologic units layer, the site card's geology row and the historical rover traverse layer are out of scope. Layer 3 (Science) is met by Spectral instead: TES mineral and dust maps, THEMIS, and science targets from Perseverance's sample sites. CRISM mineralogy is still to add.
+- **Whole planet, not one site.** The spec asked for a few kilometres round one habitat. The map covers all of Mars; walking-scale imagery (CTX, HiRISE) and the 20 m elevation model cover Jezero only, and the route finder uses MOLA (463 m/px) elsewhere.
+- **Routes live under `#/globe/2d`.** The planner and EVA are `#/globe/2d/plan` and `#/globe/2d/eva`, part of the globe's 2D map, not separate top-level pages as the Frontend Spec §2 lays out.
+- **Email confirmation is off** for sign-up (Security Spec §4 asks for it on), so a new account signs in straight away.
 
 ## Team
 
