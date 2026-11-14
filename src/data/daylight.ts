@@ -42,6 +42,15 @@ export function minutesToSunset(at: LngLat, ms: number): number | null {
   return null
 }
 
+/** Minutes from `ms` until the Sun next rises at a point (null if it's already up, or doesn't rise within a sol). */
+export function minutesToSunrise(at: LngLat, ms: number): number | null {
+  if (sunElevation(at, ms) >= 0) return null
+  for (let t = ms + STEP_MS; t <= ms + SOL_S * 1000; t += STEP_MS) {
+    if (sunElevation(at, t) >= 0) return (t - ms) / 60_000
+  }
+  return null
+}
+
 /* ---------- Many points at one moment, and the day/night line (from MapaMars lib/daylight.ts) ---------- */
 
 /** Where the Sun is overhead at this moment, for working out many points at once. */

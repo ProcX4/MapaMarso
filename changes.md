@@ -61,6 +61,19 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.11 · EVA playback, new layout, and a sun that follows the walk
+
+**Added**
+- **Playback:** a Play/Pause button walks the crew along the planned route at the route's pace, at 1, 5 or 15 walking minutes per second. Space plays or pauses; the arrow keys step 50 m. Playback pauses at the destination, and a banner says when the crew reaches each stop.
+- **Scrubber:** drag to any point on the route; the clock moves with it. Ticks mark each stop (green for science stops).
+- **Sun dynamics:** the EVA has its own simulated clock. The status bar shows LMST, whether the sun is up, and minutes to sunset or sunrise, and the map's night shading follows that clock while EVA is open. Leaving EVA returns the map to the real time.
+- **Return to base** now plays the walk home along the route; **Resume route** turns back.
+
+**Changed**
+- Layout: status bar and alerts at the top centre, the next-stop and return facts in a column on the left, and the player plus actions in one bar along the bottom, so the crew's position in the middle stays clear. The off-route drift practice is folded into a "Practice" section.
+
+---
+
 ## 2026-11-15 · v0.5.10 · Planner picker as icons with info boxes
 
 **Changed**

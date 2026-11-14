@@ -565,7 +565,7 @@ export function GlobePage() {
 
       {flat && (
         <div className={`flat-view is-${mapMode}`}>
-          <MapView routes={siteRoutes} selectedRoute={mission ? selectedId : null} onSelectRoute={select} onPick={closeCard} sunAt={nightAt} missionPath={safeLine ? missionSafe.value : null} />
+          <MapView routes={siteRoutes} selectedRoute={mission ? selectedId : null} onSelectRoute={select} onPick={closeCard} sunAt={mapMode === 'eva' && walk.evaTimeMs !== null ? walk.evaTimeMs : nightAt} missionPath={safeLine ? missionSafe.value : null} />
         </div>
       )}
 

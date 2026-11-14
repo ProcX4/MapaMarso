@@ -1,29 +1,129 @@
-/* EVA: same tokens, bigger. Max three facts, one alert, large pills. Designed for a landscape tablet. */
-.eva { position: absolute; inset: 0; z-index: 8; display: flex; flex-direction: column; justify-content: space-between; padding: 72px 16px 16px; pointer-events: none; }
+/* EVA: same tokens, bigger. A status bar and one alert at the top, the facts in a slim column on the left, the
+   playback along the bottom, so the middle of the map (where the crew is) stays clear. Designed for a landscape
+   tablet. */
+.eva { position: absolute; inset: 0; z-index: 8; pointer-events: none; }
 .eva > * { pointer-events: auto; }
-.eva-top { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
-.eva-sim { display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 6px 12px; font-size: 12px; letter-spacing: 0.14em; color: var(--gray-1); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; }
-.eva-alert { margin: 0; padding: 14px 20px; font-size: 18px; font-weight: 500; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+
+/* ---------- Top: status bar, alert, arrival ---------- */
+.eva-top {
+  position: absolute;
+  top: 72px;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(720px, calc(100% - 32px));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.eva-top > * { pointer-events: auto; }
+.eva-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 16px;
+  margin: 0;
+  padding: 8px 16px;
+  font-size: 14px;
+  color: var(--white);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.eva-status small { font-size: 11px; color: var(--gray-2); }
+.eva-sim-badge { display: inline-flex; align-items: center; gap: 6px; font: 11px var(--sans); letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray-1); }
+.eva-sun { display: inline-flex; align-items: center; gap: 6px; }
+.eva-sun.is-day svg { color: var(--caution); }
+.eva-sun.is-twilight svg { color: var(--hazard); }
+.eva-sun.is-night svg { color: var(--info); }
+.eva-alert { margin: 0; padding: 12px 20px; font-size: 17px; font-weight: 500; text-align: center; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
 .eva-alert.is-alert { color: var(--alert); border-color: var(--alert); }
 .eva-alert.is-hazard { color: var(--hazard); border-color: var(--hazard); }
 .eva-alert.is-caution { color: var(--caution); border-color: var(--caution); }
 .eva-alert.is-ok { color: var(--ok); }
+.eva-arrived { margin: 0; padding: 8px 16px; font-size: 14px; font-weight: 500; color: var(--black); background: var(--ok); border-radius: 999px; animation: fade-in 200ms ease both; }
 
-.eva-facts { display: flex; gap: 12px; flex-wrap: wrap; margin-top: auto; margin-bottom: 12px; }
-.eva-fact { flex: 1 1 220px; padding: 16px 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
-.eva-big { display: flex; align-items: center; gap: 12px; margin: 6px 0 4px; font-size: clamp(36px, 5vw, 52px); line-height: 1.1; }
-.eva-sub { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0; font-size: 14px; color: var(--gray-1); }
+/* ---------- Left: the facts ---------- */
+.eva-facts {
+  position: absolute;
+  top: 72px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(300px, calc(100% - 32px));
+}
+.eva-fact { padding: 14px 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+.eva-big { display: flex; align-items: center; gap: 12px; margin: 6px 0 4px; font-size: clamp(30px, 3.4vw, 40px); line-height: 1.1; }
+.eva-sub { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0; font-size: 13px; color: var(--gray-1); }
 .eva-arrow { display: inline-block; font-size: 0.8em; transition: transform 200ms; }
 
-.eva-bottom { display: flex; flex-direction: column; gap: 12px; padding: 14px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
-.eva-progress { display: flex; align-items: center; gap: 14px; font-size: 13px; }
-.eva-progress span { flex: none; }
+/* ---------- Bottom: playback and actions ---------- */
+.eva-bottom {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(1040px, calc(100% - 32px));
+  padding: 14px 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  transform: translateX(-50%);
+}
+.eva-player { display: flex; align-items: center; gap: 16px; }
+.eva-play {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  color: var(--black);
+  background: var(--white);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.eva-play:hover { background: var(--gray-1); }
+.eva-play:focus-visible { outline: 2px solid var(--white); outline-offset: 3px; }
+.eva-scrub { flex: 1; min-width: 0; }
+.eva-scrub-track { position: relative; display: flex; align-items: center; height: 24px; }
+/* A short tick at each stop, under the slider's thumb */
+.eva-scrub-mark { position: absolute; top: 50%; width: 3px; height: 14px; margin-left: -1.5px; background: rgba(255, 255, 255, 0.55); border-radius: 2px; transform: translateY(-50%); pointer-events: none; }
+.eva-scrub-mark.is-science { background: var(--ok); }
+.eva-scrub-mark.is-destination { background: var(--white); }
+.eva-scrub-text { display: flex; justify-content: space-between; gap: 12px; margin: 4px 0 0; font-size: 12px; color: var(--gray-1); }
+.eva-speed { flex: none; display: flex; gap: 4px; }
+.eva-speed button {
+  padding: 6px 10px;
+  font: 12px var(--mono);
+  color: var(--gray-1);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.eva-speed button:hover { color: var(--white); border-color: rgba(255, 255, 255, 0.5); }
+.eva-speed button.is-on { color: var(--black); background: var(--white); border-color: var(--white); }
 .eva-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.eva-practice summary { width: max-content; font-size: 12px; color: var(--gray-2); cursor: pointer; }
+.eva-practice summary:hover { color: var(--white); }
+.eva-progress { display: flex; align-items: center; gap: 14px; margin-top: 8px; font-size: 13px; }
+.eva-progress span { flex: none; }
 
-.eva-empty { align-items: center; justify-content: center; gap: 20px; background: rgba(0, 0, 0, 0.7); }
+.eva-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; background: rgba(0, 0, 0, 0.7); }
 .eva-empty-text { font-size: 24px; margin: 0; }
 
 @media (max-width: 720px) {
+  .eva-facts { top: auto; bottom: 236px; flex-direction: row; width: calc(100% - 32px); }
+  .eva-fact { flex: 1; padding: 10px 12px; }
+  .eva-big { font-size: 24px; }
+  .eva-player { flex-wrap: wrap; }
+  .eva-speed { width: 100%; justify-content: center; }
   .eva-actions { grid-template-columns: repeat(2, 1fr); }
-  .eva-big { font-size: 36px; }
 }
