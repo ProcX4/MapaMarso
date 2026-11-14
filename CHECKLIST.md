@@ -88,8 +88,8 @@ Infrared and mineral maps.
 ### Planner and EVA
 - [x] Start, destination, waypoints, science stops, end or round trip; review before EVA
 - [x] EVA: simulated position, next waypoint (distance, bearing, elevation change), distance to base, return estimate, one hazard alert at a time, Next / Science / Route / Return to base
-- [ ] Estimated return as a clock time, e.g. "16:42 LMST" (PS §3 example)
-- [ ] Route-deviation warning in EVA (PS §2.3)
+- [x] Estimated return as a clock time, e.g. "16:42 LMST" (PS §3 example): "Back at base about 16:42 LMST" in EVA, at the base's longitude, from the real current time plus the walk back
+- [x] Route-deviation warning in EVA (PS §2.3): "OFF ROUTE · 89 m from the planned path" past 30 m (A14). The simulated position is always on the route, so a "Simulated drift off the route" slider moves it to the right to try the warning
 - [ ] Route export to a file (PS §16; saving to Supabase works)
 - [ ] Site comparison (PS §16)
 - [ ] Search: replace the 2 hand-typed place names with the IAU gazetteer (P6)
