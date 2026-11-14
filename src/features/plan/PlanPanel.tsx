@@ -8,6 +8,7 @@ import { ReturnEstimate } from './ReturnEstimate'
 import { ScienceOpportunity } from './ScienceOpportunity'
 import { ElevationProfile } from './ElevationProfile'
 import { SaveMission } from './SaveMission'
+import { ExportRoute } from './ExportRoute'
 import { useMissionFromCode } from './useMissionFromCode'
 import './plan.css'
 
@@ -39,6 +40,7 @@ export function PlanPanel() {
         <RouteOptions />
         <ReturnEstimate />
         <ScienceOpportunity />
+        <ExportRoute />
         <SaveMission key={m?.id ?? 'new'} />
 
         <div className="form-footer">
