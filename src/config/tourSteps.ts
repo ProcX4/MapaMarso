@@ -22,6 +22,16 @@ export function tourSteps(mode: Mode): TourStep[] {
       ...end,
     ]
   }
+  if (mode === 'mission') {
+    return [
+      { title: 'A saved mission', text: 'The mission on the same map it was planned on: its route along the safe path, with the NASA layers, site card and elevation profile.' },
+      { target: '.mission-go', title: 'Walk it or edit it', text: 'Walk it in EVA follows the route on foot; Edit route opens it in the planner (for its lead).' },
+      { target: '.mission-tabs', title: 'Summary, crew and log', text: 'The route’s numbers and stops, who is on the crew, and the mission log.' },
+      { target: '.layers-link', title: 'Layers', text: 'Turn NASA layers on and off over the route: topographic, optical and spectral.' },
+      { target: '.plan-bottom', title: 'Elevation profile', text: 'Hover the profile to see the matching point on the map.' },
+      ...end,
+    ]
+  }
   if (mode === 'eva') {
     return [
       { title: 'EVA mode', text: 'The route as you would walk it: three facts, one alert at a time, large buttons. Your position is simulated.' },

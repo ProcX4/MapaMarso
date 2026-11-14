@@ -61,6 +61,18 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.12 · Missions open on the planning map
+
+**Changed**
+- Viewing a mission now opens it on the same 2D map it was planned on (`#/globe/2d/mission/CODE`, or `/m/<id>` from the browse list) instead of a separate page with a small map. Its route is drawn along the safe path, with the NASA layers, the site card on click, and the elevation profile along the bottom.
+- The left panel sums the mission up: name, lead, code (click to copy), status and trip type; distance, walking time, steepest slope and stop count; the stops in walking order with each leg's distance; and the dates. Crew and Log are tabs beside the summary.
+- Two buttons at the top: **Walk it in EVA** and, for its lead, **Edit route** (opens it in the planner). Mark complete / Reopen and Delete stay at the bottom for the lead.
+- Old `#/missions/CODE` and `#/missions/m/<id>` links redirect to the map view; mission links on the globe, the missions list and after saving go there directly.
+
+**Not yet verified in a browser** (build and preview weren't run this time); type check and lint pass.
+
+---
+
 ## 2026-11-15 · v0.5.11 · EVA playback, new layout, and a sun that follows the walk
 
 **Added**

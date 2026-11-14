@@ -35,6 +35,8 @@ import { SiteCard } from '../explore/SiteCard'
 import { Search } from '../explore/Search'
 import { PlanPanel } from '../plan/PlanPanel'
 import { EvaView } from '../eva/EvaView'
+import { ElevationProfile } from '../plan/ElevationProfile'
+import { MissionPanel } from '../missions/MissionView'
 import { CatalogHud } from './CatalogHud'
 import { LandingSiteCard, MoonCard, TimeBar, ViewSwitch } from './GlobeOverlay'
 import { MissionCard, MissionsHud } from './MissionsHud'
@@ -576,6 +578,14 @@ export function GlobePage() {
           {exploring && <Search />}
           {mapMode === 'plan' && <LayerPanel />}
           {mapMode === 'plan' && <PlanPanel />}
+          {/* A saved mission: the planner's map and layers, with its summary, crew and log in place of the steps */}
+          {mapMode === 'mission' && <LayerPanel />}
+          {mapMode === 'mission' && <MissionPanel />}
+          {mapMode === 'mission' && (
+            <section className="plan-bottom" aria-label="Elevation profile">
+              <ElevationProfile />
+            </section>
+          )}
           {mapMode !== 'eva' && !site && !mission && !moonId && <SiteCard />}
           {mapMode === 'eva' && <EvaView />}
         </>

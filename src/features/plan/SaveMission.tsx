@@ -7,7 +7,7 @@ import { CodeInput } from '../../components/CodeInput'
 import { Button } from '../../components/Button'
 import { LIMITS } from '../../config/assumptions'
 import { toOpenMission } from './useMissionFromCode'
-import { missionPath, planPath } from '../../lib/missionPaths'
+import { missionMapPath, planPath } from '../../lib/missionPaths'
 
 /** How long after the last keystroke the code is checked with Supabase */
 const CHECK_DELAY_MS = 400
@@ -152,7 +152,7 @@ export function SaveMission() {
       {saved && (
         <p className="form-ok" role="status">
           Saved as <span className="mono-code">{saved}</span>. Share the link: <span className="mono-code">{planPath(saved)}</span>{' '}
-          <a href={missionPath(saved)}>Open mission page</a>
+          <a href={missionMapPath(saved)}>Open mission page</a>
         </p>
       )}
       <Button type="submit" disabled={busy || code.length !== 6 || codeStatus === 'taken' || !name.trim() || state.stops.length < 2}>

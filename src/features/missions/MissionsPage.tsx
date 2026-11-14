@@ -5,8 +5,7 @@ import { Icon } from '../../components/Icon'
 import { fetchMissionByCode, fetchMissionById, type Mission } from '../../services/missions'
 import { MISSION_CODE_PATTERN } from '../../lib/missionCode'
 import { FindMission } from './FindMission'
-import { MissionView } from './MissionView'
-import { GLOBE_PLAN, go, missionPath, planPath } from '../../lib/missionPaths'
+import { GLOBE_PLAN, missionMapIdPath, missionMapPath, planPath } from '../../lib/missionPaths'
 import './missions.css'
 
 /* The missions pages (from MapaMars pages/missions/MissionsPage.tsx). */
@@ -17,9 +16,9 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 // #/missions                   browse + enter a code
 // #/missions/new               create
-// #/missions/ABC-123           open by code (can join)
-// #/missions/ABC-123/edit      edit (author)
-// #/missions/m/<id>            open from the browse list (no code needed to look)
+// #/missions/ABC-123           open by code (can join): on the 2D map, #/globe/2d/mission/ABC-123
+// #/missions/ABC-123/edit      edit (author): in the planner, #/globe/2d/plan/ABC-123
+// #/missions/m/<id>            open from the browse list (no code needed to look): #/globe/2d/mission/m/<id>
 function parse(hash: string): Screen {
   const [, segment, action] = hash.replace(/^#\/missions\/?/, '#/').split('/')
   if (!segment) return { kind: 'find' }
@@ -81,15 +80,11 @@ function MissionsScreen() {
   const current = lookup && lookup.key === key ? lookup : null
   const canManage = (m: Mission) => !!user && (m.ownerId === user.id || user.isAdmin)
 
-  const deleted = (m: Mission) => {
-    setLookup(null)
-    setNotice(`Mission ${m.code ?? m.name} was deleted.`)
-    go(missionPath())
-  }
-
   // New and edit both open the one mission planner on the 2D map (Plan Marswalk), so a mission is planned
   // with the same map, layers, safe paths, stats and profile wherever you start from
   if (screen.kind === 'new') return <Redirect to={GLOBE_PLAN} />
+  // A mission is viewed on the same 2D map as it was planned on, with its layers, safe path and profile
+  if (screen.kind === 'view') return <Redirect to={screen.code ? missionMapPath(screen.code) : missionMapIdPath(screen.id!)} />
 
   if (key && !current) {
     return (
@@ -101,17 +96,7 @@ function MissionsScreen() {
 
   if (key && current?.status === 'found' && current.mission) {
     const mission = current.mission
-    if (screen.kind === 'edit' && canManage(mission) && mission.code) return <Redirect to={planPath(mission.code)} />
-    return (
-      <MissionView
-        mission={mission}
-        knownCode={code ?? mission.code}
-        user={user}
-        canManage={canManage(mission)}
-        onChanged={(m) => setLookup({ key: key, status: 'found', mission: m })}
-        onDeleted={deleted}
-      />
-    )
+    return <Redirect to={canManage(mission) && mission.code ? planPath(mission.code) : missionMapPath(mission.code ?? code!)} />
   }
 
   const problem =

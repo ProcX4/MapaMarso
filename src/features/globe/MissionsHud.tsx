@@ -7,7 +7,7 @@ import { FlagIcon } from '../../components/FlagIcon'
 import { Icon } from '../../components/Icon'
 import { SearchBox } from '../../components/SearchBox'
 import { daylightOf, daylightText, sunAt, sunElevationAt } from '../../data/daylight'
-import { GLOBE_PLAN, missionIdPath, missionPath, OWNER_FILTERS, type OwnerFilter } from '../../lib/missionPaths'
+import { GLOBE_PLAN, missionMapIdPath, missionMapPath, missionPath, OWNER_FILTERS, type OwnerFilter } from '../../lib/missionPaths'
 
 /* The globe's missions list and mission card (from MapaMars pages/globe/MissionsHud.tsx). */
 
@@ -212,7 +212,7 @@ export function MissionCard({ mission: m, at, atLabel, pathNote, onClose }: Card
         </dl>
       )}
       {m.objective && <p className="info-card-text">{m.objective}</p>}
-      <a className="button info-card-action" href={m.code ? missionPath(m.code) : missionIdPath(m.id)}>
+      <a className="button info-card-action" href={m.code ? missionMapPath(m.code) : missionMapIdPath(m.id)}>
         Open mission
       </a>
     </aside>
