@@ -7,7 +7,7 @@ Tasks come from the four spec documents and are ticked where the current build (
 Sources: **GS** = [Gen Spec.md](Gen%20Spec.md) · **PS** = [docs/MAPA_Marswalk_Product_Specification.md](docs/MAPA_Marswalk_Product_Specification.md) · **FS** = [Frontend Spec.md](Frontend%20Spec.md) · **SS** = [Security Spec.md](Security%20Spec.md).
 Details of each stand-in are in [placeholders.md](placeholders.md); what changed is in [changes.md](changes.md).
 
-Last updated: 2026-11-15
+Last updated: 2026-11-15. The open items are collected by owner in [docs/remaining-work.md](docs/remaining-work.md).
 ## 1. Topographic · Jim (in progress)
 
 Height and shape of the ground, and the A* safe path round steep and deep terrain.
@@ -242,9 +242,9 @@ The 17 tasks in the three Todo images, with the owner from the section headings 
 ### Must-do for the challenge
 - [x] **1. Fill the science targets** · Daril. Done 2026-11-15 with 27 Perseverance sample sites (see §3). `public/data/science-targets.geojson` is empty; it needs real points with `name`, `reason` (e.g. "CRISM hydrated signature") and `source`. Makes the science opportunity cards and the site card's nearby targets work (§3).
 - [x] **2. Add a radiation / space-weather panel** · everyone (§4). Done 2026-11-15 as the minimal version: a *Radiation* panel in the planner with the dose for the walk (0.67 mSv/day from Curiosity's RAD at Gale crater × the walk's duration), labelled Estimated, with the caveats in its tooltip. **Not** a live space-weather feed: solar storms are not included (a live feed would need a new proxy and CSP entry)
-- [ ] **3. Add point-of-view photos at waypoints and destinations** · Shin (§2). Perseverance raw images near each stop; only the unused `SITE.rawImagesUrl` exists today.
+- [x] **3. Add point-of-view photos at waypoints and destinations** · Shin (§2). Done 2026-11-15: the site card shows up to 8 Perseverance photos near a point (see §2).
 - [x] **4. Add rock and boulder hazards** · Jim. Done 2026-11-15: HiRISE-derived rocky-ground map (`public/data/site-obstacles.bin`, built by `scripts/build-obstacles.mjs`) with A* costs; Jezero only, where the 1 m DTMs exist
-- [ ] **5. Get sharper imagery at walking scale** · Shin (§2). THEMIS 100 m/px is the sharpest; needs a CTX or HiRISE source that serves tiles, or a local tile set (P3).
+- [x] **5. Get sharper imagery at walking scale** · Shin (§2). Done 2026-11-15: CTX (~5 m/px, whole planet) and HiRISE (25 cm/px, Jezero) (see §2). Offline copies are still undecided.
 - [ ] **6. Source the mobility and safety assumptions** · everyone, with Jim for the A* costs. Researched 2026-11-15 in `docs/assumptions-sources.md`: 2 km/h and 6 h are in line with Apollo and ISS figures, the climb penalty has no source, and NASA's 20° suit slope figure conflicts with the 25° impassable limit. **Still needs the team's decision** (A1–A4); two figures need opening and confirming.
 
 ### Decisions the team still has to make
