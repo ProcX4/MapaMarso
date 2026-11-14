@@ -18,6 +18,9 @@
 .mission-form-wrap > p { margin: 0 0 24px; line-height: 1.55; }
 /* The map stays in view while the long form scrolls */
 .mission-map { grid-area: globe; min-width: 0; display: flex; flex-direction: column; gap: 10px; position: sticky; top: 76px; align-self: start; }
+/* The route on the shared NASA map: a framed box the map fills */
+.mission-olmap { position: relative; height: min(560px, 70vh); overflow: hidden; background: var(--black); border: 1px solid var(--line); border-radius: 14px; }
+.mission-map-credit { margin: 0; font-size: 11px; }
 .map-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
 .jump-to select { padding: 6px 12px; font: 13px var(--sans); color: var(--white); background: var(--black); border: 1px solid var(--line); border-radius: 999px; }
 .jump-to select option,
@@ -135,7 +138,6 @@
 }
 .planner-map .jump-to select { height: 36px; padding: 0 14px; background: rgba(0, 0, 0, 0.78); border-color: rgba(255, 255, 255, 0.22); }
 /* The day/night shading stays, without its labels */
-.planner-map :is(.map2d-terminator-label, .map2d-sun .map2d-label) { display: none; }
 .planner-map .map-hint {
   position: absolute;
   left: calc(var(--panel-w) + 32px);
@@ -146,10 +148,6 @@
   border-radius: 999px;
   pointer-events: none;
 }
-.planner-map .map2d.is-fill .map2d-zoom { top: 72px; bottom: auto; right: 24px; }
-.planner-map .map2d-scale { left: calc(var(--panel-w) + 32px); bottom: 60px; }
-.planner-map .map2d-readout { right: 24px; bottom: 30px; }
-.planner-map .map2d.is-fill .map2d-source { left: auto; right: 24px; }
 .planner .planner-panel { padding: 16px 18px 0; display: block; }
 .planner .planner-panel > * + * { padding-top: 0; border-top: 0; }
 .planner .planner-panel .form-footer { background: linear-gradient(to bottom, rgba(8, 8, 8, 0.85), rgb(8, 8, 8) 30%); }
@@ -180,12 +178,8 @@
   }
   @keyframes sheet-in { from { opacity: 0; transform: translateY(24px); } }
   .planner-map .map-toolbar { top: 64px; left: 16px; right: 60px; }
-  .planner-map .map2d.is-fill .map2d-zoom { top: 64px; right: 12px; }
-  .planner-map .map-hint,
-  .planner-map .map2d-scale,
-  .planner-map .map2d-readout,
-  .planner-map .map2d.is-fill .map2d-source { display: none; }
-  .code-boxes { gap: 6px; }
+    .planner-map .map-hint,
+        .code-boxes { gap: 6px; }
   .code-box { width: 40px; height: 52px; font-size: 24px; }
   .code-dash { width: 12px; font-size: 24px; }
 }

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CodeInput } from '../../components/CodeInput'
-import { MarsMap2D } from '../../globe/MarsMap2D'
+import { MissionMap } from '../../map/MissionMap'
+import type { PlanetRoute } from '../../map/planetLayers'
 import { formatDistanceKm, formatLat, formatLon } from '../../lib/format'
-import { routeLegs, routeMarkers, routeStops } from '../../globe/missionRoute'
+import { routeLegs, routeStops } from '../../globe/missionRoute'
 import { useNow } from '../../hooks/useNow'
 import { useMissionPath } from '../../hooks/useSafePath'
 import type { LngLat } from '../../state/types'
@@ -46,7 +47,6 @@ export function MissionView({ mission, knownCode, user, canManage, onChanged, on
   const end = { name: mission.target, lat: mission.lat, lon: mission.lon }
   const round = mission.tripType === 'round'
   const stops = routeStops(start, mission.phases, end, round)
-  const markers = routeMarkers(start, mission.phases, end, round)
   const route = routeLegs(stops)
   // Walked by its A* safe path round steep, deep and rocky ground, exactly as on the globe page's 2D map
   const points = useMemo(
@@ -57,6 +57,19 @@ export function MissionView({ mission, knownCode, user, canManage, onChanged, on
     [mission],
   )
   const walk = useMissionPath(points)
+  const mapRoute = useMemo<PlanetRoute>(
+    () => ({
+      key: mission.id,
+      closed: round,
+      path: walk.line ?? undefined,
+      points: [
+        { lat: mission.startLat, lon: mission.startLon, key: 'start', badge: '', label: mission.name, variant: 'start' },
+        ...mission.phases.map((p, i) => ({ lat: p.lat, lon: p.lon, key: `p${i}`, badge: String(i + 1), label: p.name, variant: 'phase' as const })),
+        ...(round ? [] : [{ lat: mission.lat, lon: mission.lon, key: 'end', badge: '', label: mission.target, variant: 'finish' as const }]),
+      ],
+    }),
+    [mission, round, walk.line],
+  )
   const walkedKm = walk.legM ? walk.legM.reduce((a, b) => a + b, 0) / 1000 : null
 
   useEffect(() => {
@@ -320,7 +333,10 @@ export function MissionView({ mission, knownCode, user, canManage, onChanged, on
       </section>
 
       <section className="mission-map">
-        <MarsMap2D points={markers} closed={round} path={walk.line?.map(([lon, lat]) => ({ lat, lon }))} label={`Route of ${mission.name}`} />
+        <MissionMap route={mapRoute} label={`Route of ${mission.name}`} />
+        <p className="mission-map-credit muted">
+          Imagery: NASA Viking MDIM 2.1 colour mosaic, MRO CTX (Caltech Murray Lab / Esri) from zoom 10, and MRO HiRISE at Jezero from zoom 12 · OBSERVED
+        </p>
       </section>
     </main>
   )
