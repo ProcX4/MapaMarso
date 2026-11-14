@@ -49,10 +49,10 @@ All in `src/config/assumptions.ts` unless noted. Shown in the UI on hover of eve
 
 | # | Assumption | Value | Done when |
 |---|---|---|---|
-| A1 | Walking speed (flat) | 2 km/h | Sourced or agreed by the team |
-| A2 | Climb penalty | +1 min per 10 m climbed | Sourced or agreed |
-| A3 | Planned EVA length | 6 h | Sourced or agreed |
-| A4 | Slope bands | < 10° walkable · 10–15° caution · 15–25° avoid · > 25° impassable | Sourced or agreed |
+| A1 | Walking speed (flat) | 2 km/h | Researched 2026-11-15: in line with Apollo 15 crews' EVA 2 pace, but that figure was seen only in a search summary. See [docs/assumptions-sources.md](docs/assumptions-sources.md). Team to agree |
+| A2 | Climb penalty | +1 min per 10 m climbed | No source found. Team to agree (see docs/assumptions-sources.md) |
+| A3 | Planned EVA length | 6 h | Researched 2026-11-15: ISS spacewalks run about 5 to 7 h. Earth-orbit, not Mars. Team to agree (see docs/assumptions-sources.md) |
+| A4 | Slope bands | < 10° walkable · 10–15° caution · 15–25° avoid · > 25° impassable | Researched 2026-11-15: a NASA test document lists 20° as the suit's slope capability (seen in a search summary only), which conflicts with the 25° limit. Team to decide (see docs/assumptions-sources.md) |
 | A5 | Limits | 12 stops (base + 10 between + end, the saved-mission limit), names 80 chars, notes 500 chars, speed 0.5–5 km/h, EVA 1–8 h | Confirmed |
 | A6 | Science opportunity search radius | 1 km from the route | `src/data/route.ts` → `scienceOpportunities(…, withinM = 1000)` |
 | A7 | Site-card "nearby targets" radius | 500 m | `src/features/explore/SiteCard.tsx` → `NEARBY_M` |
