@@ -19,6 +19,7 @@ export type Action =
   | { type: 'placeAt'; at: LngLat }
   | { type: 'setRouteOption'; value: RouteOption }
   | { type: 'setEvaPosition'; at: LngLat }
+  | { type: 'setEvaTime'; ms: number | null }
   | { type: 'renameStop'; id: string; name: string }
   | { type: 'loadRoute'; stops: Stop[]; roundTrip: boolean; mission: OpenMission | null }
   | { type: 'setMission'; mission: OpenMission | null }
@@ -47,6 +48,7 @@ export function initialState(): MarswalkState {
     walkingSpeedKmh: clamp(WALKING.speedKmh, LIMITS.speedKmh),
     maxEvaHours: clamp(EVA.maxHours, LIMITS.evaHours),
     evaPosition: null,
+    evaTimeMs: null,
     mission: null,
   }
 }
@@ -159,6 +161,10 @@ export function reducer(state: MarswalkState, action: Action): MarswalkState {
     case 'setRouteOption':
       if (action.value !== 'safest' && action.value !== 'direct') return state
       return { ...state, routeOption: action.value }
+
+    case 'setEvaTime':
+      if (action.ms !== null && !Number.isFinite(action.ms)) return state
+      return { ...state, evaTimeMs: action.ms }
 
     case 'setEvaPosition':
       if (!isLngLat(action.at)) return state

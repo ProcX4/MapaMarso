@@ -61,6 +61,31 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.11 · EVA playback, new layout, and a sun that follows the walk
+
+**Added**
+- **Playback:** a Play/Pause button walks the crew along the planned route at the route's pace, at 1, 5 or 15 walking minutes per second. Space plays or pauses; the arrow keys step 50 m. Playback pauses at the destination, and a banner says when the crew reaches each stop.
+- **Scrubber:** drag to any point on the route; the clock moves with it. Ticks mark each stop (green for science stops).
+- **Sun dynamics:** the EVA has its own simulated clock. The status bar shows LMST, whether the sun is up, and minutes to sunset or sunrise, and the map's night shading follows that clock while EVA is open. Leaving EVA returns the map to the real time.
+- **Return to base** now plays the walk home along the route; **Resume route** turns back.
+
+**Changed**
+- Layout: status bar and alerts at the top centre, the next-stop and return facts in a column on the left, and the player plus actions in one bar along the bottom, so the crew's position in the middle stays clear. The off-route drift practice is folded into a "Practice" section.
+
+---
+
+## 2026-11-15 · v0.5.10 · Planner picker as icons with info boxes
+
+**Changed**
+- The planner's "Click the map to place" picker is five round icon buttons instead of words, each drawn like the stop it places so it matches the stop list and the map: **A** (Start), **1** (Waypoint), a green dot (Science stop), **B** (Destination), and an eye (Just look). The picked one has a white ring.
+- Hovering an icon, or reaching it with Tab, shows an **info box** with its name and what a click does ("Each click on the map adds a science stop to the end of the route"). Before the start is placed, the others are dimmed and their box says "Place the start first."
+- The boxes open under the row of icons, all in the same spot, and stay inside the panel. The line under the icons still says what the current pick does.
+
+**Verified (headless Chrome on a production build; no page errors)**
+- All five boxes show on hover, inside the panel, before and after the start is placed; Tab focus shows the box; clicking the science-stop icon picks it.
+
+---
+
 ## 2026-11-15 · v0.5.9 · Mission page on the shared NASA map
 
 **Changed**

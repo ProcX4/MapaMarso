@@ -24,6 +24,7 @@ export type MarswalkState = {
   walkingSpeedKmh: number // assumption, shown as ESTIMATED
   maxEvaHours: number // assumption for the return threshold
   evaPosition: LngLat | null // simulated position in EVA mode
+  evaTimeMs: number | null // the EVA's simulated clock: the map's day and night follow it while walking
   mission: OpenMission | null // the saved mission this route was opened from, if any
 }
 

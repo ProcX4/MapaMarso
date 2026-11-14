@@ -181,20 +181,54 @@
 /* Step 1: what a click on the map places. Picked = white pill; the start's pick is marked like its stop */
 .plan-place { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
 .plan-place-head { margin: 0; }
-.plan-place-picks { display: flex; flex-wrap: wrap; gap: 6px; }
+.plan-place-picks { position: relative; display: flex; flex-wrap: wrap; gap: 8px; }
+/* Round icon buttons: the badge of the stop each places; the picked one has a white ring */
 .plan-place-pick {
-  padding: 6px 12px;
-  font: inherit;
-  font-size: 12.5px;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
   color: var(--gray-1);
   background: none;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 50%;
   cursor: pointer;
 }
+.plan-place-pick .stop-pick { margin: 0; }
 .plan-place-pick:hover:not(:disabled) { color: var(--white); border-color: rgba(255, 255, 255, 0.5); }
-.plan-place-pick.is-on { color: var(--black); background: var(--white); border-color: var(--white); }
-.plan-place-pick:disabled { opacity: 0.35; cursor: not-allowed; }
+.plan-place-pick.is-on { color: var(--white); background: rgba(255, 255, 255, 0.1); border: 2px solid var(--white); }
+/* Locked until the start is placed: only the icon dims, so its info box stays solid and readable */
+.plan-place-pick:disabled { cursor: not-allowed; border-color: rgba(255, 255, 255, 0.08); }
+.plan-place-pick:disabled > :not(.plan-pick-tip) { opacity: 0.35; }
+/* The info box: the pick's name and what a click does, on hover or keyboard focus. It opens under the row of
+   icons, lined up with it, so every box appears in the same place and stays inside the panel */
+.plan-pick-tip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: min(280px, 100%);
+  padding: 9px 11px;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: left;
+  color: var(--gray-1);
+  background: rgb(18, 18, 18);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.plan-pick-tip strong { color: var(--white); font-weight: 500; }
+.plan-place-pick:hover .plan-pick-tip,
+.plan-place-pick:focus-visible .plan-pick-tip { opacity: 1; visibility: visible; }
 .plan-hint.is-warning { color: var(--caution); }
 .plan-start-empty { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 13px; color: var(--gray-2); }
 .plan-route-summary { margin: 0; font-size: 14px; color: var(--white); }
