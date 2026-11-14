@@ -14,6 +14,8 @@ export const WALKING = {
 export const EVA = {
   /** Default planned EVA length. */
   maxHours: 6,
+  /** EVA warns that you have left the planned route from this far off it (ESTIMATED: a team choice, not sourced). */
+  offRouteWarnM: 30,
 }
 
 /** Slope bands for the slope layer, route hazards and alerts (Frontend Spec §6.2). */

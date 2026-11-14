@@ -1,5 +1,6 @@
 import type { HazardSection } from '../../data/route'
 import { formatDistance, formatDuration, formatSlope } from '../../lib/format'
+import { EVA } from '../../config/assumptions'
 
 type Props = {
   returnMin: number
@@ -10,10 +11,12 @@ type Props = {
   sunsetMin: number | null
   hazard: HazardSection | null
   hazardStartsInM: number | null
+  /** How far the simulated position is from the planned route, in metres (0 when on it). */
+  offRouteM?: number
 }
 
 /** One alert at a time, highest priority first. Text always states the problem: colour is never the only signal. */
-export function HazardAlert({ returnMin, leftMin, sunUp, sunsetMin, hazard, hazardStartsInM }: Props) {
+export function HazardAlert({ returnMin, leftMin, sunUp, sunsetMin, hazard, hazardStartsInM, offRouteM = 0 }: Props) {
   let alert: { level: 'alert' | 'hazard' | 'caution' | 'ok'; text: string }
 
   if (leftMin <= returnMin) {
@@ -22,6 +25,8 @@ export function HazardAlert({ returnMin, leftMin, sunUp, sunsetMin, hazard, haza
     alert = { level: 'alert', text: 'SUN IS DOWN · return to base' }
   } else if (sunsetMin !== null && sunsetMin <= returnMin) {
     alert = { level: 'alert', text: `SUNSET in ${formatDuration(sunsetMin)} · before you can get back` }
+  } else if (offRouteM > EVA.offRouteWarnM) {
+    alert = { level: 'hazard', text: `OFF ROUTE · ${formatDistance(offRouteM)} from the planned path · head back to it` }
   } else if (hazard) {
     const where = hazardStartsInM ? `in ${formatDistance(hazardStartsInM)}` : 'here'
     alert = {

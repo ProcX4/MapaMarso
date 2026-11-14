@@ -61,6 +61,7 @@ All in `src/config/assumptions.ts` unless noted. Shown in the UI on hover of eve
 | A10 | ~~Return-to-base estimate~~ | Done 2026-11-15: along the A* path (back the way you came, or on round the loop if shorter), climb included | `src/features/eva/EvaView.tsx`, `src/data/route.ts` → `returnAlongRoute` |
 | A12 | Daylight | Twilight until the Sun is 10° below the horizon; sunset found in 5-minute steps; the simulated EVA starts at the real current time | `src/data/daylight.ts`, `src/features/eva/EvaView.tsx` |
 | A13 | EVA daylight caution | under 1 h of daylight to spare after getting back | `src/features/eva/HazardAlert.tsx` |
+| A14 | EVA off-route warning distance | 30 m from the planned path (`EVA.offRouteWarnM`); distance is to the nearest sampled point of the route (10 m steps) | `src/config/assumptions.ts`, `src/features/eva/HazardAlert.tsx` |
 | A11 | Profile sample step | 10 m (coarsened to keep ≤ 5,000 samples) | `PROFILE_STEP_M` |
 
 ## 4. Deployment items not yet verified

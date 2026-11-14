@@ -37,6 +37,16 @@ export function localMeanSolarTime(mtc: number, lonEast: number) {
   return (((mtc + lonEast / 15) % 24) + 24) % 24
 }
 
+/** Local mean solar time, in hours, at an east longitude at a moment in time (ms since 1970). */
+export const lmstAt = (ms: number, lonEast: number) => localMeanSolarTime(marsClock(new Date(ms)).mtc, lonEast)
+
+/** The point `offsetM` metres to the right of `at` when facing `headingDeg` (negative: to the left). Flat-ground maths, fine at walking scale. */
+export function offsetFromHeading(at: LngLat, headingDeg: number, offsetM: number): LngLat {
+  const perDeg = metresPerDegree(at[1])
+  const right = (headingDeg + 90) * rad
+  return [at[0] + (offsetM * Math.sin(right)) / perDeg.lon, at[1] + (offsetM * Math.cos(right)) / perDeg.lat]
+}
+
 /**
  * Rough Earth–Mars distance from circular orbits with J2000 mean longitudes.
  * Good to ~10%, enough for an indicative one-way light time.
