@@ -35,7 +35,7 @@ export function RoverPhotos({ at }: { at: LngLat }) {
   return (
     <section className="rover-photos" aria-label="Rover photos near this point">
       <h3 className="info-card-kicker site-card-group">
-        What you'll see <ProvenanceTag category="observed" note="Perseverance raw images, NASA/JPL-Caltech" />
+        Pictures <ProvenanceTag category="observed" note="Perseverance raw images, NASA/JPL-Caltech" />
       </h3>
       {result.status === 'loading' && <p className="muted rover-photos-note">Looking for Perseverance photos…</p>}
       {result.status === 'error' && <p className="muted rover-photos-note">Rover photos can't be loaded right now.</p>}

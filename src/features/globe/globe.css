@@ -576,8 +576,8 @@ a.site-back { text-decoration: none; }
 /* The 3D/2D switch takes the bottom right: lift the zoom buttons clear */
 .flat-view .map .ol-zoom { right: 24px; bottom: 84px; }
 .flat-view .map .ol-attribution { right: 140px; }
-/* While planning, the elevation profile stops short of the 3D/2D switch and the zoom buttons */
-.globe-page .plan-bottom { right: 140px; }
+/* While planning, the elevation profile card stays clear of the 3D/2D switch and the zoom buttons */
+.globe-page .plan-bottom { width: min(600px, calc(100vw - var(--panel-w) - 220px)); }
 /* Exploring the 2D map: the Layers button sits in the missions row, and its list under it */
 .layers-hud.is-buttonless { top: 116px; }
 /* Search sits beside the Catalog button */

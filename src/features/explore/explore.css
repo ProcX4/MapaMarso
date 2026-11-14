@@ -51,13 +51,6 @@
 .layer-ramp { margin: 6px 0 0; font-size: 11px; color: var(--gray-2); }
 .ramp-bar { display: block; height: 8px; border-radius: 2px; border: 1px solid var(--line); }
 .ramp-ends { display: flex; justify-content: space-between; gap: 8px; margin-top: 3px; }
-.site-compare { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--line); }
-.site-compare .site-card-group { margin: 0 0 8px; padding: 0; border: 0; }
-.compare-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.compare-table th, .compare-table td { padding: 4px 6px 4px 0; text-align: left; vertical-align: top; }
-.compare-table thead th { color: var(--gray-2); font-weight: 400; }
-.compare-table tbody th { color: var(--gray-2); font-weight: 400; white-space: nowrap; }
-.site-compare-diff { margin: 8px 0 0; font-size: 12px; }
 .swatch { width: 10px; height: 10px; border-radius: 2px; border: 1px solid var(--line); }
 
 /* Site card: the info card, plus MAPA's terrain / science / hazards groups */
@@ -65,6 +58,12 @@
 .site-card-group { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--line); }
 .site-card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
 .site-card-note { margin: 8px 0 0; font-size: 12px; }
+/* A science target near the clicked point, with its reason, just above the pictures */
+.site-card-targets { margin: 14px 0 0; font-size: 12.5px; line-height: 1.45; }
+.site-card-targets p { margin: 0 0 8px; }
+.site-card-targets strong { color: var(--white); font-weight: 500; }
+/* Kept short, so the pictures below stay in view */
+.site-card-target-reason { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
 /* Rover photos in the site card: a strip of thumbnails, opening into a larger view */
 .rover-photos-note { margin: 8px 0 0; font-size: 12px; line-height: 1.45; }

@@ -11,7 +11,6 @@ import { Icon } from '../../components/Icon'
 import { useNow } from '../../hooks/useNow'
 import { daylightText, sunElevation } from '../../data/daylight'
 import { RoverPhotos } from './RoverPhotos'
-import { CompareSites } from './CompareSites'
 
 const NEARBY_M = 500
 
@@ -20,7 +19,7 @@ const compass = (deg: number) => COMPASS[Math.round((((deg % 360) + 360) % 360) 
 /** Distances on the card are approximate: the nearest 10 m (or 50 m past a kilometre) */
 const roundTo = (m: number) => (m < 1000 ? Math.round(m / 10) * 10 : Math.round(m / 50) * 50)
 
-/** Site analysis for the last clicked point. Every row says where its value comes from. */
+/** Site analysis for the last clicked point: terrain, hazards and pictures. Every row says where its value comes from. */
 export function SiteCard() {
   const { state, dispatch } = useMarswalk()
   const data = useDatasets()
@@ -62,12 +61,6 @@ export function SiteCard() {
         </dd>
       </dl>
 
-      <h3 className="info-card-kicker site-card-group">Science</h3>
-      <dl className="info-card-facts">
-        <dt>Targets</dt>
-        <dd>{nearby.length ? nearby.map((t) => `${t.name} (${formatDistance(t.m)})`).join(', ') : `None within ${formatDistance(NEARBY_M)}`}</dd>
-      </dl>
-
       <h3 className="info-card-kicker site-card-group">Hazards</h3>
       <dl className="info-card-facts">
         <dt>Terrain</dt>
@@ -92,8 +85,20 @@ export function SiteCard() {
         </dd>
       </dl>
 
-      <CompareSites at={at} />
-
+      {/* Pictures: what the ground looks like here, and why a science target nearby matters */}
+      {nearby.length > 0 && (
+        <div className="site-card-targets">
+          {nearby.slice(0, 1).map((t) => (
+            <p key={t.id}>
+              <span className="map-guide-dot" aria-hidden /> <strong>{t.name}</strong>
+              <span className="muted num"> · {t.m < 5 ? 'here' : `${formatDistance(roundTo(t.m))} away`}</span>
+              <br />
+              <span className="muted site-card-target-reason">{t.reason}</span>
+            </p>
+          ))}
+          {nearby.length > 1 && <p className="muted">and {nearby.length - 1} more science target{nearby.length > 2 ? 's' : ''} within {formatDistance(NEARBY_M)}</p>}
+        </div>
+      )}
       <RoverPhotos at={at} />
 
       {/* Stops are added from the planner's left panel (its "Click the map to place" picker), not here */}
