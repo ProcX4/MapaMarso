@@ -21,6 +21,36 @@ Entry template:
 
 ---
 
+## 2026-11-14 · v0.3.1 · UI matched 1:1 with the reference site (mapa-mars.vercel.app)
+
+Compared screenshot by screenshot against the reference (its deployed site and its repository build, which are the same) and fixed every difference on the pages they share. MAPA's own screens and functions from the specs are all kept.
+
+**Changed: shared pages now identical to the reference**
+- Brand "MAPA MARS". The menu bar shows only the brand and ☰ on Home, Globe, Missions and Account; the Explore / Plan Marswalk / EVA pill appears only on MAPA's site-map screens.
+- `#/` is the home page, as on the reference. **Explore moves to `#/explore`**; `#/plan`, `#/plan/<code>`, `#/eva`, `#/about` are unchanged.
+- Menu order as the reference (Home, Globe, Missions, then MAPA's Explore, Plan Marswalk, EVA, About & data) with the reference's hints; account entry "Your account" / "Save and share your missions".
+- Home: the reference's copy, single "Open the globe →" button, non-link feature cards, and its 1,200 px page width.
+- Globe: the reference's two-line clock (PHT + MTC); Catalog and close-up header back at its positions; its tour wording.
+- Buttons at the reference's size (12 × 22 px, 16 px text; outline 11 × 21 px; disabled at 35% opacity). MAPA's dense panels (site card, planner save, science list) keep a compact size.
+- Menu bar padding and page offsets as the reference (48 px sides on content pages, 24 px over the globe and site map; content starts under the 70 px bar).
+- Account page as the reference: sign in goes to Missions; signed in shows "Go to missions" and "Sign out". (Your missions and opening by code are on the Missions page, as in the reference.)
+- Missions: "All / Other users" chips left-aligned and the heading spacing as the reference.
+
+**Removed (extra links I had added inside the reference's pages)**
+- "Open on the site map" on landing-site cards, "Open in the route planner" on mission cards, "Analyse in the route planner" on mission pages, "Plan on the site map" on the missions hub. MAPA's planner still opens any saved mission at `#/plan/<code>`.
+
+**Fixed**
+- The Layers button on the site map was squashed by the tall list under it; it no longer shrinks.
+
+**Still different on purpose**
+- The flat map shows NASA's Viking mosaic instead of the reference's generated placeholder texture (real data kept, as asked).
+
+**Spec deviation**
+- Frontend Spec §2 puts Explore at `#/`; it is now at `#/explore` so `#/` can be the home page, as on the reference.
+
+**Verified**
+- Side-by-side screenshots of Home, Globe, Missions and Account against the reference match (the only remaining difference: a mission count shows when Supabase answers). Explore, Plan and EVA still render. Lint, types and build clean.
+
 ## 2026-11-14 · v0.3.0 · Everything from the MapaMars idea bank, merged
 
 The rest of [S-Urchin/MapaMars](https://github.com/S-Urchin/MapaMars) brought in: the 3D globe, moons, orbiters, landing-site close-up, hyperspace jump, flat map, home page and the full missions system. Code was written into MAPA's own structure, not copied in as files; where both apps had the same job, the two were merged into one. Real data from both was kept.

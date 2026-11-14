@@ -76,7 +76,7 @@ export function globeTourSteps(view: 'globe' | 'map' | 'site', credits: string[]
   }
   if (view === 'map') {
     return [
-      { title: 'The flat map', text: 'All of Mars at once, in NASA’s Viking colour mosaic. Drag to pan, scroll to zoom, and click a mission route to see it.' },
+      { title: 'The flat map', text: 'All of Mars at once. Drag to pan, scroll to zoom, and click a mission route to see it.' },
       { target: '.view-switch', title: '3D or 2D', text: 'Switch back to the globe.' },
       { target: '.daylight-bar', title: 'Day and night', text: 'Play day and night, or drag the ring along the line through the next sol; Now returns to the present.' },
       { target: '.catalog-link', title: 'Catalog', text: 'Mars, its moons and every landing site, with filters and a search. Pick one to go to it.' },
@@ -85,11 +85,11 @@ export function globeTourSteps(view: 'globe' | 'map' | 'site', credits: string[]
     ]
   }
   return [
-    { title: 'Welcome to Mars', text: 'Drag to turn Mars and scroll to zoom. This short tour points out what each control does.' },
-    { target: '.site-marker', title: 'Landing sites', text: 'Each dot is a spacecraft landing site. Click one for its card; some can be explored on the surface in 3D, and any can be opened on MAPA’s site map.' },
+    { title: 'Welcome to Mapa Mars', text: 'Drag to turn Mars and scroll to zoom. This short tour points out what each control does.' },
+    { target: '.site-marker', title: 'Landing sites', text: 'Each dot is a spacecraft landing site. Click one for its card; some can be explored on the surface in 3D.' },
     { target: '.orbiter-marker', title: 'Orbiters', text: 'The spacecraft working around Mars right now, placed live from NASA JPL Horizons. Click one for its story, its orbit and its 3D model.' },
     { target: '.moon-marker', title: 'Moons', text: 'Click Phobos or Deimos to fly up to it. Their positions are live from NASA JPL Horizons and their shapes are measured from spacecraft images.' },
-    { target: '.live-clock', title: 'Clock', text: 'Philippine time, Mars time (MTC), and the local time and daylight at the demo site.' },
+    { target: '.live-clock', title: 'Clock', text: 'Philippine time, and Mars time (MTC): the Martian equivalent of UTC.' },
     { target: '.daylight-bar', title: 'Day and night', text: 'Play day and night, or drag the ring along the line through the next sol; Now returns to the present.' },
     { target: '.catalog-link', title: 'Catalog', text: 'Mars, its moons and every landing site, with filters and a search. Pick one to fly to it.' },
     { target: '.view-switch', title: '3D or 2D', text: 'Switch between this globe and a flat map of the whole planet.' },

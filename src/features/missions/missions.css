@@ -1,6 +1,6 @@
 /* ---------- Missions pages (from MapaMars) ---------- */
 
-.missions-shell { position: absolute; inset: 0; z-index: 28; overflow-y: auto; padding-top: 56px; background: var(--black); }
+.missions-shell { position: absolute; inset: 0; z-index: 28; overflow-y: auto; padding-top: 71px; background: var(--black); }
 /* A way back to the globe, under the menu bar */
 .back-bar { padding: 20px clamp(16px, 4vw, 48px) 0; }
 
@@ -14,7 +14,7 @@
   flex-direction: column;
   align-items: center;
   gap: 24px;
-  padding: 40px 16px 64px;
+  padding: 56px 16px 64px;
   text-align: center;
 }
 .mission-center h1 { margin: 0; font-size: 32px; font-weight: 500; }
@@ -53,7 +53,6 @@
 .browse-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
 .browse-head h2 { margin: 0; font-size: 13px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray-2); }
 /* All / Other users / Mine, under the Open / Completed tabs */
-.browse-owner { justify-content: flex-start; margin-top: 14px; }
 .browse-note { margin: 10px 0 0; font-size: 13px; }
 .browse .my-missions { margin-top: 12px; padding-top: 0; border-top: 0; }
 
@@ -158,3 +157,6 @@
   .missions-shell { padding-top: 100px; }
   .mission-center { padding-top: 32px; }
 }
+
+/* All / Other users / Mine sit at the left, under the Open / Completed tabs */
+.browse-owner { justify-content: flex-start; margin-top: 14px; }

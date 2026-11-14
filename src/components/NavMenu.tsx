@@ -46,7 +46,7 @@ export function NavMenu({ pages, current }: { pages: NavPage[]; current: string 
           <div className={`nav-drawer-backdrop${open ? ' is-open' : ''}`} onClick={() => setOpen(false)} aria-hidden="true" />
           <aside id="nav-drawer" className={`nav-drawer${open ? ' is-open' : ''}`} aria-label="Menu" inert={!open}>
             <div className="nav-drawer-head">
-              <span className="nav-brand">MAPA</span>
+              <span className="nav-brand">MAPA MARS</span>
               <button type="button" className="nav-drawer-close" onClick={() => setOpen(false)} aria-label="Close menu">
                 <Icon name="close" />
               </button>
@@ -75,7 +75,7 @@ export function NavMenu({ pages, current }: { pages: NavPage[]; current: string 
                 <Icon name="account" />
                 <span>
                   {user ? user.username : 'Sign in'}
-                  <small>{user ? 'Your account and saved missions' : 'Save and share your Marswalks'}</small>
+                  <small>{user ? 'Your account' : 'Save and share your missions'}</small>
                 </span>
               </a>
             )}

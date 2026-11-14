@@ -5,8 +5,8 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 16px;
-  font-size: 13px;
+  padding: 12px 22px;
+  font: inherit;
   font-weight: 500;
   color: var(--black);
   background: var(--white);
@@ -17,7 +17,7 @@
   transition: background 150ms;
 }
 .button:hover { background: var(--gray-1); }
-.button:disabled { opacity: 0.5; cursor: default; }
+.button:disabled { opacity: 0.35; cursor: not-allowed; }
 .button.is-ghost { color: var(--gray-1); background: transparent; border: 1px solid var(--line); }
 .button.is-ghost:hover { color: var(--white); border-color: rgba(255, 255, 255, 0.5); }
 .button.is-large { padding: 16px 26px; font-size: 16px; letter-spacing: 0.08em; text-transform: uppercase; }
@@ -142,8 +142,8 @@
 .mono-code { font-family: var(--mono); letter-spacing: 0.08em; }
 
 .button-outline {
-  padding: 8px 16px;
-  font-size: 13px;
+  padding: 11px 21px;
+  font-size: 16px;
   font-weight: 500;
   color: var(--white);
   background: none;
@@ -238,3 +238,8 @@
   cursor: pointer;
 }
 .site-back:hover { background: var(--gray-1); }
+
+/* MAPA's dense panels (site card, planner, science list) use a compact pill */
+:is(.site-card-actions, .mission-save, .plan-science) .button,
+:is(.site-card-actions, .mission-save, .plan-science) .button-outline { padding: 8px 16px; font-size: 13px; }
+.button.is-large { padding: 16px 26px; font-size: 16px; }

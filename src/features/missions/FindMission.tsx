@@ -99,14 +99,9 @@ export function FindMission({ user, initialCode, problem, notice, onDismissNotic
 
       <section className="new-mission-cta">
         {user ? (
-          <>
-            <a className="button-outline" href={missionPath('new')}>
-              + New mission
-            </a>
-            <a className="button-outline" href="#/plan">
-              Plan on the site map
-            </a>
-          </>
+          <a className="button-outline" href={missionPath('new')}>
+            + New mission
+          </a>
         ) : (
           <>
             <a className="button-outline" href="#/account">
