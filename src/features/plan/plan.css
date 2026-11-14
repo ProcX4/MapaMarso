@@ -1,42 +1,77 @@
-.plan-panel {
+/* ---------- Planning a Marswalk, full screen (the MapaMars planner) ---------- */
+
+/* The map fills the window; the planner floats on the left in its own scrolling panel */
+.app.mode-plan { --panel-w: min(400px, calc(100vw - 32px)); }
+
+.planner-panel {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  bottom: 214px;
-  z-index: 5;
-  width: 360px;
-  overflow-y: auto;
+  top: 72px;
+  left: 16px;
+  z-index: 27;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
+  width: var(--panel-w);
+  /* As tall as it needs, up to the bottom of the screen */
+  max-height: calc(100% - 88px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 18px 0;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  animation: card-in-left 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.plan-panel > * + * { padding-top: 16px; border-top: 1px solid var(--line); }
-.plan-code-note { margin: 0; font-size: 12px; color: var(--caution); }
-
-.plan-stops-head { display: flex; justify-content: space-between; align-items: baseline; }
+@keyframes card-in-left { from { opacity: 0; transform: translateX(-24px); } }
+.planner-panel > * + * { padding-top: 16px; border-top: 1px solid var(--line); }
+.planner-panel > .form-footer { padding-top: 12px; }
+.planner-head { display: flex; align-items: flex-start; gap: 8px; }
+.planner-head > div { flex: 1; min-width: 0; }
+.planner-head h1 { margin: 2px 0 0; font-size: 22px; font-weight: 500; overflow-wrap: anywhere; }
+.planner-panel > .planner-head + * { border-top: 0; padding-top: 0; }
+.planner-code { flex: none; padding: 3px 9px; font-size: 12px; border: 1px solid var(--line); border-radius: 999px; }
+.planner-objective { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--gray-1); }
+.plan-note { margin: 0; font-size: 12px; line-height: 1.5; }
+.plan-section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
 .plan-count { font-size: 12px; }
-.plan-hint { font-size: 13px; line-height: 1.5; }
-.plan-stop-list { list-style: none; margin: 10px 0; padding: 0; display: grid; gap: 4px; }
-.plan-stop { display: flex; align-items: center; gap: 10px; }
-.plan-badge {
+.plan-hint { margin: 8px 0 0; font-size: 13px; line-height: 1.5; }
+
+/* Stops: one row each, in walking order, joined by a thin line */
+.stops { position: relative; display: flex; flex-direction: column; gap: 2px; margin: 0 0 12px; padding: 0; list-style: none; }
+.stops::before { content: ''; position: absolute; top: 18px; bottom: 18px; left: 19px; border-left: 1px dashed var(--line); }
+.stop-row { position: relative; display: flex; align-items: flex-start; gap: 10px; padding: 6px 6px 6px 8px; border-radius: 10px; }
+.stop-row:hover { background: rgba(255, 255, 255, 0.04); }
+.stop-pick {
   flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  font-size: 11px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-top: 3px;
+  font: 600 11px var(--sans);
   color: var(--black);
   background: var(--white);
   border-radius: 50%;
 }
-.plan-stop.is-science .plan-badge { background: var(--ok); }
-.plan-stop-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; text-align: left; background: none; border: 0; border-radius: 8px; cursor: pointer; }
-.plan-stop-main:hover { background: rgba(255, 255, 255, 0.06); }
-.plan-stop-main span { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.plan-stop-main small { font-size: 11px; }
-.plan-stop-actions { display: flex; }
-.plan-roundtrip { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--gray-1); }
+.stop-pick.is-waypoint { color: var(--white); background: rgb(40, 40, 40); border: 1px solid rgba(255, 255, 255, 0.5); }
+.stop-pick.is-science { background: var(--ok); }
+.stop-pick.is-destination { color: var(--white); background: rgb(8, 8, 8); border: 2px solid var(--white); }
+.stop-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.stop-name { width: 100%; padding: 4px 0; font: 500 14px var(--sans); color: var(--white); background: none; border: 0; border-radius: 0; outline: none; }
+.stop-name:focus { box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45); }
+.stop-name::placeholder { color: var(--gray-2); font-weight: 400; }
+.stop-coords { align-self: flex-start; padding: 0; font: 11px var(--mono); color: var(--gray-2); text-align: left; background: none; border: 0; cursor: pointer; }
+.stop-coords:hover { color: var(--white); text-decoration: underline; }
+.stop-leg { color: var(--gray-2); }
+/* Move or remove a stop: shown on hover or focus */
+.stop-actions { display: flex; gap: 2px; margin-top: 2px; opacity: 0; transition: opacity 150ms; }
+.stop-row:hover .stop-actions,
+.stop-row:focus-within .stop-actions { opacity: 1; }
+@media (hover: none) { .stop-actions { opacity: 1; } }
+.stop-actions button { width: 26px; height: 26px; padding: 0; font-size: 12px; color: var(--gray-1); background: none; border: 0; border-radius: 6px; cursor: pointer; }
+.stop-actions button:hover:not(:disabled) { color: var(--white); background: rgba(255, 255, 255, 0.1); }
+.stop-actions button:disabled { opacity: 0.3; cursor: default; }
 
 .plan-stats { gap: 14px 24px; }
 .plan-return .stats { gap: 14px 24px; }
@@ -48,7 +83,40 @@
 .plan-science-item .muted { margin: 2px 0; font-size: 13px; line-height: 1.5; }
 .plan-science-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 4px 0 8px; font-size: 12px; color: var(--gray-1); }
 
-.plan-bottom { position: absolute; left: 16px; right: 16px; bottom: 16px; z-index: 5; height: 190px; padding: 12px 16px; }
+/* Save: the mission form */
+.mission-save .button { align-self: flex-start; }
+.code-field { display: flex; flex-direction: column; gap: 8px; }
+.code-field-label { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--gray-1); }
+/* The code boxes have to fit the narrower panel */
+.planner-panel .code-boxes { gap: 6px; }
+.planner-panel .code-box { width: 40px; height: 52px; font-size: 24px; }
+
+/* Pinned summary at the foot of the panel */
+.form-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: auto;
+  padding: 12px 0 16px;
+  background: linear-gradient(to bottom, rgba(8, 8, 8, 0.85), rgb(8, 8, 8) 30%);
+  border-top: 1px solid var(--line);
+}
+.form-footer-summary { margin: 0; font-size: 14px; }
+
+/* Elevation profile: along the bottom, to the right of the planner */
+.plan-bottom {
+  position: absolute;
+  left: calc(var(--panel-w) + 32px);
+  right: 72px;
+  bottom: 16px;
+  z-index: 25;
+  height: 190px;
+  padding: 12px 16px;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  animation: fade-in 500ms ease both;
+}
 .plan-profile-head { display: flex; align-items: center; gap: 10px; }
 .plan-profile-readout { margin-left: auto; font-size: 12px; color: var(--gray-1); }
 .plan-profile-chart { margin-top: 6px; width: 100%; cursor: crosshair; touch-action: none; }
@@ -61,7 +129,12 @@
 .profile-cursor { stroke: var(--ok); stroke-width: 1; stroke-dasharray: 3 3; }
 .profile-empty { fill: var(--gray-2); font-size: 12px; }
 
+/* In Plan mode the layers column stops above the profile */
+.mode-plan .layers-hud { bottom: 230px; }
+.mode-plan .info-card { max-height: calc(100% - 360px); }
+
 @media (max-width: 720px) {
-  .plan-panel { top: auto; left: 0; right: 0; bottom: 170px; width: auto; max-height: 45%; border-radius: 14px 14px 0 0; }
-  .plan-bottom { left: 0; right: 0; bottom: 0; height: 170px; border-radius: 0; }
+  .planner-panel { top: auto; left: 0; right: 0; bottom: 150px; width: auto; max-height: 45%; border-radius: 14px 14px 0 0; }
+  .plan-bottom { left: 0; right: 0; bottom: 0; height: 150px; border-radius: 0; }
+  .mode-plan .info-card { bottom: 160px; }
 }

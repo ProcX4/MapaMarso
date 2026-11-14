@@ -7,13 +7,16 @@ import './features/explore/explore.css'
 import App from './App.tsx'
 import { MarswalkProvider } from './state/MarswalkContext'
 import { DerivedProvider } from './state/DerivedProvider'
+import { AuthProvider } from './state/AuthProvider'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <MarswalkProvider>
-      <DerivedProvider>
-        <App />
-      </DerivedProvider>
-    </MarswalkProvider>
+    <AuthProvider>
+      <MarswalkProvider>
+        <DerivedProvider>
+          <App />
+        </DerivedProvider>
+      </MarswalkProvider>
+    </AuthProvider>
   </StrictMode>,
 )

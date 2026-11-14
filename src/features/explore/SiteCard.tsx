@@ -10,6 +10,9 @@ import { layerDef, provenanceLine } from '../../map/layers/registry'
 import { Button } from '../../components/Button'
 import { ProvenanceTag } from '../../components/ProvenanceTag'
 import { LIMITS } from '../../config/assumptions'
+import { Icon } from '../../components/Icon'
+import { useNow } from '../../hooks/useNow'
+import { daylightText, sunElevation } from '../../data/daylight'
 import type { StopKind } from '../../state/types'
 
 const NEARBY_M = 500
@@ -20,6 +23,7 @@ export function SiteCard() {
   const data = useDatasets()
   const at = state.selected
   const elev = useElevationAt(at)
+  const now = useNow(60_000)
   if (!at) return null
 
   const slope = data.slope.value ? sampleGrid(data.slope.value, data.slope.value.values, at) : null
@@ -36,15 +40,16 @@ export function SiteCard() {
   }
 
   return (
-    <aside className="panel site-card" aria-label="Site analysis">
-      <button type="button" className="icon-button site-card-close" aria-label="Close site card" onClick={() => dispatch({ type: 'select', at: null })}>
-        ×
+    <aside className="info-card site-card" aria-label="Site analysis">
+      <button type="button" className="info-card-close" aria-label="Close site card" onClick={() => dispatch({ type: 'select', at: null })}>
+        <Icon name="close" size={16} />
       </button>
-      <p className="kicker">Site analysis</p>
-      <h2 className="site-card-title num">{formatLatLon(at)}</h2>
+      <p className="info-card-kicker">Site analysis</p>
+      <h2 className="num">{formatLatLon(at)}</h2>
+      <p className="muted site-card-sun">{daylightText(sunElevation(at, now.getTime()))} now</p>
 
-      <h3 className="kicker site-card-group">Terrain</h3>
-      <dl className="facts">
+      <h3 className="info-card-kicker site-card-group">Terrain</h3>
+      <dl className="info-card-facts">
         <dt>Elevation</dt>
         <dd>
           {elev.status === 'loading' ? '…' : elev.value !== null ? formatM(elev.value) : NO_DATA}
@@ -57,8 +62,8 @@ export function SiteCard() {
         </dd>
       </dl>
 
-      <h3 className="kicker site-card-group">Science</h3>
-      <dl className="facts">
+      <h3 className="info-card-kicker site-card-group">Science</h3>
+      <dl className="info-card-facts">
         <dt>Geology</dt>
         <dd>
           {geology ? `${geology.unit} · ${geology.name}` : NO_DATA}
@@ -68,8 +73,8 @@ export function SiteCard() {
         <dd>{nearby.length ? nearby.map((t) => `${t.name} (${formatDistance(t.m)})`).join(', ') : `None within ${formatDistance(NEARBY_M)}`}</dd>
       </dl>
 
-      <h3 className="kicker site-card-group">Hazards</h3>
-      <dl className="facts">
+      <h3 className="info-card-kicker site-card-group">Hazards</h3>
+      <dl className="info-card-facts">
         <dt>Terrain</dt>
         <dd>
           {band ? (

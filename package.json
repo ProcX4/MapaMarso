@@ -11,6 +11,7 @@
     "prefetch-tiles": "node scripts/prefetch-tiles.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.119.0",
     "geotiff": "^2.1.3",
     "ol": "^10.6.1",
     "react": "^19.2.8",

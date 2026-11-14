@@ -110,3 +110,113 @@
   0% { box-shadow: 0 0 0 0 rgba(255, 90, 79, 0.6); }
   100% { box-shadow: 0 0 0 8px rgba(255, 90, 79, 0); }
 }
+
+/* ---------- Forms (from MapaMars) ---------- */
+
+.mission-form { display: flex; flex-direction: column; gap: 14px; }
+.mission-form label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--gray-1); }
+.mission-form em { font-style: normal; font-size: 12px; }
+.mission-form input:not(.code-native),
+.mission-form select,
+.mission-form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font: 15px var(--sans);
+  color: var(--white);
+  background: var(--black);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.mission-form textarea { resize: vertical; min-height: 76px; }
+.mission-form input:focus,
+.mission-form select:focus,
+.mission-form textarea:focus { outline: none; border-color: var(--white); }
+.mission-form input::placeholder,
+.mission-form textarea::placeholder { color: rgba(255, 255, 255, 0.3); }
+.mission-form input[type='date'] { color-scheme: dark; }
+.form-error { margin: 0; padding: 10px 12px; font-size: 14px; border: 1px solid var(--white); border-radius: 6px; }
+.form-ok { margin: 0; padding: 10px 12px; font-size: 13px; line-height: 1.5; color: var(--ok); border: 1px solid rgba(139, 227, 168, 0.45); border-radius: 6px; }
+.signin-prompt { padding: 20px; border: 1px solid var(--line) !important; border-radius: 8px; }
+.signin-prompt p { margin: 8px 0 16px; line-height: 1.55; color: var(--gray-1); }
+.plain { color: var(--white); font-weight: 500; }
+.mono-code { font-family: var(--mono); letter-spacing: 0.08em; }
+
+.button-outline {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--white);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.button-outline:hover { border-color: var(--white); }
+.button-outline:disabled { opacity: 0.35; cursor: not-allowed; }
+.link-button { padding: 0; font: inherit; font-size: 13px; color: var(--white); background: none; border: 0; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.link-button:disabled { opacity: 0.5; cursor: default; }
+
+/* Two or three choices in one pill */
+.choice { display: flex; flex-direction: column; gap: 6px; }
+.segmented { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 3px; border: 1px solid var(--line); border-radius: 999px; }
+.segmented button { padding: 7px 10px; font-size: 13px; white-space: pre; color: var(--gray-1); background: none; border: 0; border-radius: 999px; cursor: pointer; }
+.segmented button:hover { color: var(--white); }
+.segmented button.is-on { color: var(--black); background: var(--white); }
+.choice-hint { margin: 0; font-size: 12px; line-height: 1.5; }
+
+/* Password with show / hide */
+.password-field { position: relative; display: block; }
+.mission-form .password-field input { padding-right: 48px; }
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  transform: translateY(-50%);
+  color: var(--gray-2);
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.password-toggle:hover { color: var(--white); }
+.password-toggle svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.password-rules { list-style: none; margin: -4px 0 0; padding: 0; display: grid; gap: 4px; font-size: 13px; color: var(--gray-2); }
+.password-rules li { display: flex; align-items: center; gap: 8px; }
+.password-rules li.is-met { color: var(--white); }
+.rule-mark { width: 14px; text-align: center; font-family: var(--mono); }
+
+/* Code entry: _ _ _ - _ _ _ */
+.code-input { position: relative; display: flex; justify-content: center; cursor: text; }
+.code-boxes { display: flex; align-items: center; gap: 8px; }
+.code-box {
+  width: 48px;
+  height: 60px;
+  display: grid;
+  place-items: center;
+  font: 500 28px var(--mono);
+  color: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  transition: border-color 0.15s;
+}
+.code-box.is-filled { border-color: rgba(255, 255, 255, 0.45); }
+.code-box.is-active { border-color: var(--white); box-shadow: 0 0 0 1px var(--white); }
+.code-dash { width: 18px; text-align: center; font: 500 28px var(--mono); color: var(--gray-2); }
+.code-input.is-invalid .code-box.is-filled { border-style: dashed; border-color: var(--white); }
+.code-native {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  border: 0;
+  color: transparent;
+  caret-color: transparent;
+  background: transparent;
+  cursor: text;
+}

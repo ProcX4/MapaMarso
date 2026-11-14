@@ -5,7 +5,7 @@ Each item says where it lives and what "done" looks like. In the app, stand-in l
 
 When you replace one, tick it here **and** add an entry to [changes.md](changes.md).
 
-Last updated: 2026-11-14 (baseline v0.1.0)
+Last updated: 2026-11-14 (v0.2.0, idea bank merged)
 
 ---
 
@@ -16,8 +16,9 @@ Last updated: 2026-11-14 (baseline v0.1.0)
 | D1 | **Demo site** | Jezero Crater (Mars 2020) | `src/config/site.ts` → `SITE` | Team confirms Jezero or Gale. If Gale: update `SITE`, `GAZETTEER`, `SITE_BBOX` in `scripts/prefetch-tiles.mjs`, re-run `npm run prefetch-tiles`, replace `public/data/*` |
 | D2 | **Habitat (base) location** | `77.4508°E, 18.4447°N` (Perseverance landing point), named "Habitat (placeholder)" | `src/config/site.ts` → `SITE.base`, `SITE.baseName` | A real, defensible habitat spot is picked (flat, near science) and renamed |
 | D3 | **Map rendering library** | OpenLayers (as Frontend Spec §1) | `package.json` | Gen Spec still says "_TBD_"; update Gen Spec tech-stack line to match |
-| D4 | **Saved missions / Supabase** | Not wired. `#/plan/:code` shows a "not enabled" notice | `src/features/plan/PlanPanel.tsx`, `.env.example` | Decide in/out of scope. If in: follow Security Spec §4 (RLS, policies, rate-limited join RPC) |
+| D4 | **Saved missions / Supabase** | **Code wired (v0.2.0)**, switched off until configured: accounts, save/open/delete missions by code (`#/plan/ABC-123`). Without keys the app says so and everything else works | `src/services/`, `src/state/AuthProvider.tsx`, `supabase/schema.sql`, `.env.example` | 1) Run `supabase/schema.sql` in the Supabase SQL Editor (skip if this project already runs MapaMars). 2) Put `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` in `.env.local` and in Vercel → Environment Variables. 3) Supabase → Authentication → URL Configuration: add the Vercel domain and `http://localhost:5173/**` (Security Spec §4). 4) Sign up, save a route, reopen it by code |
 | D5 | **Team names & roles** | "Team: TBD" | About page (`src/features/provenance/AboutPage.tsx`), Gen Spec "Team" table | Filled in |
+| D7 | **Space sound default** | On by default (as in MapaMars), remembered when turned off | `src/lib/spaceSound.ts` → `readFlag(ENABLED_KEY, true)` | Team decides whether judges should hear it without opting in |
 | D6 | **Code licence** | none | repo root | `LICENSE` file added, Gen Spec "Licence" updated |
 
 ## 2. Data
@@ -45,12 +46,14 @@ All in `src/config/assumptions.ts` unless noted. Shown in the UI on hover of eve
 | A2 | Climb penalty | +1 min per 10 m climbed | Sourced or agreed |
 | A3 | Planned EVA length | 6 h | Sourced or agreed |
 | A4 | Slope bands | < 10° walkable · 10–15° caution · 15–25° avoid · > 25° impassable | Sourced or agreed |
-| A5 | Limits | 25 stops, names 80 chars, notes 500 chars, speed 0.5–5 km/h, EVA 1–8 h | Confirmed |
+| A5 | Limits | 12 stops (base + 10 between + end, the saved-mission limit), names 80 chars, notes 500 chars, speed 0.5–5 km/h, EVA 1–8 h | Confirmed |
 | A6 | Science opportunity search radius | 1 km from the route | `src/data/route.ts` → `scienceOpportunities(…, withinM = 1000)` |
 | A7 | Site-card "nearby targets" radius | 500 m | `src/features/explore/SiteCard.tsx` → `NEARBY_M` |
 | A8 | EVA hazard look-ahead | 200 m | `src/features/eva/EvaView.tsx` |
 | A9 | EVA low-margin warning | under 30 min spare before turning back | `src/features/eva/HazardAlert.tsx` |
 | A10 | Return-to-base estimate | straight line to base, no climb | `src/features/eva/EvaView.tsx` — replace with route-back distance once terrain routing exists |
+| A12 | Daylight | Twilight until the Sun is 10° below the horizon; sunset found in 5-minute steps; the simulated EVA starts at the real current time | `src/data/daylight.ts`, `src/features/eva/EvaView.tsx` |
+| A13 | EVA daylight caution | under 1 h of daylight to spare after getting back | `src/features/eva/HazardAlert.tsx` |
 | A11 | Profile sample step | 10 m (coarsened to keep ≤ 5,000 samples) | `PROFILE_STEP_M` |
 
 ## 4. Deployment items not yet verified
