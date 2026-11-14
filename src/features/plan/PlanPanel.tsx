@@ -3,6 +3,7 @@ import { useRoute } from '../../hooks/useDerived'
 import { formatDuration, formatKm } from '../../lib/format'
 import { StopList } from './StopList'
 import { RouteStats } from './RouteStats'
+import { RouteOptions } from './RouteOptions'
 import { ReturnEstimate } from './ReturnEstimate'
 import { ScienceOpportunity } from './ScienceOpportunity'
 import { ElevationProfile } from './ElevationProfile'
@@ -35,6 +36,7 @@ export function PlanPanel() {
 
         <StopList />
         <RouteStats />
+        <RouteOptions />
         <ReturnEstimate />
         <ScienceOpportunity />
         <SaveMission key={m?.id ?? 'new'} />

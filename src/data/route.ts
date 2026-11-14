@@ -15,7 +15,7 @@ import { PROFILE_STEP_M, SLOPE_BANDS, WALKING } from '../config/assumptions'
 
 /** path: the way the leg is walked, stop to stop; status 'straight' until the safe path is in */
 export type Leg = { from: Stop; to: Stop; m: number; path: LngLat[]; status: LegStatus | 'straight' }
-export type ProfilePoint = { at: LngLat; distM: number; elevM: number | null; slopeDeg: number | null; leg: number }
+export type ProfilePoint = { at: LngLat; distM: number; elevM: number | null; slopeDeg: number | null; roughDeg: number | null; leg: number }
 export type HazardSection = { fromM: number; toM: number; maxSlope: number; label: string; token: string }
 
 export type RouteAnalysis = {
@@ -27,6 +27,11 @@ export type RouteAnalysis = {
   gainM: number | null
   lossM: number | null
   maxSlope: number | null
+  /** Mean slope along the walk, weighted by distance */
+  avgSlope: number | null
+  /** Mean and worst roughness (spread of slope within ~100 m, degrees) along the walk */
+  avgRoughness: number | null
+  maxRoughness: number | null
   durationMin: number
   hazards: HazardSection[]
   elevationCoverage: number // share of profile points with elevation, 0–1
@@ -47,6 +52,7 @@ export function analyseRoute(
   dtm: DtmGrid | null,
   slope: SlopeGrid | null,
   paths: LegPath[] | null = null,
+  roughness: SlopeGrid | null = null,
 ): RouteAnalysis {
   const order = walkingOrder(stops, roundTrip)
   const legs: Leg[] = order.slice(1).map((to, i) => {
@@ -74,6 +80,7 @@ export function analyseRoute(
           distM: walked + (segM * k) / n,
           elevM: dtm ? sampleGrid(dtm, dtm.values, at) : null,
           slopeDeg: slope ? sampleGrid(slope, slope.values, at) : null,
+          roughDeg: roughness ? sampleGrid(roughness, roughness.values, at) : null,
           leg: li,
         })
       }
@@ -96,6 +103,7 @@ export function analyseRoute(
 
   const slopes = profile.map((p) => p.slopeDeg).filter((s): s is number => s !== null)
   const maxSlope = slopes.length ? Math.max(...slopes) : null
+  const roughs = profile.map((p) => p.roughDeg).filter((r): r is number => r !== null)
 
   return {
     order,
@@ -105,6 +113,9 @@ export function analyseRoute(
     gainM: hasElev ? gain : null,
     lossM: hasElev ? loss : null,
     maxSlope,
+    avgSlope: along(profile, (p) => p.slopeDeg),
+    avgRoughness: along(profile, (p) => p.roughDeg),
+    maxRoughness: roughs.length ? Math.max(...roughs) : null,
     durationMin: walkMinutes(totalM, hasElev ? gain : 0, speedKmh),
     hazards: hazardSections(profile),
     elevationCoverage,
@@ -112,6 +123,42 @@ export function analyseRoute(
 }
 
 // The route finder is given the stops to 6 decimal places (useSafePath), about 6 cm on Mars
+/** Distance-weighted mean of a profile value; null when no point has it */
+function along(profile: ProfilePoint[], value: (p: ProfilePoint) => number | null) {
+  let sum = 0, weight = 0
+  for (let i = 1; i < profile.length; i++) {
+    const v = value(profile[i])
+    if (v === null) continue
+    const w = profile[i].distM - profile[i - 1].distM
+    sum += v * w
+    weight += w
+  }
+  return weight ? sum / weight : null
+}
+
+/**
+ * The way back to base from a point along the route, on the path itself (it was found safe): back the way you
+ * came, or, on a round trip, on along the rest of the loop if that's shorter. Climb counts the uphill metres in
+ * the direction walked.
+ */
+export function returnAlongRoute(profile: ProfilePoint[], alongM: number, roundTrip: boolean) {
+  const total = profile.length ? profile[profile.length - 1].distM : 0
+  const climb = (from: number, to: number, reverse: boolean) => {
+    let m = 0
+    for (let i = 1; i < profile.length; i++) {
+      const [a, b] = [profile[i - 1], profile[i]]
+      if (b.distM <= from || a.distM >= to || a.elevM === null || b.elevM === null) continue
+      const dz = reverse ? a.elevM - b.elevM : b.elevM - a.elevM
+      if (dz > 0) m += dz
+    }
+    return m
+  }
+  const back = { m: alongM, climbM: climb(0, alongM, true), way: 'back' as const }
+  if (!roundTrip) return back
+  const on = { m: total - alongM, climbM: climb(alongM, total, false), way: 'on' as const }
+  return on.m < back.m ? on : back
+}
+
 const same = (a: LngLat, b: LngLat) => Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[1] - b[1]) < 1e-6
 
 function pathLength(path: LngLat[]) {

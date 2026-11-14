@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useMarswalk } from '../../hooks/useMarswalk'
 import { useRoute } from '../../hooks/useDerived'
-import { nextStop, pointAlong, walkMinutes } from '../../data/route'
-import { distanceM } from '../../data/mars'
+import { nextStop, pointAlong, returnAlongRoute, walkMinutes } from '../../data/route'
 import { centerOn } from '../../map/mapControl'
 import { daylightText, minutesToSunset, sunElevation } from '../../data/daylight'
 import { Button } from '../../components/Button'
@@ -57,10 +56,12 @@ export function EvaView() {
     )
   }
 
-  const next = returning ? { stop: base, remainingM: distanceM(here.at, base.at) } : nextStop(route, alongM)
+  // Home along the safe path: back the way you came, or on round the rest of a round trip if that's shorter
+  const home = returnAlongRoute(route.profile, alongM, state.roundTrip)
+  const next = returning ? { stop: base, remainingM: home.m } : nextStop(route, alongM)
   const elapsedMin = total ? route.durationMin * (alongM / total) : 0
-  const toBaseM = distanceM(here.at, base.at)
-  const toBaseMin = walkMinutes(toBaseM, 0, state.walkingSpeedKmh)
+  const toBaseM = home.m
+  const toBaseMin = walkMinutes(home.m, home.climbM, state.walkingSpeedKmh)
   const leftMin = state.maxEvaHours * 60 - elapsedMin
   const simMs = startMs + elapsedMin * 60_000
   const sun = sunElevation(here.at, simMs)
@@ -86,7 +87,7 @@ export function EvaView() {
 
       <div className="eva-facts">
         <NextWaypoint from={here} next={next} />
-        <ReturnEstimate toBaseM={toBaseM} toBaseMin={toBaseMin} leftMin={leftMin} />
+        <ReturnEstimate toBaseM={toBaseM} toBaseMin={toBaseMin} leftMin={leftMin} way={home.way} safe={route.routing === 'safe'} />
       </div>
 
       <div className="eva-bottom">

@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { CodeInput } from '../../components/CodeInput'
 import { MarsMap2D } from '../../globe/MarsMap2D'
 import { formatDistanceKm, formatLat, formatLon } from '../../lib/format'
 import { routeLegs, routeMarkers, routeStops } from '../../globe/missionRoute'
 import { useNow } from '../../hooks/useNow'
+import { useMissionPath } from '../../hooks/useSafePath'
+import type { LngLat } from '../../state/types'
 import { formatCode } from '../../lib/missionCode'
 import type { User } from '../../services/auth'
 import { deleteMission, fetchCrew, fetchMissionById, joinMission, removeCrewMember, setMissionStatus, type CrewMember, type Mission } from '../../services/missions'
@@ -46,6 +48,16 @@ export function MissionView({ mission, knownCode, user, canManage, onChanged, on
   const stops = routeStops(start, mission.phases, end, round)
   const markers = routeMarkers(start, mission.phases, end, round)
   const route = routeLegs(stops)
+  // Walked by its A* safe path round steep, deep and rocky ground, exactly as on the globe page's 2D map
+  const points = useMemo(
+    () =>
+      routeStops({ name: mission.startName, lat: mission.startLat, lon: mission.startLon }, mission.phases, { name: mission.target, lat: mission.lat, lon: mission.lon }, mission.tripType === 'round').map(
+        (s): LngLat => [s.lon, s.lat],
+      ),
+    [mission],
+  )
+  const walk = useMissionPath(points)
+  const walkedKm = walk.legM ? walk.legM.reduce((a, b) => a + b, 0) / 1000 : null
 
   useEffect(() => {
     const controller = new AbortController()
@@ -181,11 +193,18 @@ export function MissionView({ mission, knownCode, user, canManage, onChanged, on
         <dl className="kv">
           <dt>Distance</dt>
           <dd>
-            {formatDistanceKm(route.totalKm)}{' '}
+            {formatDistanceKm(walkedKm ?? route.totalKm)}{' '}
             <span className="muted">
-              straight line{mission.phases.length ? `, ${mission.phases.length} phase${mission.phases.length === 1 ? '' : 's'}` : ''}
+              {walkedKm !== null ? 'on foot, along the safe path' : 'straight line'}
+              {mission.phases.length ? `, ${mission.phases.length} phase${mission.phases.length === 1 ? '' : 's'}` : ''}
             </span>
           </dd>
+          {walk.note && (
+            <>
+              <dt>Safe path</dt>
+              <dd>{walk.note}</dd>
+            </>
+          )}
           {mission.date && (
             <>
               <dt>Planned</dt>
@@ -220,7 +239,7 @@ export function MissionView({ mission, knownCode, user, canManage, onChanged, on
                     {formatLat(stop.lat, 4)} {formatLon(stop.lon, 4)}
                   </span>
                 </span>
-                {i > 0 && <span className="muted mono-count">+{formatDistanceKm(route.legs[i - 1].km)}</span>}
+                {i > 0 && <span className="muted mono-count">+{formatDistanceKm(walk.legM ? walk.legM[i - 1] / 1000 : route.legs[i - 1].km)}</span>}
               </li>
             )
           })}
@@ -301,7 +320,7 @@ export function MissionView({ mission, knownCode, user, canManage, onChanged, on
       </section>
 
       <section className="mission-map">
-        <MarsMap2D points={markers} closed={round} label={`Route of ${mission.name}`} />
+        <MarsMap2D points={markers} closed={round} path={walk.line?.map(([lon, lat]) => ({ lat, lon }))} label={`Route of ${mission.name}`} />
       </section>
     </main>
   )

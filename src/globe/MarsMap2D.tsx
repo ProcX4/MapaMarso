@@ -33,6 +33,8 @@ type Props = {
   points: MapPoint[]
   /** Draw the route back to the first point (a round trip). */
   closed?: boolean
+  /** The way the route is actually walked (the A* safe path), drawn instead of straight lines between the points */
+  path?: LatLon[] | null
   /** Called when the map is clicked (not dragged). Omit for a read-only map. */
   onPick?: (point: LatLon) => void
   /** Move the view here; pass a new object to move again. `span` is the width shown, in degrees. */
@@ -101,7 +103,7 @@ function niceKm(km: number) {
   return (n >= 5 ? 5 : n >= 2 ? 2 : 1) * pow
 }
 
-export function MarsMap2D({ points, closed = false, onPick, focus, label = 'Map of Mars', routes = [], selectedRoute = null, onSelectRoute, fill = false, sunAt = null }: Props) {
+export function MarsMap2D({ points, closed = false, path = null, onPick, focus, label = 'Map of Mars', routes = [], selectedRoute = null, onSelectRoute, fill = false, sunAt = null }: Props) {
   const hostRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const nightRef = useRef<HTMLCanvasElement>(null)
@@ -315,7 +317,7 @@ export function MarsMap2D({ points, closed = false, onPick, focus, label = 'Map 
     return paths
   }, [terminator, left, view.w])
 
-  const pathOf = (pts: MapPoint[], isClosed?: boolean) => (isClosed ? [...pts, pts[0]] : pts).map((p) => `${mapX(p)},${toY(p.lat)}`).join(' ')
+  const pathOf = (pts: LatLon[], isClosed?: boolean) => (isClosed ? [...pts, pts[0]] : pts).map((p) => `${mapX(p)},${toY(p.lat)}`).join(' ')
   const pin = (p: MapPoint) => (
     <>
       <span className="map2d-pin">{p.variant === 'finish' ? <FlagIcon /> : p.badge}</span>
@@ -361,7 +363,7 @@ export function MarsMap2D({ points, closed = false, onPick, focus, label = 'Map 
                 </g>
               ),
           )}
-          {points.length > 1 && <polyline className="map2d-route" points={pathOf(points, closed)} />}
+          {points.length > 1 && <polyline className="map2d-route" points={path && path.length > 1 ? pathOf(path) : pathOf(points, closed)} />}
         </svg>
 
         {routes.map((r) =>

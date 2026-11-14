@@ -45,6 +45,19 @@ export const PATHFINDING = {
   depthPenalty: 4,
   /** Each metre climbed costs as much as this many metres on the flat (from WALKING: 2 km/h, +1 min per 10 m) */
   climbM: 3.3,
+  /**
+   * Rocky ground, where the 1 m HiRISE DTMs cover it (public/data/site-obstacles.bin): the share of each 20 m cell
+   * that is steeper than 30° at 1 m, i.e. boulders and blocky outcrop. From this share the path steers round it...
+   * Set from the map itself (2026-11-15): half of Jezero's covered ground is 0 %, the rockiest 5 % starts at 3 %,
+   * the rockiest 1 % at 18 %. So 5 % catches about the rockiest 4 % of ground, 25 % about the rockiest 0.6 %.
+   */
+  rockSoftPct: 5,
+  /** ...and from this share it never goes in */
+  rockMaxPct: 25,
+  /** Extra cost per metre walked at the rockiest ground it still enters */
+  rockPenalty: 4,
+  /** Roughness is how much the slope varies within this radius: a steady slope is smooth, a boulder field is rough */
+  roughnessRadiusM: 100,
   /** Around each leg, how far beyond the straight line the search may wander, as a share of the leg's length */
   searchMargin: 0.6,
   minSearchMarginM: 1500,

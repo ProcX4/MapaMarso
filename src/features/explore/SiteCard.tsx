@@ -2,12 +2,12 @@ import { useMarswalk } from '../../hooks/useMarswalk'
 import { useDatasets } from '../../hooks/useDerived'
 import { usePointTerrain } from '../../hooks/usePointTerrain'
 import { slopeBand } from '../../data/slope'
-import { TERRAIN_NOTE } from '../../data/terrain'
+import { NEARBY_HAZARD_M, TERRAIN_NOTE } from '../../data/terrain'
 import { distanceM } from '../../data/mars'
 import { formatDistance, formatLatLon, formatM, formatSlope, NO_DATA } from '../../lib/format'
 import { Button } from '../../components/Button'
 import { ProvenanceTag } from '../../components/ProvenanceTag'
-import { LIMITS } from '../../config/assumptions'
+import { LIMITS, SLOPE_BANDS } from '../../config/assumptions'
 import { Icon } from '../../components/Icon'
 import { useNow } from '../../hooks/useNow'
 import { daylightText, sunElevation } from '../../data/daylight'
@@ -15,6 +15,11 @@ import type { StopKind } from '../../state/types'
 import { MAP_PLAN } from '../../lib/missionPaths'
 
 const NEARBY_M = 500
+
+const COMPASS = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west']
+const compass = (deg: number) => COMPASS[Math.round((((deg % 360) + 360) % 360) / 45) % 8]
+/** Distances on the card are approximate: the nearest 10 m (or 50 m past a kilometre) */
+const roundTo = (m: number) => (m < 1000 ? Math.round(m / 10) * 10 : Math.round(m / 50) * 50)
 
 /** Site analysis for the last clicked point. Every row says where its value comes from. */
 export function SiteCard() {
@@ -30,6 +35,7 @@ export function SiteCard() {
   const slope = terrain.value?.slopeDeg ?? null
   const band = slope !== null ? slopeBand(slope) : null
   const source = terrain.value ? TERRAIN_NOTE[terrain.value.source] : null
+  const steep = terrain.value?.nearbySteep ?? null
   const nearby = (data.targets.value ?? [])
     .map((t) => ({ ...t, m: distanceM(t.at, at) }))
     .filter((t) => t.m <= NEARBY_M)
@@ -79,6 +85,17 @@ export function SiteCard() {
             NO_DATA
           )}
           <ProvenanceTag category="estimated" note="Slope thresholds are assumptions for a suited astronaut" />
+        </dd>
+        <dt>Nearby</dt>
+        <dd>
+          {waiting
+            ? '…'
+            : !terrain.value
+              ? NO_DATA
+              : steep
+                ? `Steep ground (${formatSlope(steep.slopeDeg)}) about ${formatDistance(roundTo(steep.m))} ${compass(steep.bearingDeg)}`
+                : `No steep ground within ${formatDistance(NEARBY_HAZARD_M)}`}
+          <ProvenanceTag category="derived" note={`Closest ground of ${SLOPE_BANDS.find((b) => b.token === 'hazard')!.min}° or more within ${formatDistance(NEARBY_HAZARD_M)}, from the ${source ?? 'elevation model'}`} />
         </dd>
       </dl>
 

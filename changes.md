@@ -21,6 +21,36 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.1 · Topographic: route options, safety envelope, roughness, safer return
+
+**Added**
+- **Route options:** every route is found two ways, *Safest* (round steep and deep ground, avoiding climbs) and *Most direct* (round impassable ground only), compared side by side in the planner with distance, time, max slope and distance over 10°. Pick one and the map, stats, profile and EVA follow it; the other is drawn dashed on the map.
+- **Safety envelope** (Topographic layer): the ground the habitat can be walked to and back from within the planned EVA at the walking speed, on the A* costs (Dijkstra from base).
+- **Roughness:** Trek's global MOLA roughness layer, and a derived roughness (spread of slope within 100 m) along the route, shown as an average in the route stats with the worst value on hover.
+- **Average slope** in the route stats.
+- **Site card "Nearby":** the closest ground of 15° or more within 1 km, with distance and compass direction, anywhere on Mars.
+- With only the habitat placed, the terrain round it is mapped straight away (hazard shading and the envelope), before any stop is added.
+- **Rocky ground (boulders, blocky outcrop):** `scripts/build-obstacles.mjs` turns USGS's seven 1 m HiRISE DTMs of Jezero (757 MB, downloaded once into a temp cache) into `public/data/site-obstacles.bin` (2.4 MB): for each 20 m cell of the site DTM, the share of ground steeper than 30° at 1 m. It covers 31.5 % of the site DTM: the habitat, the delta and most of the crater floor. A* steers round cells from 5 % and never enters 25 % or more (about the rockiest 4 % and 0.6 % of covered ground); the shading shows it in tan and brown. No published rock-abundance map exists for the site in Trek or the USGS Mars 2020 set, so this is a derived proxy (DERIVED).
+  - Checked: delta top → western rim crossed a 32 % rocky cell without it; with it the path tops out at 7 % for 40 m extra. Routes over smooth floor are unchanged.
+- **Mission details page follows the safe path too:** its map draws the same A* path as the globe page's 2D view, and its distance, per-leg distances and a "Safe path" line are measured along it (both pages share `useMissionPath` in `src/hooks/useSafePath.ts`). Checked with a stand-in mission: 13.9 km, legs 4.88 + 9.04 km on both pages.
+
+**Changed**
+- EVA's back-to-base distance and time follow the A* path (back the way you came, or on round the loop if shorter), climb included, instead of a straight line with no climb.
+- Map stacking: opaque base imagery first, see-through imagery (elevation colour, roughness, TES) above it, so turning those on always shows them.
+- The planner says plainly when the safe path is still being found, when legs had to stay straight, or when elevation couldn't be loaded.
+
+**Verified**
+- `tsc -b`, `oxlint` pass.
+- Slope: GDAL's Horn formula re-implemented in NumPy matches MAPA on all 2,406,940 interior cells of the Jezero DTM (max difference 0.00000°). Plain `gdaldem slope` on the file reads 0.14° low on average (p95 0.56°): it takes the 20 m projected pixels as ground metres, while at 18.4°N they are 18.9 m east–west.
+- Worker on the full Jezero grid (2.4 M cells, both routes, roughness and envelope): about 0.9 s. Envelope for 6 h at 2 km/h: about 99 km².
+- In the app (headless Chrome): route options switch the route; envelope draws round the habitat; site card reads "Steep ground (16.2°) about 500 m north"; with `/api/elevation` blocked the planner, stats and site card show the error and "No data" without spinning.
+- Keyboard: map takes focus, + zooms, arrows pan; route options are in the Tab order and switch with Space.
+
+**Not verified**
+- A* on a real saved mission (still no missions in the database).
+
+---
+
 ## 2026-11-15 · v0.5.0 · Layers regrouped as Topographic, Optical and Spectral; A* safe paths across all of Mars
 
 **Changed: three layer groups, all covering the whole planet (Mars Trek)**

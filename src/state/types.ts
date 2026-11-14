@@ -7,12 +7,16 @@ export type LayerState = { id: string; visible: boolean; opacity: number }
 
 export type Mode = 'explore' | 'plan' | 'eva'
 
+/** Which A* route the plan follows: round all hard ground, or only round impassable ground */
+export type RouteOption = 'safest' | 'direct'
+
 export type MarswalkState = {
   mode: Mode
   layers: LayerState[]
   selected: LngLat | null // last clicked point → site card
   stops: Stop[] // walking order; base first
   roundTrip: boolean // finish back at base
+  routeOption: RouteOption // which of the two A* routes is walked
   walkingSpeedKmh: number // assumption, shown as ESTIMATED
   maxEvaHours: number // assumption for the return threshold
   evaPosition: LngLat | null // simulated position in EVA mode
