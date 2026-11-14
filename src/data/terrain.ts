@@ -1,7 +1,7 @@
 import type { LngLat } from '../state/types'
 import { loadDtmGrid, sampleGrid, type DtmGrid } from './elevation'
-import { metresPerDegree } from './mars'
-import { PATHFINDING } from '../config/assumptions'
+import { bearingDeg, distanceM, metresPerDegree } from './mars'
+import { PATHFINDING, SLOPE_BANDS } from '../config/assumptions'
 
 /*
  * Elevation anywhere on Mars, as a grid of heights in metres:
@@ -11,7 +11,10 @@ import { PATHFINDING } from '../config/assumptions'
  */
 
 export type TerrainSource = 'site' | 'mola'
-export type TerrainGrid = DtmGrid & { source: TerrainSource; resM: number }
+/** obstacles: rocky share per cell (0–100 %, 255 = not covered), on the site DTM only */
+export type TerrainGrid = DtmGrid & { source: TerrainSource; resM: number; obstacles?: Uint8Array }
+
+export const OBSTACLES_URL = '/data/site-obstacles.bin'
 
 export const TERRAIN_NOTE: Record<TerrainSource, string> = {
   site: 'Jezero CTX DTM, 20 m/px (USGS)',
@@ -26,13 +29,29 @@ let site: Promise<TerrainGrid | null> | null = null
 
 /** The site DTM, or null when it's missing (then MOLA covers the site too). */
 export function siteTerrain() {
-  site ??= loadDtmGrid()
-    .then((g): TerrainGrid => ({ ...g, source: 'site', resM: ((g.bbox[3] - g.bbox[1]) / g.height) * metresPerDegree(0).lat }))
+  site ??= Promise.all([loadDtmGrid(), loadObstacles()])
+    .then(([g, obstacles]): TerrainGrid => ({
+      ...g,
+      source: 'site',
+      resM: ((g.bbox[3] - g.bbox[1]) / g.height) * metresPerDegree(0).lat,
+      // Only if it was built for this exact grid (scripts/build-obstacles.mjs)
+      obstacles: obstacles?.length === g.width * g.height ? obstacles : undefined,
+    }))
     .catch((err) => {
       console.info('Site DTM not available:', err?.message ?? err)
       return null
     })
   return site
+}
+
+/** The site's rocky-ground map, or null if it hasn't been built */
+async function loadObstacles() {
+  try {
+    const res = await fetch(OBSTACLES_URL, { signal: AbortSignal.timeout(TIMEOUT_MS) })
+    return res.ok ? new Uint8Array(await res.arrayBuffer()) : null
+  } catch {
+    return null
+  }
 }
 
 const inside = (g: DtmGrid, [lon, lat]: LngLat) => lon > g.bbox[0] && lon < g.bbox[2] && lat > g.bbox[1] && lat < g.bbox[3]
@@ -77,19 +96,50 @@ export async function terrainFor(points: LngLat[]): Promise<TerrainGrid> {
   return molaGrid([Math.max(-180, w), Math.max(-90, s), Math.min(180, e), Math.min(90, n)])
 }
 
-export type PointTerrain = { elevM: number | null; slopeDeg: number | null; source: TerrainSource }
+export type NearbySteep = { m: number; bearingDeg: number; slopeDeg: number }
+export type PointTerrain = { elevM: number | null; slopeDeg: number | null; nearbySteep: NearbySteep | null; source: TerrainSource }
 
-/** Height and slope at one point, from the best elevation there is for it. */
+/** How far round a clicked point the site card looks for steep ground */
+export const NEARBY_HAZARD_M = 1000
+const steepMin = SLOPE_BANDS.find((b) => b.token === 'hazard')!.min
+
+/** Height, slope and the nearest steep ground round one point, from the best elevation there is for it. */
 export async function pointTerrain(at: LngLat): Promise<PointTerrain> {
   const dtm = await siteTerrain()
   const grid = dtm && inside(dtm, at) ? dtm : await molaGrid(around(at))
-  return { elevM: sampleGrid(grid, grid.values, at), slopeDeg: slopeAt(grid, at), source: grid.source }
+  return {
+    elevM: sampleGrid(grid, grid.values, at),
+    slopeDeg: slopeAt(grid, at),
+    nearbySteep: nearestSteep(grid, at, NEARBY_HAZARD_M),
+    source: grid.source,
+  }
 }
 
-/** A few MOLA pixels either side of a point */
+/** MOLA pixels either side of a point, enough to look NEARBY_HAZARD_M round it */
 function around([lon, lat]: LngLat): [number, number, number, number] {
-  const d = 4 / 128
-  return [Math.max(-180, lon - d), Math.max(-90, lat - d), Math.min(180, lon + d), Math.min(90, lat + d)]
+  const d = Math.max(4 / 128, (1.5 * NEARBY_HAZARD_M) / metresPerDegree(0).lat)
+  const dLon = d / Math.max(0.2, Math.cos((lat * Math.PI) / 180))
+  return [Math.max(-180, lon - dLon), Math.max(-90, lat - d), Math.min(180, lon + dLon), Math.min(90, lat + d)]
+}
+
+/** The closest cell within radiusM whose slope is in the hazard band or steeper, with its distance and bearing. */
+export function nearestSteep(g: DtmGrid, at: LngLat, radiusM: number): NearbySteep | null {
+  const [west, south, east, north] = g.bbox
+  const dLon = (east - west) / g.width, dLat = (north - south) / g.height
+  const m = metresPerDegree(at[1])
+  const rx = Math.ceil(radiusM / (dLon * m.lon)), ry = Math.ceil(radiusM / (dLat * m.lat))
+  const cx = Math.floor((at[0] - west) / dLon), cy = Math.floor((north - at[1]) / dLat)
+  let best: NearbySteep | null = null
+  for (let y = cy - ry; y <= cy + ry; y++) {
+    for (let x = cx - rx; x <= cx + rx; x++) {
+      const p: LngLat = [west + (x + 0.5) * dLon, north - (y + 0.5) * dLat]
+      const d = distanceM(at, p)
+      if (d > radiusM || (best && d >= best.m)) continue
+      const s = slopeAt(g, p)
+      if (s !== null && s >= steepMin) best = { m: d, bearingDeg: bearingDeg(at, p), slopeDeg: s }
+    }
+  }
+  return best
 }
 
 /** Slope in degrees at a point (Horn's method on the 3×3 cells round it), or null at the edge or by no-data. */

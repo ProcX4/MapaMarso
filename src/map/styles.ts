@@ -22,6 +22,11 @@ export function routeLineStyle() {
   ]
 }
 
+/** The route option not being followed: faint and dashed, under the chosen one */
+export function otherRouteStyle() {
+  return new Style({ stroke: new Stroke({ color: 'rgba(255,255,255,0.55)', width: 2, lineDash: [4, 6] }) })
+}
+
 export function hazardLineStyle(token: string) {
   return new Style({ stroke: new Stroke({ color: cssVar(token), width: 4 }) })
 }
