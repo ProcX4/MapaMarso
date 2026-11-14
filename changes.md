@@ -31,8 +31,10 @@ Entry template:
 - `node_modules/`, `dist/` and `.env*` (except `.env.example`) are ignored.
 - Secret scan of the committed files found nothing (the only match is the checklist text in `Security Spec.md`).
 
+- Pushed to GitHub: https://github.com/S-Urchin/MapaMarso (`origin`, `main` tracks `origin/main`).
+
 **Still to do**
-- Push to GitHub, then turn on secret scanning, push protection, Dependabot and branch protection on `main` (placeholders.md V5).
+- Turn on secret scanning, push protection, Dependabot and branch protection on `main` (placeholders.md V5).
 
 ## 2026-11-14 · v0.1.0 · Baseline from the three specs
 

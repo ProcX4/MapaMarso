@@ -61,4 +61,4 @@ All in `src/config/assumptions.ts` unless noted. Shown in the UI on hover of eve
 | V2 | `api/tiles.ts` imports `src/config/trekLayers.ts` (shared allow-list) | `api/tiles.ts` | First deploy builds the function without a module error (else move the list into `api/`) |
 | V3 | CSP in `vercel.json` | `vercel.json` | Tested in the deployed app: no "Refused to load" in the console, map renders |
 | V4 | Fonts from Google Fonts | `src/styles/tokens.css` | Keep, or self-host and drop the Google entries from the CSP |
-| V5 | Repo settings: secret scanning, push protection, Dependabot, branch protection on `main` | GitHub | Local git repo exists (branch `main`). Still to do: push to GitHub, then turn these on (Security Spec §2, §6) |
+| V5 | Repo settings: secret scanning, push protection, Dependabot, branch protection on `main` | GitHub | Pushed to https://github.com/S-Urchin/MapaMarso. Still to do: turn these on in the repo settings (Security Spec §2, §6) |
