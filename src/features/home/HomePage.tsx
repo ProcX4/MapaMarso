@@ -11,28 +11,24 @@ import { useNow } from '../../hooks/useNow'
 import { markWarpArrival } from '../../lib/warp'
 import './home.css'
 
-/* The home page (from MapaMars pages/HomePage.tsx), with MAPA's own tools listed alongside the globe. */
+/* The home page (from MapaMars pages/HomePage.tsx), kept identical to it. */
 
 const features = [
   {
     title: 'Explore Mars in 3D',
     text: 'Drag to spin the planet and scroll to zoom. Hover anywhere on the surface to read its latitude and longitude.',
-    href: '#/globe',
   },
   {
     title: 'Visit landing sites',
     text: `${landingSites.length} NASA landers and rovers, from Viking 1 to Perseverance, placed at their published coordinates. Pick one to fly the camera there.`,
-    href: '#/globe',
   },
   {
-    title: 'Plan a safe Marswalk',
-    text: 'NASA imagery, elevation, slope and science layers at walking scale, with distance, climb, hazards and the way home.',
-    href: '#/plan',
+    title: 'Read Mars time',
+    text: 'See the local solar time at every site, the current sol, and how long a signal takes to travel from Mars to Earth.',
   },
   {
     title: 'Log a mission',
-    text: 'Save a walk with a code like MRS-204. Browse other missions and their crews, join one with its code, and keep a shared log.',
-    href: '#/missions',
+    text: 'Plan a mission, pick a target on the globe, and give it a code like MRS-204. Browse other missions and their crews, and join one with its code.',
   },
 ]
 
@@ -101,26 +97,21 @@ export function HomePage() {
       <section className="hero">
         <div className="hero-copy">
           <h1>Mars, up close.</h1>
-          <p>An interactive 3D globe of the red planet, and a NASA-data map for planning a walk on it. Find where every lander touched down and see what time it is there right now.</p>
-          <div className="hero-actions">
-            <a className="button" href="#/globe" onClick={openGlobe}>
-              Open the globe →
-            </a>
-            <a className="button-outline" href="#/plan">
-              Plan a Marswalk
-            </a>
-          </div>
+          <p>An interactive 3D globe of the red planet. Find where every NASA lander touched down and see what time it is there right now.</p>
+          <a className="button" href="#/globe" onClick={openGlobe}>
+            Open the globe →
+          </a>
         </div>
       </section>
       {phase === 'warping' && <Hyperspace onDone={arrive} />}
 
       <section className="features" aria-label="What you can do">
         {features.map((f, i) => (
-          <a key={f.title} className="feature" href={f.href}>
+          <article key={f.title} className="feature">
             <span className="feature-num">0{i + 1}</span>
             <h2>{f.title}</h2>
             <p>{f.text}</p>
-          </a>
+          </article>
         ))}
       </section>
 

@@ -199,11 +199,6 @@ export function MissionCard({ mission: m, at, atLabel, onClose }: CardProps) {
       <a className="button info-card-action" href={m.code ? missionPath(m.code) : missionIdPath(m.id)}>
         Open mission
       </a>
-      {m.code && (
-        <a className="button-outline info-card-action" href={`#/plan/${m.code}`}>
-          Open in the route planner
-        </a>
-      )}
     </aside>
   )
 }

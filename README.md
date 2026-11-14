@@ -23,7 +23,7 @@ Tracking files:
 
 ```bash
 npm install
-npm run dev             # http://localhost:5173  (tile proxy runs inside Vite)
+npm run dev             # http://localhost:5173  (#/ home, #/explore site map; proxies run inside Vite)
 npm run lint
 npm run build
 npm run preview         # test the production build + CSP locally

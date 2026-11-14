@@ -23,7 +23,6 @@ import { readFlag, writeFlag } from '../../lib/storage'
 import type { MissionStatus } from '../../services/missions'
 import { clearWarpArrival, isWarpArrival } from '../../lib/warp'
 import { byOwner, GLOBE_2D, GLOBE_3D, GLOBE_PLAN, go, missionPath, type OwnerFilter } from '../../lib/missionPaths'
-import { flyTo } from '../../map/mapControl'
 import { CatalogHud } from './CatalogHud'
 import { LandingSiteCard, MoonCard, TimeBar, ViewSwitch } from './GlobeOverlay'
 import { MissionCard, MissionsHud } from './MissionsHud'
@@ -372,12 +371,6 @@ export function GlobePage() {
     // A new object each time, so the globe flies out even when returning from the same site again
     if (site) setZoomOut({ lat: site.lat, lon: site.lon })
   }
-  // Merged with MAPA: open a landing site on the NASA-layer site map (Explore), centred on it
-  const openOnSiteMap = (lat: number, lon: number) => {
-    go('#/')
-    // After the Explore view is back on screen
-    setTimeout(() => flyTo([lon, lat], 9), 0)
-  }
 
   // Esc closes whatever is open: the tour or a hidden interface first, then the close-up or info card,
   // then the tools. H hides or brings back the interface. Re-registered every render so it always acts on
@@ -520,7 +513,7 @@ export function GlobePage() {
 
       {landed && !planning && (
         <>
-          <LiveClock />
+          <LiveClock compact />
           {/* The ongoing-missions list makes way for a site, mission or moon card which opens in the same corner.
               A mission completed while its card is open drops out of the list, and the list comes back. */}
           {!inSite && (
@@ -581,7 +574,6 @@ export function GlobePage() {
           diving={preparing || diving}
           onExplore={openSite}
           onClose={closeCard}
-          onMap={() => openOnSiteMap(site.lat, site.lon)}
         />
       ) : mission ? (
         <MissionCard key={mission.id} mission={mission} at={nightAt} atLabel={atLabel} onClose={closeCard} />

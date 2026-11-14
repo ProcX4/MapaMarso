@@ -16,7 +16,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 24px 16px clamp(16px, 4vw, 48px);
+  padding: 16px clamp(16px, 4vw, 48px);
   pointer-events: none;
   transition: opacity 700ms ease, visibility 0s;
 }
@@ -452,3 +452,11 @@
 /* EVA has its own big action buttons along the bottom: the tools move to the top right */
 .mode-eva .tool-dock { top: 72px; bottom: auto; left: auto; right: 24px; align-items: flex-end; }
 .mode-eva .tool-dock-row { display: none; }
+
+/* Over the globe and the site map the menu sits closer to the edge, as on the idea bank's globe page */
+.page-globe .nav,
+.page-map .nav { padding-right: 24px; }
+
+/* Scrolling pages: the idea bank's 4 px scroll bar runs beside its menu bar, so the ☰ sits 4 px further in */
+.page-home .nav,
+.page-about .nav { padding-right: calc(clamp(16px, 4vw, 48px) + 4px); }

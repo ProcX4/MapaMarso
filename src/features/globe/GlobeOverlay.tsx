@@ -89,12 +89,10 @@ type SiteCardProps = {
   diving: boolean
   onExplore: () => void
   onClose: () => void
-  /** Open this site in MAPA's Explore map (NASA layers at walking scale) */
-  onMap?: () => void
 }
 
 /** Brief background for a landing site, shown on the globe only. */
-export function LandingSiteCard({ site, canExplore, diving, onExplore, onClose, onMap }: SiteCardProps) {
+export function LandingSiteCard({ site, canExplore, diving, onExplore, onClose }: SiteCardProps) {
   return (
     <aside className="info-card" aria-label={`${site.mission} landing site`}>
       <button type="button" className="info-card-close" onClick={onClose} aria-label="Close">
@@ -110,11 +108,6 @@ export function LandingSiteCard({ site, canExplore, diving, onExplore, onClose, 
       {canExplore && (
         <button type="button" className="button info-card-action" onClick={onExplore} disabled={diving}>
           {diving ? 'Descending…' : 'Explore landing site'}
-        </button>
-      )}
-      {onMap && (
-        <button type="button" className="button-outline info-card-action" onClick={onMap}>
-          Open on the site map
         </button>
       )}
     </aside>

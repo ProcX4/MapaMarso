@@ -33,25 +33,26 @@ function parse(hash: string): Route {
   if (hash === '#/eva') return { mode: 'eva', page: 'map', hash: '#/eva' }
   if (hash === '#/about') return { mode: 'explore', page: 'about', hash: '#/about' }
   if (hash === '#/account') return { mode: 'explore', page: 'account', hash: '#/account' }
-  if (hash === '#/home') return { mode: 'explore', page: 'home', hash: '#/home' }
   if (hash === '#/globe' || hash.startsWith('#/globe/')) return { mode: 'explore', page: 'globe', hash: '#/globe' }
   if (hash === '#/missions' || hash.startsWith('#/missions/')) return { mode: 'explore', page: 'missions', hash: '#/missions' }
-  return { mode: 'explore', page: 'map', hash: '#/' }
+  if (hash === '#/explore') return { mode: 'explore', page: 'map', hash: '#/explore' }
+  // The home page, as in the idea bank (and for anything unknown)
+  return { mode: 'explore', page: 'home', hash: '#/' }
 }
 
 const MODES: { mode: Mode; label: string; href: string }[] = [
-  { mode: 'explore', label: 'Explore', href: '#/' },
+  { mode: 'explore', label: 'Explore', href: '#/explore' },
   { mode: 'plan', label: 'Plan Marswalk', href: '#/plan' },
   { mode: 'eva', label: 'EVA', href: '#/eva' },
 ]
 
 const PAGES: NavPage[] = [
-  { hash: '#/home', label: 'Home', icon: 'home', hint: 'Back to the home screen' },
-  { hash: '#/globe', label: 'Globe', icon: 'globe', hint: 'Mars in 3D, its moons, orbiters and landing sites' },
-  { hash: '#/', label: 'Explore', icon: 'explore', hint: 'NASA layers and site analysis' },
+  { hash: '#/', label: 'Home', icon: 'home', hint: 'Back to the home screen' },
+  { hash: '#/globe', label: 'Globe', icon: 'globe', hint: 'Mars in 3D, its moons and landing sites' },
+  { hash: '#/missions', label: 'Missions', icon: 'missions', hint: 'Browse missions, yours and everyone else’s' },
+  { hash: '#/explore', label: 'Explore', icon: 'explore', hint: 'NASA layers and site analysis' },
   { hash: '#/plan', label: 'Plan Marswalk', icon: 'plan', hint: 'Route, profile, hazards and science stops' },
   { hash: '#/eva', label: 'EVA', icon: 'eva', hint: 'Follow the route on foot' },
-  { hash: '#/missions', label: 'Missions', icon: 'missions', hint: 'Browse missions, yours and everyone else’s' },
   { hash: '#/about', label: 'About & data', icon: 'about', hint: 'Where every layer comes from' },
 ]
 
@@ -94,8 +95,8 @@ export default function App() {
   return (
     <div className={`app page-${route.page} mode-${route.mode}${uiHidden && onMap ? ' is-ui-hidden' : ''}`}>
       <header className="nav">
-        <a className="nav-brand" href="#/">MAPA</a>
-        <nav className="mode-switch" aria-label="Mode">
+        <a className="nav-brand" href="#/">MAPA MARS</a>
+        {onMap && <nav className="mode-switch" aria-label="Mode">
           {MODES.map((m) => {
             const on = onMap && route.mode === m.mode
             return (
@@ -104,8 +105,8 @@ export default function App() {
               </a>
             )
           })}
-        </nav>
-        <NavMenu pages={PAGES} current={route.page === 'map' ? route.hash : `#/${route.page}`} />
+        </nav>}
+        <NavMenu pages={PAGES} current={route.page === 'map' || route.page === 'home' || route.page === 'globe' || route.page === 'missions' ? route.hash : `#/${route.page}`} />
       </header>
 
       {/* The map fills the window in every mode and stays mounted, so switching never resets the view. */}

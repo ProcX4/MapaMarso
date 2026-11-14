@@ -228,15 +228,6 @@ export function MissionView({ mission, knownCode, user, canManage, onChanged, on
 
         {mission.objective && <p className="site-note">{mission.objective}</p>}
 
-        {code && (
-          <div className="form-actions mission-plan-link">
-            <a className="button-outline" href={`#/plan/${code}`}>
-              Analyse in the route planner
-            </a>
-            <span className="muted">Elevation, slope, hazards and EVA timing for this route</span>
-          </div>
-        )}
-
         <section className="crew" aria-label="Crew">
           <h2>
             Crew <span className="muted">{(crew?.length ?? mission.crewCount) + 1}</span>
