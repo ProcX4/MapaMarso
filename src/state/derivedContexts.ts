@@ -19,8 +19,6 @@ export type Datasets = {
   hazard: Loaded<HazardGrid>
   /** Spread of slope nearby, degrees */
   roughness: Loaded<SlopeGrid>
-  /** The safety envelope: ground the habitat can be walked to and back from within the EVA */
-  reach: Loaded<HazardGrid>
   targets: Loaded<ScienceTarget[]>
 }
 

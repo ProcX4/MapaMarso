@@ -12,9 +12,9 @@ export const SITE = {
   /** Map opens here, [lon °E, lat °N] planetocentric. */
   center: [77.45, 18.44] as LngLat,
   zoom: 9,
-  /** PLACEHOLDER habitat location: the first stop of every new route. Pick a real one. */
+  /** Perseverance's landing point (Octavia E. Butler Landing), where its photos start. Routes no longer start here:
+   *  each one starts wherever its planner places the start. */
   base: [77.4508, 18.4447] as LngLat,
-  baseName: 'Habitat (placeholder)',
   rawImagesUrl: 'https://mars.nasa.gov/mars2020/multimedia/raw-images/',
 }
 

@@ -17,8 +17,6 @@ import { HAZARD, NO_OBSTACLE_DATA, type LegResult, type PathRequest, type PathRe
  * 4. A* (8 directions, no cutting corners past blocked cells), then the zigzag of grid steps is pulled straight
  *    wherever a straight line crosses no harder ground than the steps it replaces. Done twice: the safest route
  *    (the costs above) and the most direct one (only impassable ground avoided), so the two can be compared.
- * 5. Optionally, the safety envelope: Dijkstra out from base, marking every cell that can be walked to and back
- *    within the EVA's time budget.
  */
 
 const cautionMin = SLOPE_BANDS.find((b) => b.token === 'caution')!.min
@@ -26,11 +24,11 @@ const hazardMin = SLOPE_BANDS.find((b) => b.token === 'hazard')!.min
 
 self.onmessage = (e: MessageEvent<PathRequest>) => {
   const res = solve(e.data)
-  const transfer = [res.slope.buffer, res.hazard.buffer, res.roughness.buffer, ...(res.reach ? [res.reach.buffer] : [])]
+  const transfer = [res.slope.buffer, res.hazard.buffer, res.roughness.buffer]
   ;(self as unknown as { postMessage(m: unknown, t: Transferable[]): void }).postMessage(res satisfies PathResponse, transfer)
 }
 
-function solve({ grid, points, reach, obstacles }: PathRequest): PathResponse {
+function solve({ grid, points, obstacles }: PathRequest): PathResponse {
   const { width: W, height: H, bbox, values: z } = grid
   const [west, south, east, north] = bbox
   const dLon = (east - west) / W
@@ -148,7 +146,7 @@ function solve({ grid, points, reach, obstacles }: PathRequest): PathResponse {
     })
 
   const legs: Record<RouteOption, LegResult[]> = { safest: route(cost), direct: route(directCost) }
-  return { legs, slope, hazard, roughness, reach: reach ? envelope(reach.from, reach.budgetM) : null }
+  return { legs, slope, hazard, roughness }
 
   /** The cost of stepping between two neighbouring cells (each cell's cost already includes its penalty) */
   function stepCost(cx: number, cy: number, nx: number, ny: number, ca: number, cb: number, symmetric: boolean) {
@@ -242,40 +240,6 @@ function solve({ grid, points, reach, obstacles }: PathRequest): PathResponse {
     return true
   }
 
-  /** Cells that can be walked to from `from` and back again on the safest costs within the budget. */
-  function envelope(from: [number, number], budgetM: number) {
-    const out = new Uint8Array(W * H)
-    const start = cellOf(from)
-    if (!start) return out
-    const g = new Float64Array(W * H).fill(Infinity)
-    const heap = new MinHeap()
-    const s = start[1] * W + start[0]
-    g[s] = 0
-    heap.push(s, 0)
-    while (heap.size) {
-      const cur = heap.pop()
-      if (out[cur]) continue
-      out[cur] = 1
-      const cx = cur % W, cy = Math.floor(cur / W)
-      const cc = cur === s && cost[cur] === Infinity ? 1 + P.slopePenalty.hazard : cost[cur]
-      for (let dy = -1; dy <= 1; dy++) {
-        for (let dx = -1; dx <= 1; dx++) {
-          if (!dx && !dy) continue
-          const nx = cx + dx, ny = cy + dy
-          if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue
-          const n = ny * W + nx
-          if (out[n] || cost[n] === Infinity) continue
-          if (dx && dy && (cost[cy * W + nx] === Infinity || cost[ny * W + cx] === Infinity)) continue
-          const ng = g[cur] + stepCost(cx, cy, nx, ny, cc, cost[n], true)
-          if (ng <= budgetM && ng < g[n]) {
-            g[n] = ng
-            heap.push(n, ng)
-          }
-        }
-      }
-    }
-    return out
-  }
 }
 
 /** Binary min-heap of cell indexes by priority. */

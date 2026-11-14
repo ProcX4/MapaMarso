@@ -61,6 +61,31 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.7 · Planner in steps; stops placed from the left panel; layers behind group buttons; science-target guide
+
+**Changed: the planner, in three steps (the old mission form's layout)**
+- A step bar, **1 Route · 2 Review · 3 Save**, shows one step at a time instead of one long form; any step is a click away, and a **Next** button leads on once there's a route. Nothing was removed: Route has the stops, round trip or one way, the route options and a short summary; Review has the stats, EVA margin, radiation, science opportunities and export; Save has the name, code and details. The elevation profile stays along the bottom.
+- **Stops are placed from the left panel.** A "Click the map to place" picker (Start, Waypoint, Science stop, Destination, Just look) decides what a click on the map adds. **There is no placeholder start any more:** a new route is empty, the first click places the start (A), and the picker moves on to Waypoint. Clicking again with Start picked moves the start. "Just look" only opens the site card.
+- The **site card** (right) keeps its terrain, science, hazards, comparison and rover photos, but no longer adds stops: Add waypoint, Add science stop, Route here and Set as start are gone from it.
+- The start's badge is **A** (it was H, for the habitat) in the stop list, on the map and on the profile.
+
+**Changed: layers behind group buttons**
+- The layer panel shows three buttons, **Topographic**, **Optical** and **Spectral**, each saying how many of its layers are on; a button opens to show its layers. Which ones are open is remembered.
+- **Topographic:** Elevation; Steep, deep and rocky ground; Safe path (A*). **Removed:** Safety envelope and Surface roughness (MOLA), with the envelope's code in the route finder; the route stats' derived roughness stays.
+- **Optical:** unchanged.
+- **Spectral:** Science targets, then three groups of their own: **Heat and brightness** (daytime and night-time infrared, thermal inertia, surface albedo), **Mineral spectroscopy** (pyroxene, plagioclase, sheet silicates and glass), **Dust indexes** (dust cover index and its over-relief version).
+- **Science targets are always on when the app opens**, even if they were switched off last time (`onAtStart`).
+
+**Added: a guide to the science targets**
+- A card on the 2D map, while Science targets are on: click near a green target to see why it matters and Perseverance's photos from there. **Show me one** flies to a target and opens its site card (it never adds a stop); **Got it** hides the guide for good.
+
+**Verified (headless Chrome on a production build; no page errors)**
+- Layers: the three buttons show 2/3, 2/4 and 2/10 on; each holds exactly the layers above; Science targets saved as off came back on.
+- Planner: steps 1–3 show; the route starts empty with only Start pickable; the first click placed A and switched the picker to Waypoint; the next click added a waypoint; Just look added nothing; Next was off until there was a route; Review showed the stats and EVA margin; Save showed the save form.
+- Guide: Show me one opened the site card at the Montdenier and Montagnac targets with 8 Perseverance photos and no stop added; Got it kept it hidden after a reload.
+
+---
+
 ## 2026-11-15 · v0.5.6 · One mission planner; Explore Mars and Explore Jezero Crater on the home page
 
 **Changed: one planner for every mission**

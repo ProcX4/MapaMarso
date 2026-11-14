@@ -10,9 +10,11 @@ export function tourSteps(mode: Mode): TourStep[] {
   ]
   if (mode === 'plan') {
     return [
-      { title: 'Plan a Marswalk', text: 'Build a route from the habitat to your science stops and back. Every number says whether it is observed, derived or estimated.' },
+      { title: 'Plan a Marswalk', text: 'Build a route from your start to your science stops and back, in three steps. Every number says whether it is observed, derived or estimated.' },
+      { target: '.planner-steps', title: 'Three steps', text: '1. Route: place the stops. 2. Review: the numbers. 3. Save: name and code. Any step is a click away.' },
+      { target: '.plan-place', title: 'Click the map to place', text: 'Pick what a click on the map adds: the start first, then waypoints, science stops or a destination. Just look only opens the site card.' },
       { target: '.planner-panel .stops', title: 'Stops', text: 'Your route in walking order. Rename a stop by typing over its name; hover a stop to move it up, down or remove it. Drag a stop on the map to move it.' },
-      { target: '.planner-panel .segmented', title: 'Round trip or one way', text: 'A round trip finishes back at the habitat; the return walk then counts towards the EVA time.' },
+      { target: '.planner-panel .segmented', title: 'Round trip or one way', text: 'A round trip finishes back at the start; the return walk then counts towards the EVA time.' },
       { target: '.plan-stats', title: 'Route stats', text: 'Distance, walking time, climb and the steepest slope. Hover a tag to see what an estimate assumes.' },
       { target: '.plan-bottom', title: 'Elevation profile', text: 'Hover the profile to see the matching point on the map, and the other way round. Steep sections are drawn in caution colours.' },
       { target: '.mission-save', title: 'Save and share', text: 'Sign in to save the route as a mission with a code like MRS-204, then open it anywhere at #/globe/2d/plan/MRS-204.' },
@@ -33,7 +35,7 @@ export function tourSteps(mode: Mode): TourStep[] {
     { target: '.live-clock', title: 'Clock', text: 'Philippine time, Mars time (MTC), and the local time and daylight at the demo site right now.' },
     { target: '.layers-link', title: 'Layers', text: 'Turn NASA layers on and off: imagery, elevation, slope and science. Each one says where its data comes from.' },
     { target: '.explore-search', title: 'Search', text: 'Find a named place at the site and fly to it.' },
-    { target: '.map', title: 'Site analysis', text: 'Click anywhere on the map for its coordinates, elevation, slope and hazards, then add it to your route.' },
+    { target: '.map', title: 'Site analysis', text: 'Click anywhere on the map for its coordinates, elevation, slope, hazards and any rover photos there. To build a route, open Plan Marswalk in the tools.' },
     { target: '.tool-dock-toggle', title: 'Modes', text: 'Plan a Marswalk or walk it in EVA mode from the tools.' },
     ...end,
   ]
@@ -61,7 +63,7 @@ export function globeTourSteps(view: 'globe' | 'map' | 'site', credits: string[]
       { title: 'The 2D map', text: 'All of Mars at once on NASA layers. Drag to pan, scroll to zoom right down to the demo site, and click a mission route to see it.' },
       { target: '.layers-link', title: 'Layers', text: 'Turn NASA layers on and off: imagery, elevation, slope and science. Each one says where its data comes from.' },
       { target: '.explore-search', title: 'Search', text: 'Find a named place at the demo site and fly to it.' },
-      { target: '.map', title: 'Site analysis', text: 'Click open ground for its coordinates, elevation, slope and hazards, then add it to your route.' },
+      { target: '.map', title: 'Site analysis', text: 'Click open ground for its coordinates, elevation, slope, hazards and any rover photos there. To build a route, open Plan Marswalk in the tools.' },
       { target: '.view-switch', title: '3D or 2D', text: 'Switch back to the globe.' },
       { target: '.daylight-bar', title: 'Day and night', text: 'Play day and night, or drag the ring along the line through the next sol; Now returns to the present.' },
       { target: '.catalog-link', title: 'Catalog', text: 'Mars, its moons and every landing site, with filters and a search. Pick one to go to it.' },

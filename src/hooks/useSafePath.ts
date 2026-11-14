@@ -14,23 +14,20 @@ const SETTLE_MS = 250
 /**
  * The A* safe path through a list of points, worked out again whenever the points change. The last result stays
  * up (status 'loading') until the new one is ready, so the map doesn't flash back to straight lines.
- * One point maps the terrain round it with no route (the habitat before any stop is added).
- * reachBudgetM: also mark the safety envelope round the first point, for that walking budget.
+ * One point maps the terrain round it with no route (the start, before any other stop is added).
  */
-export function useSafePath(points: LngLat[] | null, reachBudgetM: number | null = null): SafePathState {
+export function useSafePath(points: LngLat[] | null): SafePathState {
   const pointsKey = points?.length ? points.map((p) => `${p[0].toFixed(6)},${p[1].toFixed(6)}`).join(';') : ''
-  const key = pointsKey && `${pointsKey}|${reachBudgetM ? Math.round(reachBudgetM) : ''}`
+  const key = pointsKey
   // The result, tagged with the points it was found for; a newer set of points shows as loading over it
   const [found, setFound] = useState<SafePathState & { key: string }>({ ...IDLE, key: '' })
 
   useEffect(() => {
     if (!key) return
-    const [ptsPart, budgetPart] = key.split('|')
-    const pts = ptsPart.split(';').map((p) => p.split(',').map(Number) as LngLat)
-    const budget = budgetPart ? Number(budgetPart) : null
+    const pts = key.split(';').map((p) => p.split(',').map(Number) as LngLat)
     const ctl = new AbortController()
     const id = setTimeout(() => {
-      findSafePath(pts, budget, ctl.signal)
+      findSafePath(pts, ctl.signal)
         .then((value) => setFound({ status: 'ready', value, key }))
         .catch((err) => {
           if (ctl.signal.aborted) return

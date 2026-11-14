@@ -13,6 +13,10 @@ export type LayerDef = {
   /** What it shows and how to use it, in a sentence or two of plain words (the layer panel's first line) */
   howTo: string
   group: 'topographic' | 'optical' | 'spectral'
+  /** A smaller group inside the group, its own button in the layer panel (Spectral's heat, mineral and dust maps) */
+  subgroup?: Subgroup
+  /** Switched on every time the app opens, whatever it was left at last time */
+  onAtStart?: boolean
   kind: 'wmts' | 'xyz' | 'cog' | 'vector'
   source: string // Trek layer ID, or a path under public/
   category: Category
@@ -47,6 +51,15 @@ export type LayerDef = {
   /** Set while the layer's data is a stand-in; shown as a PLACEHOLDER tag. See placeholders.md. */
   placeholder?: string
 }
+
+export type Subgroup = 'thermal' | 'minerals' | 'dust'
+
+/** The smaller groups inside Spectral, each a button of its own in the layer panel, in this order */
+export const SUBGROUPS: { id: Subgroup; label: string; note: string }[] = [
+  { id: 'thermal', label: 'Heat and brightness', note: 'Daytime and night-time infrared, thermal inertia and surface albedo' },
+  { id: 'minerals', label: 'Mineral spectroscopy', note: 'Minerals picked out from the infrared light the ground gives off' },
+  { id: 'dust', label: 'Dust indexes', note: 'How much dust covers the ground' },
+]
 
 export const GROUPS: { id: LayerDef['group']; label: string; note: string }[] = [
   { id: 'topographic', label: 'Topographic', note: 'The shape of the ground: how high, how steep, and the safest way across it' },
@@ -104,37 +117,6 @@ export const LAYERS: LayerDef[] = [
       { label: 'Rocky: steered round', color: ROCK_COLOURS.soft },
       { label: 'Rocky: never entered', color: ROCK_COLOURS.rocky },
     ],
-  },
-  {
-    id: 'reach',
-    name: 'Safety envelope',
-    howTo: 'The green area is how far you can walk from the habitat and still get back before the EVA ends. A stop outside it is too far for one walk.',
-    group: 'topographic',
-    kind: 'cog',
-    source: 'route',
-    category: 'estimated',
-    provenance: {
-      derivedFrom: 'Ground the habitat can be walked to and back from within the EVA, at the assumed walking speed, round steep and deep ground (A* costs)',
-      resolution: 'Same as the elevation used',
-    },
-    defaultVisible: false,
-    defaultOpacity: 0.6,
-    legend: [{ label: 'There and back within the EVA', color: 'var(--ok)' }],
-  },
-  {
-    id: 'mola-roughness',
-    name: 'Surface roughness (MOLA)',
-    howTo: 'Shows which regions are bumpy and which are smooth, kilometre by kilometre. Best for comparing regions when zoomed out; it blurs as you zoom in.',
-    group: 'topographic',
-    ...trek('mola_roughness'),
-    category: 'observed',
-    provenance: {
-      instrument: 'MOLA',
-      mission: 'Mars Global Surveyor',
-      product: 'mola_roughness (Mars Trek)',
-    },
-    defaultVisible: false,
-    defaultOpacity: 0.7,
   },
   {
     id: 'route',
@@ -239,10 +221,30 @@ export const LAYERS: LayerDef[] = [
   },
   // ---------- Spectral ----------
   {
+    id: 'science-targets',
+    name: 'Science targets',
+    howTo: 'Green dots mark places worth visiting. Click near one to see why it matters and Perseverance’s photos from there. To add one to a route, pick Science stop in the planner and click it.',
+    group: 'spectral',
+    kind: 'vector',
+    source: '/data/science-targets.geojson',
+    category: 'observed',
+    provenance: {
+      instrument: 'Perseverance rock cores',
+      mission: 'Mars 2020',
+      product: "Sealed sample cores, NASA Mars Rock Samples page; position from NASA's stop list (within about 300 m)",
+    },
+    defaultVisible: true,
+    // The science goal of every walk: always on when the app opens
+    onAtStart: true,
+    defaultOpacity: 1,
+    legend: [{ label: 'Perseverance sample site', color: 'var(--ok)' }],
+  },
+  {
     id: 'themis-day-ir',
     name: 'Daytime infrared (THEMIS)',
     howTo: 'A daytime heat picture: bright ground is warmer, dark ground cooler, which brings out slopes and textures. Appears once you zoom in a little.',
     group: 'spectral',
+    subgroup: 'thermal',
     ...trek('THEMIS_DayIR_ControlledMosaics_100m_v2_oct2018'),
     category: 'observed',
     provenance: {
@@ -261,6 +263,7 @@ export const LAYERS: LayerDef[] = [
     name: 'Night-time infrared (THEMIS)',
     howTo: 'A night-time heat picture: bright ground holds its heat after dark, which usually means rock; dark ground is dust or sand. Appears once you zoom in a little.',
     group: 'spectral',
+    subgroup: 'thermal',
     ...trek('THEMIS_NightIR_ControlledMosaics_100m_v2_oct2018'),
     category: 'observed',
     provenance: {
@@ -273,30 +276,13 @@ export const LAYERS: LayerDef[] = [
     defaultOpacity: 1,
     minZoom: 5,
   },
-  tes('tes-thermal-inertia', 'Thermal inertia (TES)', 'TES_Thermal_Inertia', 'How fast the ground heats up and cools down: high means rock and bedrock, low means loose dust.', RAINBOW, 'Low: dust and fine sand', 'High: rock and bedrock'),
-  tes('tes-pyroxene', 'High-calcium pyroxene (TES)', 'TES_Clinopyroxene', 'Where pyroxene, a mineral of volcanic rock, is common.', RAINBOW, 'Little or none', 'Most: Syrtis Major'),
-  tes('tes-plagioclase', 'Plagioclase (TES)', 'TES_Plagioclase', 'Where plagioclase feldspar, a common mineral in volcanic rock, is common.', RAINBOW, 'Little or none', 'Most: Syrtis Major region'),
-  tes('tes-sheet-silicates', 'Sheet silicates and glass (TES)', 'TES_Glass_Clay', 'Where clay-like minerals and volcanic glass show up; clays can point to water in the past.', RAINBOW, 'Little or none', 'Most'),
-  tes('tes-dust', 'Dust cover index (TES)', 'TES_Dust', 'Where dust blankets the surface and hides the rock underneath.', RAINBOW, 'Less dust', 'More dust', '3.5 km/px'),
-  tes('tes-dust-relief', 'Dust cover index over relief (TES)', 'tes_ruffdust', 'The dust map laid over shaded relief, so you can see which landforms are dusty.', RAINBOW, 'Less dust', 'More dust', '3.5 km/px'),
-  tes('tes-albedo', 'Surface albedo (TES)', 'Mars_MGS_TES_Albedo_mosaic_global_7410m', 'How bright the ground is: bright areas are usually dusty, dark areas sand or bare rock.', GREYS, 'Dark', 'Bright', '7.4 km/px'),
-  {
-    id: 'science-targets',
-    name: 'Science targets',
-    howTo: 'Green dots mark places worth visiting, each with a reason. Click one to see why, and add it to your route as a science stop.',
-    group: 'spectral',
-    kind: 'vector',
-    source: '/data/science-targets.geojson',
-    category: 'observed',
-    provenance: {
-      instrument: 'Perseverance rock cores',
-      mission: 'Mars 2020',
-      product: "Sealed sample cores, NASA Mars Rock Samples page; position from NASA's stop list (within about 300 m)",
-    },
-    defaultVisible: true,
-    defaultOpacity: 1,
-    legend: [{ label: 'Perseverance sample site', color: 'var(--ok)' }],
-  },
+  { ...tes('tes-thermal-inertia', 'Thermal inertia (TES)', 'TES_Thermal_Inertia', 'How fast the ground heats up and cools down: high means rock and bedrock, low means loose dust.', RAINBOW, 'Low: dust and fine sand', 'High: rock and bedrock'), subgroup: 'thermal' },
+  { ...tes('tes-pyroxene', 'High-calcium pyroxene (TES)', 'TES_Clinopyroxene', 'Where pyroxene, a mineral of volcanic rock, is common.', RAINBOW, 'Little or none', 'Most: Syrtis Major'), subgroup: 'minerals' },
+  { ...tes('tes-plagioclase', 'Plagioclase (TES)', 'TES_Plagioclase', 'Where plagioclase feldspar, a common mineral in volcanic rock, is common.', RAINBOW, 'Little or none', 'Most: Syrtis Major region'), subgroup: 'minerals' },
+  { ...tes('tes-sheet-silicates', 'Sheet silicates and glass (TES)', 'TES_Glass_Clay', 'Where clay-like minerals and volcanic glass show up; clays can point to water in the past.', RAINBOW, 'Little or none', 'Most'), subgroup: 'minerals' },
+  { ...tes('tes-dust', 'Dust cover index (TES)', 'TES_Dust', 'Where dust blankets the surface and hides the rock underneath.', RAINBOW, 'Less dust', 'More dust', '3.5 km/px'), subgroup: 'dust' },
+  { ...tes('tes-dust-relief', 'Dust cover index over relief (TES)', 'tes_ruffdust', 'The dust map laid over shaded relief, so you can see which landforms are dusty.', RAINBOW, 'Less dust', 'More dust', '3.5 km/px'), subgroup: 'dust' },
+  { ...tes('tes-albedo', 'Surface albedo (TES)', 'Mars_MGS_TES_Albedo_mosaic_global_7410m', 'How bright the ground is: bright areas are usually dusty, dark areas sand or bare rock.', GREYS, 'Dark', 'Bright', '7.4 km/px'), subgroup: 'thermal' },
 ]
 
 /** A global TES map: coarse (Trek serves it to zoom 1, or 2 for the dust-over-relief map), so it's laid over the others half see-through */
