@@ -21,9 +21,10 @@ function viewChanged() {
 }
 
 export function registerMap(map: Map | null) {
+  current?.un('moveend', viewChanged)
   current = map
   // Only once a move has finished, so panning doesn't re-render whatever is listening on every frame
-  map?.on('moveend', viewChanged)
+  current?.on('moveend', viewChanged)
   viewChanged()
 }
 

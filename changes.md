@@ -21,11 +21,12 @@ Entry template:
 
 ---
 
-## 2026-11-15 · v0.5.3 · Plain-language layer instructions; zoom for rover photos
+## 2026-11-15 · v0.5.4 · Plain-language layer instructions; zoom for rover photos
 
 **Changed: the layer panel explains itself**
 - Every layer has a short **how to use** line in plain words under its name: what the colours mean, when it shows, what to do with it (`howTo` in `src/map/layers/registry.ts`). The three group notes are rewritten the same way.
-- **Live hints** when a switched-on layer can't be seen from where you are: "Zoomed out too far to show it: zoom in closer", "Too blurry this close: zoom out to read it", or, for HiRISE away from Jezero, "Not in this part of Mars" with a **Go to Jezero** button that flies there.
+- **Live hints** when a switched-on layer can't be seen from where you are: "Zoomed out too far to show it: zoom in closer", with **Zoom in here** and **Zoom to Jezero Crater** buttons; "Too blurry this close: zoom out to read it"; or, for HiRISE away from Jezero, "Not in this part of Mars" with a **Go to Jezero** button.
+- **Merged with v0.5.3's zoom hint (Daril):** the two hints are now one, so a row never shows both. v0.5.3's "Zoom to Jezero Crater" button is kept, joined by "Zoom in here" (CTX and THEMIS cover the whole planet, so zooming in where you are is usually what you want). One view listener in `src/map/mapControl.ts` (`subscribeView`, fired when a pan or zoom ends) replaces `useBelowMinZoom`. The TES colour bars from v0.5.3 are kept as they are, under the new how-to lines.
 - The technical details (instrument, mission, resolution, coverage) are folded under a **Source** toggle on each row.
 
 **Added: zoom in the rover photo viewer**
@@ -37,6 +38,22 @@ Entry template:
 - CTX has gaps at its sharpest zoom (Esri answers 404 itself, e.g. parts of Valles Marineris and ~70°N); the layer underneath shows there, and its instructions say so.
 - Panel zoomed out: CTX says to zoom in; HiRISE says it only covers one area and offers Go to Jezero, which flies there and the hints clear.
 - Photo viewer: wheel zoom to the cap, drag, Fit, double-click, + button and 0 key all work; the original (1648 × 1200 for a Mastcam-Z frame) replaces the 1200 px copy and the cap rises from 239 % to 329 %.
+
+---
+
+## 2026-11-15 · v0.5.3 · Legends for the TES maps, and a zoom hint for site-scale layers
+
+**Added**
+- A colour bar under each switched-on TES layer in the layer panel, with a plain-words label at each end (for example "Low: dust and fine sand" to "High: rock and bedrock"). The colours were sampled from the Trek tiles themselves: violet is lowest and red highest, and albedo runs black to white. No numbers are given, because Trek publishes no value range for these maps. The labels come from the Trek catalogue descriptions, except the dust ends, which follow the pattern on the map (Amazonis, Alba and Tharsis, the dustiest regions, show red).
+- A hint under any switched-on layer that is zoomed out too far to draw (the THEMIS, CTX and HiRISE layers, which draw only when zoomed in), with a **Zoom to Jezero Crater** button. Before, the switch looked as if it did nothing.
+- `ramp` on the layer registry (`LayerDef`) for continuous colour scales, and `useBelowMinZoom` in `src/map/mapControl.ts`, which re-renders only when a layer appears or disappears, not on every frame of a zoom.
+
+**Spec deviations**
+- None.
+
+**Verified**
+- Type check, lint and build pass; no console errors.
+- In the browser: bars and end labels show for the thermal inertia, pyroxene, both dust and albedo layers; the hint shows for the THEMIS layer that is on, and goes away after the button zooms to the site. Plagioclase and sheet silicates share the same code and were not switched on.
 
 ---
 

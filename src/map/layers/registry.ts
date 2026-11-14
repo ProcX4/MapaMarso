@@ -42,6 +42,8 @@ export type LayerDef = {
   /** Walking-scale imagery: drawn above the other imagery, which it only replaces once zoomed in past minZoom */
   walkScale?: boolean
   legend?: { label: string; color: string }[]
+  /** A continuous colour scale: a bar from `low` to `high` through `stops`, with a plain-words label at each end (no invented numbers) */
+  ramp?: { stops: string[]; low: string; high: string }
   /** Set while the layer's data is a stand-in; shown as a PLACEHOLDER tag. See placeholders.md. */
   placeholder?: string
 }
@@ -51,6 +53,10 @@ export const GROUPS: { id: LayerDef['group']; label: string; note: string }[] = 
   { id: 'optical', label: 'Optical', note: 'Photos of the surface. Zoom in and sharper photos take over by themselves' },
   { id: 'spectral', label: 'Spectral', note: 'What the ground is made of and how warm it is: heat, mineral and dust maps' },
 ]
+
+/** The colour scale Trek paints its TES maps with, sampled from the tiles (violet = lowest, red = highest) */
+const RAINBOW = ['#560ad9', '#154ce7', '#1acadb', '#1fd01b', '#e1e200', '#f96d07', '#ff0d0d']
+const GREYS = ['#000000', '#ffffff']
 
 const trek = (id: TrekLayerId) => ({ kind: 'xyz' as const, source: id, maxZoom: TREK_LAYERS[id].maxZoom })
 const esri = (id: EsriLayerId) => ({ kind: 'xyz' as const, source: id, maxZoom: ESRI_LAYERS[id].maxZoom })
@@ -267,13 +273,13 @@ export const LAYERS: LayerDef[] = [
     defaultOpacity: 1,
     minZoom: 5,
   },
-  tes('tes-thermal-inertia', 'Thermal inertia (TES)', 'TES_Thermal_Inertia', 'How fast the ground heats up and cools down: high means rock and bedrock, low means loose dust.'),
-  tes('tes-pyroxene', 'High-calcium pyroxene (TES)', 'TES_Clinopyroxene', 'Where pyroxene, a mineral of volcanic rock, is common.'),
-  tes('tes-plagioclase', 'Plagioclase (TES)', 'TES_Plagioclase', 'Where plagioclase feldspar, a common mineral in volcanic rock, is common.'),
-  tes('tes-sheet-silicates', 'Sheet silicates and glass (TES)', 'TES_Glass_Clay', 'Where clay-like minerals and volcanic glass show up; clays can point to water in the past.'),
-  tes('tes-dust', 'Dust cover index (TES)', 'TES_Dust', 'Where dust blankets the surface and hides the rock underneath.', '3.5 km/px'),
-  tes('tes-dust-relief', 'Dust cover index over relief (TES)', 'tes_ruffdust', 'The dust map laid over shaded relief, so you can see which landforms are dusty.', '3.5 km/px'),
-  tes('tes-albedo', 'Surface albedo (TES)', 'Mars_MGS_TES_Albedo_mosaic_global_7410m', 'How bright the ground is: bright areas are usually dusty, dark areas sand or bare rock.', '7.4 km/px'),
+  tes('tes-thermal-inertia', 'Thermal inertia (TES)', 'TES_Thermal_Inertia', 'How fast the ground heats up and cools down: high means rock and bedrock, low means loose dust.', RAINBOW, 'Low: dust and fine sand', 'High: rock and bedrock'),
+  tes('tes-pyroxene', 'High-calcium pyroxene (TES)', 'TES_Clinopyroxene', 'Where pyroxene, a mineral of volcanic rock, is common.', RAINBOW, 'Little or none', 'Most: Syrtis Major'),
+  tes('tes-plagioclase', 'Plagioclase (TES)', 'TES_Plagioclase', 'Where plagioclase feldspar, a common mineral in volcanic rock, is common.', RAINBOW, 'Little or none', 'Most: Syrtis Major region'),
+  tes('tes-sheet-silicates', 'Sheet silicates and glass (TES)', 'TES_Glass_Clay', 'Where clay-like minerals and volcanic glass show up; clays can point to water in the past.', RAINBOW, 'Little or none', 'Most'),
+  tes('tes-dust', 'Dust cover index (TES)', 'TES_Dust', 'Where dust blankets the surface and hides the rock underneath.', RAINBOW, 'Less dust', 'More dust', '3.5 km/px'),
+  tes('tes-dust-relief', 'Dust cover index over relief (TES)', 'tes_ruffdust', 'The dust map laid over shaded relief, so you can see which landforms are dusty.', RAINBOW, 'Less dust', 'More dust', '3.5 km/px'),
+  tes('tes-albedo', 'Surface albedo (TES)', 'Mars_MGS_TES_Albedo_mosaic_global_7410m', 'How bright the ground is: bright areas are usually dusty, dark areas sand or bare rock.', GREYS, 'Dark', 'Bright', '7.4 km/px'),
   {
     id: 'science-targets',
     name: 'Science targets',
@@ -295,7 +301,7 @@ export const LAYERS: LayerDef[] = [
 ]
 
 /** A global TES map: coarse (Trek serves it to zoom 1, or 2 for the dust-over-relief map), so it's laid over the others half see-through */
-function tes(id: string, name: string, product: TrekLayerId, howTo: string, resolution?: string): LayerDef {
+function tes(id: string, name: string, product: TrekLayerId, howTo: string, stops: string[], low: string, high: string, resolution?: string): LayerDef {
   return {
     id,
     name,
@@ -306,6 +312,7 @@ function tes(id: string, name: string, product: TrekLayerId, howTo: string, reso
     provenance: { instrument: 'TES', mission: 'Mars Global Surveyor', product: `${product} (Mars Trek)`, resolution },
     defaultVisible: false,
     defaultOpacity: 0.7,
+    ramp: { stops, low, high },
   }
 }
 
