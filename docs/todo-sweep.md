@@ -1,6 +1,6 @@
 # To-do sweep, 2026-11-15: what was done and how it works
 
-Branch `daril/todo-sweep`, one commit per item, most important first. Everything here was tested before it was committed; the test is given with each item. Nothing was pushed or merged.
+Branch `daril/todo-sweep` (PR #3), one commit per item, most important first. Everything here was tested before it was committed; the test is given with each item. Nothing was pushed or merged.
 
 ## What was done
 
@@ -52,6 +52,23 @@ Branch `daril/todo-sweep`, one commit per item, most important first. Everything
 
 **Tested:** a 7 h 18 min walk shows 0.20 mSv (0.67 × 438 ÷ 1,440 = 0.204); the panel is hidden when there is no route.
 
+## Added after the first pass
+
+### 8. Place-name search (P6)
+**What you see:** typing in the search box finds any of Mars's 2,055 IAU names; picking one flies there at a zoom that fits the feature and opens the site card. Typing nonsense says "No place with that name".
+**How it works:** `scripts/build-gazetteer.mjs` downloads the USGS Mars nomenclature shapefile, reads its attribute table directly (needs the `unzip` command), and writes `public/data/gazetteer.json` (88 KB: name, longitude, latitude, type, diameter). The file uses 0 to 360 °E; the script converts to -180 to 180. `src/data/gazetteer.ts` loads it on first keystroke, ignores accents, ranks names that start with the query first, and picks a zoom from the diameter (`log2(11083 / km)`, between 2 and 12). NASA's own name for the landing site is kept in `src/config/site.ts` and marked "not an IAU name".
+**Tested:** Jezero (77.687°E, 18.408°N), Gale (137.811°E, -5.367°S), Olympus Mons (-133.8°E, 18.65°N) and Valles Marineris all match their published positions. In the app, searching Gale opened the site card at 5.367°S, 137.811°E. It also showed the old hand-typed Jezero point had been 0.1° off.
+
+### 9. Site comparison
+**What you see:** *Pin to compare* on the site card. After pinning, click elsewhere or search a name and a table shows the pinned point and this point side by side, with the distance, bearing and height difference. *Show pin*, *Clear pin* and *Pin this point instead* manage it.
+**How it works:** the pinned point is app state (`pinned`), compared using the same elevation and slope lookups the site card uses, so the numbers are the same ones you'd see by clicking each point.
+**Tested:** Jezero pinned, then Neretva Vallis: 28.6 km apart at bearing 287° and +698 m, which matches a hand calculation (0.487° of longitude at 18.5°N plus 0.142° of latitude).
+
+### 10. Keyboard audit, Esri terms, offline tiles
+- **Keyboard:** a script checked every visible control on five pages: all have names, all are reachable, none are fake buttons, all images have alt text. Visible focus comes from a global rule; the daylight bar uses a glow ring on its thumb instead. A human tab-through with a screen reader is still worth doing.
+- **Esri terms:** the service says `accessInformation: None` and credits "NASA/JPL/MSSS/Caltech Murray Lab/Esri", and the Murray Lab allows free use with credit. No separate Esri terms turned up, so it stays open (CHECKLIST §2). The service is the preliminary beta01 mosaic.
+- **Offline tiles:** sizing in CHECKLIST §2. CTX for the base area is cheap, HiRISE is the costly one. It needs a decision.
+
 ## What was not done, and why
 
 | Item | Why |
@@ -62,9 +79,9 @@ Branch `daril/todo-sweep`, one commit per item, most important first. Everything
 | Agree the A* limits (25° impassable, 60 m deep) | Waits on the 20° decision above |
 | CRISM mineralogy tile layer | No source serves tiles for Jezero (checked 2026-11-15) |
 | Site card mineral and hydration rows | Need orbital mineral data for the point, which does not exist in the app yet |
-| IAU gazetteer search, site comparison, landing-site close-ups for other sites | Larger features; not started. Next in line |
-| Esri terms for proxying the CTX service, offline CTX/HiRISE tiles | A legal reading and a design decision |
-| Keyboard pass over every control, demo rehearsal, "show a teammate", branch-per-feature habits | Need a person |
+| Landing-site close-ups for other sites | Larger; only Viking 1 has one. Not started |
+| Esri terms (settled), offline CTX/HiRISE tiles | Researched (section 10), but a legal reading and a design decision remain |
+| Demo rehearsal, "show a teammate", a human tab-through, branch-per-feature habits | Need a person |
 | Geology layer, rover traverse layer, hazard shading beyond the route | Out of scope or a decision |
 
 ## How to check it yourself
