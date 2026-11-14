@@ -37,6 +37,18 @@ export function subscribeView(listener: () => void) {
 }
 export const viewSnapshot = () => viewInfo
 
+/** Where the next 2D map to open should start, asked for before it exists (the home page's Jezero button) */
+let pendingView: { at: LngLat; zoom: number } | null = null
+export function openMapAt(at: LngLat, zoom: number) {
+  pendingView = { at, zoom }
+}
+/** The start view asked for, once: the map takes it when it's created */
+export function takePendingView() {
+  const v = pendingView
+  pendingView = null
+  return v
+}
+
 /** Instant recentre, for following a moving position. */
 export function centerOn(at: LngLat) {
   current?.getView().setCenter(at)

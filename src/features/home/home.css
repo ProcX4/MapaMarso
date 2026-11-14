@@ -11,6 +11,7 @@
 .home .hero-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 .home .hero-actions .button,
 .home .hero-actions .button-outline { padding: 12px 22px; font-size: 15px; }
+.home .hero-copy .hero-hint { margin: 14px auto 0; max-width: 460px; font-size: 13px; color: var(--gray-2); }
 
 /* Leaving for the globe: the hero recedes into the distance, then the jump starts. */
 .home.is-leaving { pointer-events: none; }

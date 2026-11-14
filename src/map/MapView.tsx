@@ -15,7 +15,7 @@ import { LAYERS } from './layers/registry'
 import { createLayer, gridSource, planetBackdrop } from './layers/createLayer'
 import { marsProjection, VIEW_RESOLUTIONS } from './projection'
 import { attachInteractions } from './interactions'
-import { currentZoom, fitTo, flyTo, registerMap } from './mapControl'
+import { currentZoom, fitTo, flyTo, registerMap, takePendingView } from './mapControl'
 import { daylightFeatures, daylightStyle, routeFeatures, routeStyle, type PlanetRoute } from './planetLayers'
 import { sunAt as subsolar } from '../data/daylight'
 import { cssVar, cursorStyle, evaPositionStyle, hazardLineStyle, otherRouteStyle, rgba, routeLineStyle, stopStyle, targetStyle } from './styles'
@@ -114,8 +114,13 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
         extent: [-1e6, -90, 1e6, 90],
       }),
     })
-    // Exploring opens on the whole planet; planning and EVA open on the walk-scale site
-    if (latest.current.mode === 'explore') {
+    // Asked to open somewhere (the home page's Jezero button); otherwise exploring opens on the whole planet,
+    // and planning and EVA on the walk-scale site
+    const pending = takePendingView()
+    if (pending) {
+      m.getView().setCenter(pending.at)
+      m.getView().setZoom(pending.zoom)
+    } else if (latest.current.mode === 'explore') {
       m.getView().setCenter([0, 0])
       m.getView().setZoom(0)
     }

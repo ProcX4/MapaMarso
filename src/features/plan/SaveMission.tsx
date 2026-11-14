@@ -1,17 +1,23 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useMarswalk } from '../../hooks/useMarswalk'
 import { useAuth } from '../../hooks/useAuth'
-import { createMission, suggestMissionCode, updateMission, type MissionVisibility } from '../../services/missions'
+import { createMission, isMissionCodeAvailable, suggestMissionCode, updateMission, type MissionVisibility } from '../../services/missions'
 import { formatCode, sanitizeCode } from '../../lib/missionCode'
 import { CodeInput } from '../../components/CodeInput'
 import { Button } from '../../components/Button'
 import { LIMITS } from '../../config/assumptions'
 import { toOpenMission } from './useMissionFromCode'
-import { planPath } from '../../lib/missionPaths'
+import { missionPath, planPath } from '../../lib/missionPaths'
+
+/** How long after the last keystroke the code is checked with Supabase */
+const CHECK_DELAY_MS = 400
+
+type CodeCheck = { code: string; status: 'checking' | 'available' | 'taken' | 'error' }
 
 /**
- * Save the route as a mission with a code (MapaMars mission form, cut down to what MAPA needs).
- * The author can update their mission; anyone else saves their own copy under a new code.
+ * Save the route as a mission with a code: the one place missions are created and edited (the + button, the
+ * Missions page's New and Edit all open this planner). The author can update their mission; anyone else saves
+ * their own copy under a new code. The code is checked as it's typed, so a taken one shows before saving.
  */
 export function SaveMission() {
   const { state, dispatch } = useMarswalk()
@@ -26,6 +32,26 @@ export function SaveMission() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState<string | null>(null)
+  const [check, setCheck] = useState<CodeCheck | null>(null)
+  const full = formatCode(code)
+  // Keeping your own mission's code needs no check
+  const ownCode = mine && full === open?.code
+
+  useEffect(() => {
+    if (code.length !== 6 || ownCode || !available || !user) return
+    let alive = true
+    const id = setTimeout(() => {
+      setCheck({ code: full, status: 'checking' })
+      isMissionCodeAvailable(full, mine ? open?.id : undefined)
+        .then((ok) => alive && setCheck({ code: full, status: ok ? 'available' : 'taken' }))
+        .catch(() => alive && setCheck({ code: full, status: 'error' }))
+    }, CHECK_DELAY_MS)
+    return () => {
+      alive = false
+      clearTimeout(id)
+    }
+  }, [code, full, ownCode, available, user, mine, open?.id])
+  const codeStatus = code.length !== 6 || ownCode ? null : check?.code === full ? check.status : 'checking'
 
   if (!available) {
     return (
@@ -93,6 +119,14 @@ export function SaveMission() {
           )}
         </span>
         <CodeInput value={code} onChange={setCode} label="Mission code, three letters then three digits" />
+        {codeStatus && (
+          <p className={`code-status is-${codeStatus}`} role="status">
+            {codeStatus === 'checking' && 'Checking…'}
+            {codeStatus === 'available' && `${full} is free`}
+            {codeStatus === 'taken' && `${full} is taken: pick another, or Suggest one`}
+            {codeStatus === 'error' && "Couldn't check the code; it's checked again when you save"}
+          </p>
+        )}
       </div>
       <div className="choice">
         <div className="segmented" role="radiogroup" aria-label="Who can find it">
@@ -117,10 +151,11 @@ export function SaveMission() {
       {error && <p className="form-error" role="alert">{error}</p>}
       {saved && (
         <p className="form-ok" role="status">
-          Saved as <span className="mono-code">{saved}</span>. Share the link: <span className="mono-code">{planPath(saved)}</span>
+          Saved as <span className="mono-code">{saved}</span>. Share the link: <span className="mono-code">{planPath(saved)}</span>{' '}
+          <a href={missionPath(saved)}>Open mission page</a>
         </p>
       )}
-      <Button type="submit" disabled={busy || code.length !== 6 || !name.trim() || state.stops.length < 2}>
+      <Button type="submit" disabled={busy || code.length !== 6 || codeStatus === 'taken' || !name.trim() || state.stops.length < 2}>
         {busy ? 'Saving…' : mine ? 'Update mission' : 'Save mission'}
       </Button>
     </form>

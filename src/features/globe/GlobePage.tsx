@@ -21,7 +21,7 @@ import { routeStops } from '../../globe/missionRoute'
 import { readFlag, writeFlag } from '../../lib/storage'
 import type { MissionStatus } from '../../services/missions'
 import { clearWarpArrival, isWarpArrival } from '../../lib/warp'
-import { byOwner, GLOBE_2D, GLOBE_3D, GLOBE_PLAN, go, MAP_EVA, MAP_PLAN, mapModeOf, missionPath, type OwnerFilter } from '../../lib/missionPaths'
+import { byOwner, GLOBE_2D, GLOBE_3D, GLOBE_PLAN, go, MAP_EVA, MAP_PLAN, mapModeOf, type OwnerFilter } from '../../lib/missionPaths'
 import { MapView } from '../../map/MapView'
 import { fitTo, flyTo, showArea } from '../../map/mapControl'
 import type { PlanetRoute as MapRoute } from '../../map/planetLayers'
@@ -45,7 +45,6 @@ import { LiveClock } from '../../components/LiveClock'
 import { ToolDock, type Tool } from '../../components/ToolDock'
 import { Tour } from '../../components/Tour'
 import { globeTourSteps, tourSteps } from '../../config/tourSteps'
-import { MissionForm } from '../missions/MissionForm'
 import './globe.css'
 
 /*
@@ -100,14 +99,20 @@ const CATALOG_OPEN_KEY = 'mapa.globe.catalogOpen'
 const narrow = () => window.matchMedia('(max-width: 720px)').matches
 
 export function GlobePage() {
-  const { user, loading: authLoading } = useAuth()
+  const { user } = useAuth()
   const hash = useHash()
-  const planning = hash === GLOBE_PLAN
-  const flat = hash.startsWith(GLOBE_2D) || planning
+  // Adding a mission (the + button, #/globe/new) is planning a new route: the same planner as Plan Marswalk
+  const newMission = hash === GLOBE_PLAN
+  const flat = hash.startsWith(GLOBE_2D) || newMission
   // The 2D map's tools: site analysis (explore), the Marswalk planner or EVA
-  const mapMode = flat && !planning ? mapModeOf(hash) : 'explore'
+  const mapMode = newMission ? 'plan' : flat ? mapModeOf(hash) : 'explore'
   const exploring = mapMode === 'explore'
   const { state: walk, dispatch } = useMarswalk()
+  useEffect(() => {
+    if (!newMission) return
+    dispatch({ type: 'newRoute' })
+    window.location.replace(MAP_PLAN)
+  }, [newMission, dispatch])
   const walkRoute = useRoute()
   // The NASA layers list shares the top right with the missions list on the 2D map: one opens at a time
   const [layersOpen, setLayersOpen] = useState(false)
@@ -125,7 +130,8 @@ export function GlobePage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [moonId, setMoonId] = useState<MoonId | null>(null)
   const [orbiterId, setOrbiterId] = useState<OrbiterId | null>(null)
-  const [layers, setLayers] = useState<GlobeLayers>({ labels: true, orbits: true, grid: true, terminator: false, orbiters: true, moons: true })
+  // Orbiters start hidden so the planet itself is the first thing seen; the Orbiters tool shows them
+  const [layers, setLayers] = useState<GlobeLayers>({ labels: true, orbits: true, grid: true, terminator: false, orbiters: false, moons: true })
   const [resetKey, setResetKey] = useState(0)
   const [toolsOpen, setToolsOpen] = useState(false)
   // Every panel cleared off the screen for an unobstructed view (the button at the bottom left, or H)
@@ -557,19 +563,14 @@ export function GlobePage() {
         )}
       </div>
 
-      {flat && !planning && (
+      {flat && (
         <div className={`flat-view is-${mapMode}`}>
           <MapView routes={siteRoutes} selectedRoute={mission ? selectedId : null} onSelectRoute={select} onPick={closeCard} sunAt={nightAt} missionPath={safeLine ? missionSafe.value : null} />
         </div>
       )}
 
-      {/* Planning a mission: the flat map fills the screen with the form over it */}
-      {planning && (
-        <MissionForm layout="fullscreen" sunAt={nightAt} user={user} authLoading={authLoading} onSaved={(m) => go(missionPath(m.code ?? undefined))} onCancel={() => go(GLOBE_2D)} />
-      )}
-
       {/* MAPA's tools on the 2D map: the NASA layers and site analysis while exploring, the planner, or EVA */}
-      {landed && flat && !planning && (
+      {landed && flat && (
         <>
           {exploring && <LayerPanel button={false} open={layersShown} onOpenChange={setLayersOpen} blocked={!!(site || mission || moonId)} missionPath={missionSafe} />}
           {exploring && <Search />}
@@ -580,7 +581,7 @@ export function GlobePage() {
         </>
       )}
 
-      {landed && !planning && (
+      {landed && (
         <>
           {exploring && <LiveClock compact />}
           {/* The ongoing-missions list makes way for a site, mission or moon card which opens in the same corner.
@@ -637,7 +638,7 @@ export function GlobePage() {
       )}
 
       {/* Keyed so each new selection slides its card in afresh; the landing-site close-up has none */}
-      {planning ? null : site && !inSite ? (
+      {site && !inSite ? (
         <LandingSiteCard
           key={site.id}
           site={site}

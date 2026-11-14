@@ -16,6 +16,7 @@ export type Action =
   | { type: 'removeStop'; id: string }
   | { type: 'reorderStops'; from: number; to: number }
   | { type: 'setRoundTrip'; value: boolean }
+  | { type: 'setBase'; at: LngLat; name: string }
   | { type: 'setRouteOption'; value: RouteOption }
   | { type: 'setEvaPosition'; at: LngLat }
   | { type: 'renameStop'; id: string; name: string }
@@ -122,6 +123,13 @@ export function reducer(state: MarswalkState, action: Action): MarswalkState {
 
     case 'setRoundTrip':
       return { ...state, roundTrip: action.value }
+
+    // A mission can start anywhere on Mars, not only at the demo site's habitat
+    case 'setBase': {
+      if (!isLngLat(action.at)) return state
+      const name = cleanText(action.name, LIMITS.nameLength) || 'Start'
+      return { ...state, stops: state.stops.map((s) => (s.kind === 'base' ? { ...s, at: action.at, name } : s)) }
+    }
 
     case 'setRouteOption':
       if (action.value !== 'safest' && action.value !== 'direct') return state

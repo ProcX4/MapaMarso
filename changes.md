@@ -61,6 +61,22 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.6 · One mission planner; Explore Mars and Explore Jezero Crater on the home page
+
+**Changed: one planner for every mission**
+- Adding a mission (the **+** on the globe, `#/globe/new`), the Missions page's **New** and **Edit**, and the mission page's **Edit** button now all open the Plan Marswalk planner on the 2D map: the same map, NASA layers, A* safe path, route options, stats, elevation profile and save form. Before, they opened a separate three-step form on the older canvas map (`MissionForm`), which had none of that. `MissionForm.tsx` is removed; old addresses (`#/globe/new`, `#/missions/new`, `#/missions/<code>/edit`) still work and land in the planner.
+- To keep what the old form could do: **Set as start** on the site card (a mission can start anywhere on Mars, not only at the habitat), a live **mission code check** in the save form (a taken code shows before saving), and an **Open mission page** link after saving.
+- The form styles the old form carried (also used by the save form, the account page and the mission pages) moved to `src/styles/forms.css`, loaded once for the whole app.
+
+**Changed: home page**
+- **Open the globe** is now **Explore Mars**: the same hyperspace jump to the 3D planet.
+- New **Explore Jezero Crater** button: the same jump, landing on the 2D map over the whole crater (zoom 10, CTX photos showing), where every tool is to hand: NASA layers, safe routes, rover photos and EVA.
+
+**Changed: globe**
+- **Orbiters are off by default** on the 3D globe, so the planet is the first thing seen; the Orbiters tool shows them (and their orbit lines).
+
+---
+
 ## 2026-11-15 · v0.5.5 · Debug: zoom points
 
 **Added**

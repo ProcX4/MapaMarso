@@ -39,24 +39,6 @@ export function tourSteps(mode: Mode): TourStep[] {
   ]
 }
 
-/**
- * The flat-map mission planner's own tour (the ? in its panel, and once by itself on a first visit); from
- * MapaMars. Steps whose control isn't on screen are left out, so it fits whichever step of the form is open.
- */
-export const plannerTourSteps: TourStep[] = [
-  { title: 'Plan a Marswalk', text: 'Lay out a walk on the map, give it a name and an invite code, and add any details. This quick tour shows where everything is.' },
-  { target: '.planner-steps', title: 'Three steps', text: 'Route, then name and code, then details. Click a step to jump to it; a tick shows once one is done.' },
-  { target: '.trip-switch', title: 'Trip type', text: 'A → B finishes somewhere new. A round trip comes back to the start, and needs at least one stop on the way.' },
-  { target: '.stop-row.is-placing', title: 'Place a stop', text: 'The highlighted stop is the one the map places: click the map to drop it there, and the next empty stop is picked for you. Click any stop’s letter to place it again.' },
-  { target: '.stop-coords', title: 'Exact coordinates', text: 'Click a stop’s coordinates to type its latitude and longitude instead. Once two stops are placed, the distance from the one before shows here too.' },
-  { target: '.add-stop', title: 'Stops along the way', text: 'Add up to 10 stops between start and finish, in walking order. Hover a stop to move it earlier or later, or remove it.' },
-  { target: '.planner-map .jump-to', title: 'Jump to a place', text: 'Fly the map to a landmark or a landing site.' },
-  { target: '.planner-map .map2d-zoom', title: 'Zoom', text: 'Zoom in for Marswalk-scale detail. You can also scroll to zoom and drag to pan.' },
-  { target: '.planner-summary', title: 'Distance', text: 'The walk’s straight-line length, once every stop is placed.' },
-  { target: '.planner-next', title: 'Next step', text: 'On to the name and invite code, then the details. You create the Marswalk from the last step.' },
-  { target: '.planner-help', title: 'This tour', text: 'Run it again any time from here.' },
-]
-
 /** The globe page's tour for whichever view is showing (from MapaMars pages/globe/tourSteps.ts). */
 export function globeTourSteps(view: 'globe' | 'map' | 'site', credits: string[]): TourStep[] {
   const end: TourStep[] = [
