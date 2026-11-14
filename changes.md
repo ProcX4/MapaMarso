@@ -21,6 +21,22 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.3 · Legends for the TES maps, and a zoom hint for site-scale layers
+
+**Added**
+- A colour bar under each switched-on TES layer in the layer panel, with a plain-words label at each end (for example "Low: dust and fine sand" to "High: rock and bedrock"). The colours were sampled from the Trek tiles themselves: violet is lowest and red highest, and albedo runs black to white. No numbers are given, because Trek publishes no value range for these maps. The labels come from the Trek catalogue descriptions, except the dust ends, which follow the pattern on the map (Amazonis, Alba and Tharsis, the dustiest regions, show red).
+- A hint under any switched-on layer that is zoomed out too far to draw (the THEMIS, CTX and HiRISE layers, which draw only when zoomed in), with a **Zoom to Jezero Crater** button. Before, the switch looked as if it did nothing.
+- `ramp` on the layer registry (`LayerDef`) for continuous colour scales, and `useBelowMinZoom` in `src/map/mapControl.ts`, which re-renders only when a layer appears or disappears, not on every frame of a zoom.
+
+**Spec deviations**
+- None.
+
+**Verified**
+- Type check, lint and build pass; no console errors.
+- In the browser: bars and end labels show for the thermal inertia, pyroxene, both dust and albedo layers; the hint shows for the THEMIS layer that is on, and goes away after the button zooms to the site. Plagioclase and sheet silicates share the same code and were not switched on.
+
+---
+
 ## 2026-11-15 · v0.5.2 · Topographic: route options, safety envelope, roughness, safer return
 
 **Added**

@@ -35,6 +35,8 @@ export type LayerDef = {
   /** Walking-scale imagery: drawn above the other imagery, which it only replaces once zoomed in past minZoom */
   walkScale?: boolean
   legend?: { label: string; color: string }[]
+  /** A continuous colour scale: a bar from `low` to `high` through `stops`, with a plain-words label at each end (no invented numbers) */
+  ramp?: { stops: string[]; low: string; high: string }
   /** Set while the layer's data is a stand-in; shown as a PLACEHOLDER tag. See placeholders.md. */
   placeholder?: string
 }
@@ -44,6 +46,10 @@ export const GROUPS: { id: LayerDef['group']; label: string; note: string }[] = 
   { id: 'optical', label: 'Optical', note: 'The surface in visible light' },
   { id: 'spectral', label: 'Spectral', note: 'Infrared, mineral, dust and albedo maps' },
 ]
+
+/** The colour scale Trek paints its TES maps with, sampled from the tiles (violet = lowest, red = highest) */
+const RAINBOW = ['#560ad9', '#154ce7', '#1acadb', '#1fd01b', '#e1e200', '#f96d07', '#ff0d0d']
+const GREYS = ['#000000', '#ffffff']
 
 const trek = (id: TrekLayerId) => ({ kind: 'xyz' as const, source: id, maxZoom: TREK_LAYERS[id].maxZoom })
 const esri = (id: EsriLayerId) => ({ kind: 'xyz' as const, source: id, maxZoom: ESRI_LAYERS[id].maxZoom })
@@ -248,13 +254,13 @@ export const LAYERS: LayerDef[] = [
     defaultOpacity: 1,
     minZoom: 5,
   },
-  tes('tes-thermal-inertia', 'Thermal inertia (TES)', 'TES_Thermal_Inertia'),
-  tes('tes-pyroxene', 'High-calcium pyroxene (TES)', 'TES_Clinopyroxene'),
-  tes('tes-plagioclase', 'Plagioclase (TES)', 'TES_Plagioclase'),
-  tes('tes-sheet-silicates', 'Sheet silicates and glass (TES)', 'TES_Glass_Clay'),
-  tes('tes-dust', 'Dust cover index (TES)', 'TES_Dust', '3.5 km/px'),
-  tes('tes-dust-relief', 'Dust cover index over relief (TES)', 'tes_ruffdust', '3.5 km/px'),
-  tes('tes-albedo', 'Surface albedo (TES)', 'Mars_MGS_TES_Albedo_mosaic_global_7410m', '7.4 km/px'),
+  tes('tes-thermal-inertia', 'Thermal inertia (TES)', 'TES_Thermal_Inertia', RAINBOW, 'Low: dust and fine sand', 'High: rock and bedrock'),
+  tes('tes-pyroxene', 'High-calcium pyroxene (TES)', 'TES_Clinopyroxene', RAINBOW, 'Little or none', 'Most: Syrtis Major'),
+  tes('tes-plagioclase', 'Plagioclase (TES)', 'TES_Plagioclase', RAINBOW, 'Little or none', 'Most: Syrtis Major region'),
+  tes('tes-sheet-silicates', 'Sheet silicates and glass (TES)', 'TES_Glass_Clay', RAINBOW, 'Little or none', 'Most'),
+  tes('tes-dust', 'Dust cover index (TES)', 'TES_Dust', RAINBOW, 'Less dust', 'More dust', '3.5 km/px'),
+  tes('tes-dust-relief', 'Dust cover index over relief (TES)', 'tes_ruffdust', RAINBOW, 'Less dust', 'More dust', '3.5 km/px'),
+  tes('tes-albedo', 'Surface albedo (TES)', 'Mars_MGS_TES_Albedo_mosaic_global_7410m', GREYS, 'Dark', 'Bright', '7.4 km/px'),
   {
     id: 'science-targets',
     name: 'Science targets',
@@ -275,7 +281,7 @@ export const LAYERS: LayerDef[] = [
 ]
 
 /** A global TES map: coarse (Trek serves it to zoom 1, or 2 for the dust-over-relief map), so it's laid over the others half see-through */
-function tes(id: string, name: string, product: TrekLayerId, resolution?: string): LayerDef {
+function tes(id: string, name: string, product: TrekLayerId, stops: string[], low: string, high: string, resolution?: string): LayerDef {
   return {
     id,
     name,
@@ -285,6 +291,7 @@ function tes(id: string, name: string, product: TrekLayerId, resolution?: string
     provenance: { instrument: 'TES', mission: 'Mars Global Surveyor', product: `${product} (Mars Trek)`, resolution },
     defaultVisible: false,
     defaultOpacity: 0.7,
+    ramp: { stops, low, high },
   }
 }
 

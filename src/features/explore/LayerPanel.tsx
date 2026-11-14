@@ -4,6 +4,8 @@ import { useDatasets, useRoute } from '../../hooks/useDerived'
 import { TERRAIN_NOTE, type TerrainGrid } from '../../data/terrain'
 import type { SafePathState } from '../../hooks/useSafePath'
 import { GROUPS, LAYERS, provenanceLine, type LayerDef } from '../../map/layers/registry'
+import { SITE } from '../../config/site'
+import { flyTo, useBelowMinZoom } from '../../map/mapControl'
 import { Switch } from '../../components/Switch'
 import { Slider } from '../../components/Slider'
 import { Icon } from '../../components/Icon'
@@ -52,6 +54,8 @@ function LayerRow({ def, path }: { def: LayerDef; path: PathInfo }) {
   const status = layerStatus(def, path, data.targets.status, data.reach.status)
   const topographic = def.id === 'slope' || def.id === 'route'
   const routing = def.id === 'route' ? ROUTING_TEXT[path.routing] : null
+  // Site-scale layers draw only when zoomed in; say so rather than leave a switch that seems to do nothing
+  const tooFar = useBelowMinZoom(def.minZoom)
   return (
     <li className="layer-row">
       <div className="layer-row-head">
@@ -69,6 +73,15 @@ function LayerRow({ def, path }: { def: LayerDef; path: PathInfo }) {
             valueText={`${Math.round(layer.opacity * 100)}%`}
             onChange={(opacity) => dispatch({ type: 'setOpacity', id: def.id, opacity })}
           />
+          {def.ramp && (
+            <div className="layer-ramp">
+              <span className="ramp-bar" style={{ background: `linear-gradient(to right, ${def.ramp.stops.join(', ')})` }} aria-hidden />
+              <span className="ramp-ends">
+                <span>{def.ramp.low}</span>
+                <span>{def.ramp.high}</span>
+              </span>
+            </div>
+          )}
           {def.legend && (status === 'ready' || def.kind === 'xyz') && (
             <ul className="layer-legend">
               {def.legend.map((l) => (
@@ -79,6 +92,14 @@ function LayerRow({ def, path }: { def: LayerDef; path: PathInfo }) {
             </ul>
           )}
         </div>
+      )}
+      {layer.visible && tooFar && (
+        <p className="layer-status layer-zoom-hint" role="status">
+          Zoomed out too far to show this: it is site-scale imagery.{' '}
+          <button type="button" className="link-button" onClick={() => flyTo(SITE.center, Math.max(SITE.zoom, (def.minZoom ?? 0) + 1))}>
+            Zoom to {SITE.name}
+          </button>
+        </p>
       )}
       {status === 'loading' && !routing && <p className="layer-status">Loading…</p>}
       {status === 'missing' && <p className="layer-status">No data loaded</p>}
