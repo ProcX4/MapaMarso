@@ -50,6 +50,7 @@ Everything works without this; saving and opening missions by code needs Supabas
 ```text
 api/tiles.ts               Mars Trek tile proxy (fixed host, allow-listed layers)
 api/horizons.ts            JPL Horizons proxy (moon and orbiter positions)
+api/elevation.ts           USGS global MOLA DEM reader (heights anywhere on Mars, for A*)
 supabase/schema.sql        Accounts and missions tables, with Row Level Security
 src/config/                Demo site, assumptions, Trek allow-list, tour steps
 src/state/                 Reducer (the one place state changes), auth and derived contexts
@@ -59,7 +60,7 @@ src/data/                  Elevation (COG), slope worker, route maths, Mars time
 src/services/              Supabase calls: accounts and missions
 src/features/              explore · plan · eva · provenance · account · home · globe · missions
 src/components/            Shared UI: menu, live clock, tools dock, tour, inputs, tags …
-public/data/               Site DTM + GeoJSON (placeholders for now)
+public/data/               Jezero CTX DTM (20 m) + science targets GeoJSON (placeholder)
 public/tiles/              Pre-fetched demo-site tiles (offline fallback)
 public/resources/          NASA 3D models, moon shapes, star catalogue, Draco decoder
 ```

@@ -17,7 +17,8 @@ const LABEL_FONT = '500 12px "IBM Plex Sans", system-ui, sans-serif'
 const NIGHT = 'rgba(0, 0, 0, 0.5)'
 
 export type RoutePoint = LatLon & { key: string; badge: string; label: string; variant: 'start' | 'phase' | 'end' | 'finish' }
-export type PlanetRoute = { key: string; points: RoutePoint[]; closed?: boolean }
+/** path: the A* safe path through the points as [lon, lat], once found; until then the line joins them straight */
+export type PlanetRoute = { key: string; points: RoutePoint[]; closed?: boolean; path?: [number, number][] }
 
 const at = (p: LatLon) => [p.lon, p.lat]
 
@@ -27,7 +28,7 @@ export function routeFeatures(routes: PlanetRoute[], selected: string | null): F
   for (const r of routes) {
     const on = r.key === selected
     if (r.points.length > 1) {
-      const line = [...r.points, ...(r.closed ? [r.points[0]] : [])].map(at)
+      const line = r.path ?? [...r.points, ...(r.closed ? [r.points[0]] : [])].map(at)
       out.push(new Feature({ geometry: new LineString(line), routeKey: r.key, kind: 'line', on }))
     }
     for (const p of r.points) {

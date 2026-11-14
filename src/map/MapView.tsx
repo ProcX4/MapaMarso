@@ -18,8 +18,10 @@ import { attachInteractions } from './interactions'
 import { currentZoom, fitTo, flyTo, registerMap } from './mapControl'
 import { daylightFeatures, daylightStyle, routeFeatures, routeStyle, type PlanetRoute } from './planetLayers'
 import { sunAt as subsolar } from '../data/daylight'
-import { cssVar, cursorStyle, evaPositionStyle, geologyStyle, hazardLineStyle, rgba, routeLineStyle, stopStyle, targetStyle } from './styles'
-import { slopeBand } from '../data/slope'
+import { cssVar, cursorStyle, evaPositionStyle, hazardLineStyle, rgba, routeLineStyle, stopStyle, targetStyle } from './styles'
+import { HAZARD } from '../data/pathfind'
+import { DEEP_COLOURS } from './layers/registry'
+import type { SafePath } from '../data/safePath'
 import { pointAlong } from '../data/route'
 import { SITE } from '../config/site'
 import type { LngLat, Stop } from '../state/types'
@@ -39,6 +41,8 @@ type Props = {
   onPick?: () => void
   /** Shade the night side as it is at this moment (ms), and mark where the Sun is overhead */
   sunAt?: number | null
+  /** The picked mission's A* safe path: its steep and deep ground is shaded instead of the planned route's */
+  missionPath?: SafePath | null
 }
 
 function badgeFor(stop: Stop, index: number) {
@@ -51,7 +55,7 @@ function badgeFor(stop: Stop, index: number) {
  * The single OpenLayers map, the globe page's 2D view of the whole planet. React creates it once and then
  * only talks to it (the map is the TV, React is the remote): layers are toggled, never rebuilt.
  */
-export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRoute, onPick, sunAt = null }: Props) {
+export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRoute, onPick, sunAt = null, missionPath = null }: Props) {
   const el = useRef<HTMLDivElement>(null)
   const map = useRef<Map | null>(null)
   const layers = useRef<Record<string, BaseLayer>>({})
@@ -74,9 +78,12 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
 
   // Create once
   useEffect(() => {
-    LAYERS.forEach((def, i) => {
+    // Imagery at the bottom in list order, then the overlays drawn from data (hazards, targets) above all of it
+    const imagery = LAYERS.filter((d) => d.kind === 'xyz' || d.kind === 'wmts')
+    LAYERS.forEach((def) => {
       const layer = createLayer(def)
-      layer.setZIndex(i)
+      const i = imagery.indexOf(def)
+      layer.setZIndex(i >= 0 ? i : imagery.length + LAYERS.indexOf(def))
       layers.current[def.id] = layer
     })
     ;(layers.current['route'] as VectorLayer).setZIndex(19)
@@ -165,37 +172,21 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
     if (sunAt !== null) src.addFeatures(daylightFeatures(subsolar(sunAt)))
   }, [sunAt])
 
-  // Attach rasters once computed
+  // Steep and deep ground round the route on show: the picked mission's, or else the planned route's
+  const hazard = missionPath?.hazard ?? data.hazard.value
   useEffect(() => {
-    const dtm = data.dtm.value
-    if (!dtm) return
-    const span = dtm.max - dtm.min || 1
-    ;(layers.current['site-dtm'] as ImageLayer<never>).setSource(
-      gridSource(dtm, (v) => {
-        const g = Math.round(((v - dtm.min) / span) * 255)
-        return [g, g, g, 255]
-      }) as never,
-    )
-  }, [data.dtm.value])
-
-  useEffect(() => {
-    const slope = data.slope.value
-    if (!slope) return
-    const colours = Object.fromEntries(['caution', 'hazard', 'alert'].map((t) => [t, rgba(cssVar(t), 200)]))
-    ;(layers.current['slope'] as ImageLayer<never>).setSource(
-      gridSource(slope, (v) => {
-        const token = slopeBand(v).token
-        return token ? colours[token] : null // walkable ground stays transparent
-      }) as never,
-    )
-  }, [data.slope.value])
-
-  useEffect(() => {
-    const layer = layers.current['geology'] as VectorLayer
-    layer.setStyle(geologyStyle)
-    layer.getSource()!.clear()
-    if (data.geology.value) layer.getSource()!.addFeatures(data.geology.value)
-  }, [data.geology.value])
+    const layer = layers.current['slope'] as ImageLayer<never>
+    if (!hazard) return layer.setSource(null)
+    const colours: Record<number, [number, number, number, number] | null> = {
+      [HAZARD.caution]: rgba(cssVar('caution'), 200),
+      [HAZARD.hazard]: rgba(cssVar('hazard'), 200),
+      [HAZARD.steep]: rgba(cssVar('alert'), 210),
+      [HAZARD.deepSoft]: rgba(DEEP_COLOURS.soft, 150),
+      [HAZARD.deep]: rgba(DEEP_COLOURS.deep, 200),
+    }
+    // Easy ground and no-data stay transparent
+    layer.setSource(gridSource({ ...hazard, values: Float32Array.from(hazard.values) }, (v) => colours[v] ?? null) as never)
+  }, [hazard])
 
   useEffect(() => {
     const layer = layers.current['science-targets'] as VectorLayer
@@ -210,7 +201,8 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
     const src = (layers.current['route'] as VectorLayer).getSource()!
     src.clear()
     if (route.order.length > 1) {
-      const line = new Feature(new LineString(route.order.map((s) => s.at)))
+      // The A* safe path, leg by leg (each a straight line until its path is in)
+      const line = new Feature(new LineString(route.legs.flatMap((l, i) => (i ? l.path.slice(1) : l.path))))
       line.setStyle(routeLineStyle())
       src.addFeature(line)
       for (const h of route.hazards) {

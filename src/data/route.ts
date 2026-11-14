@@ -3,15 +3,18 @@ import { distanceM, lerp } from './mars'
 import { sampleGrid, type DtmGrid } from './elevation'
 import { slopeBand, type SlopeGrid } from './slope'
 import type { ScienceTarget } from './vectors'
+import type { LegPath, LegStatus } from './safePath'
 import { PROFILE_STEP_M, SLOPE_BANDS, WALKING } from '../config/assumptions'
 
 /*
  * Everything MAPA works out about a route. Nothing here is stored in state:
  * it is recalculated from the stops whenever they change, so it can't drift.
- * Legs are straight lines between stops (terrain-aware routing is a stretch goal).
+ * Each leg follows the A* safe path between its stops once that's been found (safePath.ts), and is a
+ * straight line until then, or where no path could be found.
  */
 
-export type Leg = { from: Stop; to: Stop; m: number }
+/** path: the way the leg is walked, stop to stop; status 'straight' until the safe path is in */
+export type Leg = { from: Stop; to: Stop; m: number; path: LngLat[]; status: LegStatus | 'straight' }
 export type ProfilePoint = { at: LngLat; distM: number; elevM: number | null; slopeDeg: number | null; leg: number }
 export type HazardSection = { fromM: number; toM: number; maxSlope: number; label: string; token: string }
 
@@ -43,27 +46,39 @@ export function analyseRoute(
   speedKmh: number,
   dtm: DtmGrid | null,
   slope: SlopeGrid | null,
+  paths: LegPath[] | null = null,
 ): RouteAnalysis {
   const order = walkingOrder(stops, roundTrip)
-  const legs = order.slice(1).map((to, i) => ({ from: order[i], to, m: distanceM(order[i].at, to.at) }))
+  const legs: Leg[] = order.slice(1).map((to, i) => {
+    const from = order[i]
+    // A path found for an earlier set of stops is only used if it still joins this leg's two stops
+    const found = paths?.[i]
+    const fits = found && same(found.path[0], from.at) && same(found.path[found.path.length - 1], to.at)
+    const path = fits ? found.path : [from.at, to.at]
+    return { from, to, path, status: fits ? found.status : 'straight', m: pathLength(path) }
+  })
   const totalM = legs.reduce((sum, l) => sum + l.m, 0)
   const step = Math.max(PROFILE_STEP_M, totalM / MAX_SAMPLES)
 
   const profile: ProfilePoint[] = []
   let walked = 0
   legs.forEach((leg, li) => {
-    const n = Math.max(1, Math.ceil(leg.m / step))
-    for (let k = li === 0 ? 0 : 1; k <= n; k++) {
-      const at = lerp(leg.from.at, leg.to.at, k / n)
-      profile.push({
-        at,
-        distM: walked + (leg.m * k) / n,
-        elevM: dtm ? sampleGrid(dtm, dtm.values, at) : null,
-        slopeDeg: slope ? sampleGrid(slope, slope.values, at) : null,
-        leg: li,
-      })
-    }
-    walked += leg.m
+    leg.path.slice(1).forEach((b, si) => {
+      const a = leg.path[si]
+      const segM = distanceM(a, b)
+      const n = Math.max(1, Math.ceil(segM / step))
+      for (let k = li === 0 && si === 0 ? 0 : 1; k <= n; k++) {
+        const at = lerp(a, b, k / n)
+        profile.push({
+          at,
+          distM: walked + (segM * k) / n,
+          elevM: dtm ? sampleGrid(dtm, dtm.values, at) : null,
+          slopeDeg: slope ? sampleGrid(slope, slope.values, at) : null,
+          leg: li,
+        })
+      }
+      walked += segM
+    })
   })
 
   let gain = 0, loss = 0, withElev = 0
@@ -94,6 +109,15 @@ export function analyseRoute(
     hazards: hazardSections(profile),
     elevationCoverage,
   }
+}
+
+// The route finder is given the stops to 6 decimal places (useSafePath), about 6 cm on Mars
+const same = (a: LngLat, b: LngLat) => Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[1] - b[1]) < 1e-6
+
+function pathLength(path: LngLat[]) {
+  let m = 0
+  for (let i = 1; i < path.length; i++) m += distanceM(path[i - 1], path[i])
+  return m
 }
 
 /** ESTIMATED walking time: flat-ground speed plus a penalty per metre climbed. */

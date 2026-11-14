@@ -21,6 +21,41 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.0 · Layers regrouped as Topographic, Optical and Spectral; A* safe paths across all of Mars
+
+**Changed: three layer groups, all covering the whole planet (Mars Trek)**
+- **Topographic:** Elevation (MOLA + HRSC colour hillshade, 200 m/px); Steep and deep ground; Safe path (A*).
+- **Optical:** Viking MDIM 2.1 colour mosaic; MGS MOC colour atlas.
+- **Spectral:** THEMIS daytime and night-time infrared (100 m/px); TES thermal inertia, high-calcium pyroxene, plagioclase, sheet silicates and glass; science targets (CRISM, still empty).
+- Each group has a one-line description in the layer panel. Imagery always sits under the overlays drawn from data.
+
+**Added: A* safe paths (Topographic)**
+- Every planned route, and any mission picked on the map or globe, is walked by an A* path that goes round steep ground and deep ground instead of a straight line. The map line, distance, time, gain and loss, the elevation profile, hazards and EVA all follow the path.
+- Cost of a step: its length × a penalty for harder ground, plus 3.3 m per metre climbed. Never crossed: slopes of 25° or more, ground more than 60 m below the ground within 600 m (pits, channels, small craters). Steered round: the 10–25° slope bands and 15–60 m deep ground. Settings in `src/config/assumptions.ts` → `PATHFINDING`.
+- Runs in a Web Worker (`src/data/pathfind.worker.ts`): slope (Horn), depth (summed-area box mean), A* in 8 directions without cutting past blocked cells, then the grid zigzag is pulled straight where the straight line is no harder going. A leg with no safe way through stays straight and says so.
+- "Steep and deep ground" shades the ground round the route: slope bands in the caution, hazard and alert colours, deep ground in blue.
+- The layer panel and the mission card say how the path was found and on what elevation.
+
+**Added: elevation for the whole planet**
+- `api/elevation.ts`: reads a window of the USGS global MOLA DEM (463 m/px, a 2 GB GeoTIFF on the USGS bucket) one byte range per row, thinned to 320 samples a side at most. Fixed upstream file, validated numbers only, no local imports.
+- `public/data/site-dtm.tif` is now the real USGS Mars 2020 CTX DTM of Jezero (20 m/px). Routes with every stop on it use it; anywhere else uses MOLA.
+- The site card gives elevation and slope anywhere on Mars, and says which model they came from.
+
+**Removed**
+- Geology (empty placeholder layer, its file, and the site card row), the grey site-DTM layer, the old MOLA 463 m colour hillshade layer (replaced by the 200 m blend) and the separate slope worker.
+
+**Verified**
+- `tsc -b`, `oxlint` and `vite build` pass.
+- A* on the Jezero DTM: habitat to the delta top, the straight line crosses 29.8° ground; the safe path tops out at 13.1° for 130 m extra. Delta to the western rim: 30.5° straight, 15.0° safe. Whole 2.4 M-cell grid in about 0.5 s.
+- A* on MOLA, Valles Marineris plateau to canyon floor: the straight line crosses impassable cliffs and deep ground; the safe path stays under 22.2°.
+- In the app (headless Chrome): a planned route at Jezero and one just off the DTM (MOLA) both draw the safe path, with the hazard shading, profile and stats following it.
+- `api/elevation`: Jezero matches the CTX DTM range; Olympus Mons tops out at 21,241 m; bad areas get a 400.
+
+**Not verified**
+- Picking a saved mission: the database had no missions to pick, so the mission path ran only through the same code as the planner.
+
+---
+
 ## 2026-11-14 · v0.4.0 · Site map merged into the globe's 2D map; its tab removed
 
 The site map (Explore / Plan Marswalk / EVA) was a separate tab with its own map. Its functions now all live on the globe's 2D map, and the tab is gone.

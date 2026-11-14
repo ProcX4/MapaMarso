@@ -1,56 +1,58 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { DatasetsContext, HoverContext, RouteContext, type Datasets } from './derivedContexts'
+import { DatasetsContext, HoverContext, RouteContext, type Datasets, type Loaded, type Routing } from './derivedContexts'
 import { useMarswalk } from '../hooks/useMarswalk'
-import { loadDtmGrid } from '../data/elevation'
-import { computeSlope } from '../data/slope'
+import { useSafePath } from '../hooks/useSafePath'
 import { loadFeatures, toScienceTargets } from '../data/vectors'
-import { analyseRoute } from '../data/route'
+import { analyseRoute, walkingOrder } from '../data/route'
 import { layerDef } from '../map/layers/registry'
+import type { ScienceTarget } from '../data/vectors'
 import type { LngLat } from './types'
 
 const loading = { status: 'loading', value: null } as const
 const missing = { status: 'missing', value: null } as const
 
-/** Loads the site datasets once, then provides route analysis and the hover link on top. */
+/**
+ * Loads the site datasets once, finds the planned route's A* safe path whenever its stops change, then provides
+ * the route analysis and the hover link on top.
+ */
 export function DerivedProvider({ children }: { children: ReactNode }) {
   const { state } = useMarswalk()
-  const [data, setData] = useState<Datasets>({ dtm: loading, slope: loading, geology: loading, targets: loading })
+  const [targets, setTargets] = useState<Loaded<ScienceTarget[]>>(loading)
   const [hover, setHover] = useState<LngLat | null>(null)
 
   useEffect(() => {
     let alive = true
-    const set = (patch: Partial<Datasets>) => alive && setData((d) => ({ ...d, ...patch }))
-
-    loadDtmGrid()
-      .then((dtm) => {
-        set({ dtm: { status: 'ready', value: dtm } })
-        return computeSlope(dtm).then((slope) => set({ slope: { status: 'ready', value: slope } }))
-      })
-      .catch((err) => {
-        console.info('Site DTM not available:', err?.message ?? err)
-        set({ dtm: missing, slope: missing })
-      })
-
-    loadFeatures(layerDef('geology')!.source)
-      .then((f) => set({ geology: f.length ? { status: 'ready', value: f } : missing }))
-      .catch(() => set({ geology: missing }))
-
     loadFeatures(layerDef('science-targets')!.source)
       .then((f) => {
-        const targets = toScienceTargets(f)
-        set({ targets: targets.length ? { status: 'ready', value: targets } : missing })
+        const list = toScienceTargets(f)
+        if (alive) setTargets(list.length ? { status: 'ready', value: list } : missing)
       })
-      .catch(() => set({ targets: missing }))
-
+      .catch(() => alive && setTargets(missing))
     return () => {
       alive = false
     }
   }, [])
 
-  const analysis = useMemo(
-    () => analyseRoute(state.stops, state.roundTrip, state.walkingSpeedKmh, data.dtm.value, data.slope.value),
-    [state.stops, state.roundTrip, state.walkingSpeedKmh, data.dtm.value, data.slope.value],
-  )
+  const points = useMemo(() => walkingOrder(state.stops, state.roundTrip).map((s) => s.at), [state.stops, state.roundTrip])
+  const safe = useSafePath(points)
+  const found = safe.value
+
+  const data = useMemo<Datasets>(() => {
+    const ready = <T,>(value: T | undefined): Loaded<T> =>
+      value ? { status: 'ready', value } : safe.status === 'loading' ? loading : missing
+    return { dtm: ready(found?.terrain), slope: ready(found?.slope), hazard: ready(found?.hazard), targets }
+  }, [found, safe.status, targets])
+
+  const analysis = useMemo(() => {
+    const route = analyseRoute(state.stops, state.roundTrip, state.walkingSpeedKmh, found?.terrain ?? null, found?.slope ?? null, found?.legs ?? null)
+    const statuses = route.legs.map((l) => l.status)
+    const routing: Routing =
+      !route.legs.length ? 'none'
+      : statuses.includes('straight') ? (safe.status === 'error' ? 'unavailable' : 'finding')
+      : statuses.every((s) => s === 'safe') ? 'safe'
+      : 'partial'
+    return { ...route, routing }
+  }, [state.stops, state.roundTrip, state.walkingSpeedKmh, found, safe.status])
   const hoverValue = useMemo(() => ({ hover, setHover }), [hover])
 
   return (

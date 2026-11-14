@@ -1,12 +1,10 @@
 import { useMarswalk } from '../../hooks/useMarswalk'
 import { useDatasets } from '../../hooks/useDerived'
-import { useElevationAt } from '../../hooks/useElevationAt'
-import { sampleGrid } from '../../data/elevation'
+import { usePointTerrain } from '../../hooks/usePointTerrain'
 import { slopeBand } from '../../data/slope'
-import { geologyAt } from '../../data/vectors'
+import { TERRAIN_NOTE } from '../../data/terrain'
 import { distanceM } from '../../data/mars'
 import { formatDistance, formatLatLon, formatM, formatSlope, NO_DATA } from '../../lib/format'
-import { layerDef, provenanceLine } from '../../map/layers/registry'
 import { Button } from '../../components/Button'
 import { ProvenanceTag } from '../../components/ProvenanceTag'
 import { LIMITS } from '../../config/assumptions'
@@ -23,13 +21,15 @@ export function SiteCard() {
   const { state, dispatch } = useMarswalk()
   const data = useDatasets()
   const at = state.selected
-  const elev = useElevationAt(at)
+  const terrain = usePointTerrain(at)
   const now = useNow(60_000)
   if (!at) return null
 
-  const slope = data.slope.value ? sampleGrid(data.slope.value, data.slope.value.values, at) : null
+  const waiting = terrain.status === 'loading'
+  const elev = terrain.value?.elevM ?? null
+  const slope = terrain.value?.slopeDeg ?? null
   const band = slope !== null ? slopeBand(slope) : null
-  const geology = data.geology.value ? geologyAt(data.geology.value, at) : null
+  const source = terrain.value ? TERRAIN_NOTE[terrain.value.source] : null
   const nearby = (data.targets.value ?? [])
     .map((t) => ({ ...t, m: distanceM(t.at, at) }))
     .filter((t) => t.m <= NEARBY_M)
@@ -53,23 +53,18 @@ export function SiteCard() {
       <dl className="info-card-facts">
         <dt>Elevation</dt>
         <dd>
-          {elev.status === 'loading' ? '…' : elev.value !== null ? formatM(elev.value) : NO_DATA}
-          <ProvenanceTag category="observed" />
+          {waiting ? '…' : elev !== null ? formatM(elev) : NO_DATA}
+          <ProvenanceTag category="observed" note={source ?? undefined} />
         </dd>
         <dt>Slope</dt>
         <dd>
-          {slope !== null ? formatSlope(slope) : NO_DATA}
-          <ProvenanceTag category="derived" note="Horn method on the site DTM" />
+          {waiting ? '…' : slope !== null ? formatSlope(slope) : NO_DATA}
+          <ProvenanceTag category="derived" note={`Horn method on the ${source ?? 'elevation model'}`} />
         </dd>
       </dl>
 
       <h3 className="info-card-kicker site-card-group">Science</h3>
       <dl className="info-card-facts">
-        <dt>Geology</dt>
-        <dd>
-          {geology ? `${geology.unit} · ${geology.name}` : NO_DATA}
-          <ProvenanceTag category="observed" />
-        </dd>
         <dt>Targets</dt>
         <dd>{nearby.length ? nearby.map((t) => `${t.name} (${formatDistance(t.m)})`).join(', ') : `None within ${formatDistance(NEARBY_M)}`}</dd>
       </dl>
@@ -78,7 +73,7 @@ export function SiteCard() {
       <dl className="info-card-facts">
         <dt>Terrain</dt>
         <dd>
-          {band ? (
+          {waiting ? '…' : band ? (
             <span className={band.token ? `text-${band.token}` : 'text-ok'}>{band.label}</span>
           ) : (
             NO_DATA
@@ -103,9 +98,7 @@ export function SiteCard() {
       </div>
       {full && <p className="muted site-card-note">Route is full ({LIMITS.maxStops} stops max).</p>}
 
-      <p className="provenance-line">
-        {[layerDef('site-dtm'), layerDef('geology')].map((d) => d && provenanceLine(d)).join(' | ')}
-      </p>
+      {source && <p className="provenance-line">Elevation: {source}</p>}
     </aside>
   )
 }
