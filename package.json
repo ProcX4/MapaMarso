@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "prefetch-tiles": "node scripts/prefetch-tiles.mjs"
+    "prefetch-tiles": "node scripts/prefetch-tiles.mjs",
+    "check-upstreams": "node scripts/check-upstreams.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",

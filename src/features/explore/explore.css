@@ -36,6 +36,71 @@
 .site-card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
 .site-card-note { margin: 8px 0 0; font-size: 12px; }
 
+/* Rover photos in the site card: a strip of thumbnails, opening into a larger view */
+.rover-photos-note { margin: 8px 0 0; font-size: 12px; line-height: 1.45; }
+.rover-photos-strip {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0 0 6px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+}
+.rover-photos-strip li { flex: none; scroll-snap-align: start; }
+.rover-photo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 112px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: zoom-in;
+}
+.rover-photo img {
+  width: 112px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+}
+.rover-photo:hover img, .rover-photo:focus-visible img { border-color: var(--gray-1); }
+.rover-photo-caption { font-size: 10.5px; color: var(--gray-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rover-photos .provenance-line { margin: 6px 0 0; }
+.rover-photos-all { display: inline-block; margin-top: 8px; font-size: 12px; color: var(--info); }
+
+.rover-viewer {
+  max-width: min(1240px, 94vw);
+  max-height: 94vh;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--white);
+  overflow: hidden;
+}
+.rover-viewer::backdrop { background: rgba(0, 0, 0, 0.78); }
+.rover-viewer img { display: block; max-width: 100%; max-height: calc(94vh - 72px); margin: 0 auto; }
+.rover-viewer .info-card-close { position: absolute; top: 10px; right: 10px; }
+.rover-viewer-bar { display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
+.rover-viewer-bar p { flex: 1; margin: 0; display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+.rover-viewer-bar .muted { font-size: 11.5px; }
+.rover-viewer-bar a { color: var(--info); }
+.rover-viewer-bar button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: none;
+  color: var(--white);
+  font-size: 20px;
+  cursor: pointer;
+}
+
 /* Search: top left under the live clock */
 .explore-search {
   position: absolute;

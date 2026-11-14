@@ -21,11 +21,14 @@ export const marsProjection = new Projection({
   global: true,
 })
 
-const resolutions = (maxZoom: number) => Array.from({ length: maxZoom + 1 }, (_, z) => 180 / 256 / 2 ** z)
+const resolutions = (maxZoom: number, tileSize = 256) => Array.from({ length: maxZoom + 1 }, (_, z) => 180 / tileSize / 2 ** z)
 
-/** Zoom 0: 2×1 tiles of 256 px → 180° per tile → 180/256 degrees per pixel. */
-export function marsTileGrid(maxZoom = MAX_ZOOM) {
-  return new TileGrid({ extent: MARS_EXTENT, origin: [-180, 90], tileSize: 256, resolutions: resolutions(maxZoom) })
+/**
+ * Zoom 0: 2×1 tiles of 256 px → 180° per tile → 180/256 degrees per pixel. Esri's CTX tiles are 512 px over
+ * the same 180° per tile, so each of their levels has half the degrees per pixel (OpenLayers picks the level).
+ */
+export function marsTileGrid(maxZoom = MAX_ZOOM, tileSize = 256) {
+  return new TileGrid({ extent: MARS_EXTENT, origin: [-180, 90], tileSize, resolutions: resolutions(maxZoom, tileSize) })
 }
 
 export const VIEW_RESOLUTIONS = resolutions(MAX_ZOOM)

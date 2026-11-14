@@ -9,7 +9,7 @@ import type ImageTile from 'ol/ImageTile'
 import type Tile from 'ol/Tile'
 import type BaseLayer from 'ol/layer/Base'
 import type { LayerDef } from './registry'
-import { TREK_LAYERS, type TrekLayerId } from '../../config/trekLayers'
+import { TREK_LAYERS, tileLayerInfo, type TrekLayerId } from '../../config/trekLayers'
 import { marsProjection, marsTileGrid } from '../projection'
 
 /*
@@ -48,16 +48,18 @@ export function createLayer(def: LayerDef): BaseLayer {
   switch (def.kind) {
     case 'xyz':
     case 'wmts': {
-      const ext = TREK_LAYERS[def.source as TrekLayerId]?.ext ?? 'jpg'
+      const info = tileLayerInfo(def.source)
       return new TileLayer({
         ...common,
+        // A regional layer asks for no tiles outside the area it covers
+        extent: def.coverage?.bbox,
         source: new XYZ({
           projection: marsProjection,
-          tileGrid: marsTileGrid(def.maxZoom),
-          url: `/api/tiles/${def.source}/{z}/{y}/{x}.${ext}`,
+          tileGrid: marsTileGrid(def.maxZoom, info?.tileSize),
+          url: `/api/tiles/${def.source}/{z}/{y}/{x}.${info?.ext ?? 'jpg'}`,
           tileLoadFunction: loadTileWithFallback,
           wrapX: false,
-          attributions: 'NASA/JPL-Caltech Mars Trek',
+          attributions: def.provenance.credit ?? 'NASA/JPL-Caltech Mars Trek',
         }),
       })
     }
