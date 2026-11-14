@@ -27,6 +27,7 @@ import { SITE } from '../config/site'
 import type { LngLat, Stop } from '../state/types'
 import { useDebugZoom } from '../lib/debugZoom'
 import { ZoomDebug } from './ZoomDebug'
+import { MapGuide } from './MapGuide'
 import { debugMarkStyle } from './styles'
 import './map.css'
 
@@ -49,7 +50,7 @@ type Props = {
 }
 
 function badgeFor(stop: Stop, index: number) {
-  if (stop.kind === 'base') return 'H'
+  if (stop.kind === 'base') return 'A'
   if (stop.kind === 'destination') return 'B'
   return String(index)
 }
@@ -86,7 +87,7 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
   useEffect(() => {
     // Imagery at the bottom: opaque base maps first, then walking-scale imagery (CTX, HiRISE; only shows zoomed right
     // in, where the coarser maps are blurred), then the see-through ones (elevation colour, roughness, TES) so they
-    // show over whichever base is on; then the overlays drawn from data (hazards, envelope, targets) on top
+    // show over whichever base is on; then the overlays drawn from data (hazards, targets) on top
     const tiles = LAYERS.filter((d) => d.kind === 'xyz' || d.kind === 'wmts')
     const imagery = [
       ...tiles.filter((d) => !d.walkScale && d.defaultOpacity >= 1),
@@ -129,7 +130,8 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
 
     translate.current = attachInteractions(m, stopsLayer.current, {
       onSelect: (at) => {
-        dispatch({ type: 'select', at })
+        // Planning, this places what the left panel's picker says; otherwise it just opens the site card
+        dispatch({ type: 'placeAt', at })
         latest.current.onPick?.()
       },
       onRoute: (key) => {
@@ -208,15 +210,6 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
     layer.setSource(gridSource({ ...hazard, values: Float32Array.from(hazard.values) }, (v) => colours[v] ?? null) as never)
   }, [hazard])
 
-  // The safety envelope round the habitat
-  const reach = data.reach.value
-  useEffect(() => {
-    const layer = layers.current['reach'] as ImageLayer<never>
-    if (!reach) return layer.setSource(null)
-    const ok = rgba(cssVar('ok'), 110)
-    layer.setSource(gridSource({ ...reach, values: Float32Array.from(reach.values) }, (v) => (v ? ok : null)) as never)
-  }, [reach])
-
   useEffect(() => {
     const layer = layers.current['science-targets'] as VectorLayer
     layer.setStyle(targetStyle)
@@ -281,6 +274,7 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
     <>
       <div ref={el} className="map" tabIndex={0} aria-label="Map of Mars with NASA layers and the demo site. Arrow keys pan, plus and minus zoom." />
       {debugZoom && <ZoomDebug />}
+      <MapGuide />
     </>
   )
 }

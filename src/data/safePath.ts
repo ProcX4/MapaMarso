@@ -19,18 +19,14 @@ export type SafePath = {
   hazard: HazardGrid
   /** Spread of slope nearby, in degrees */
   roughness: SlopeGrid
-  /** 1 where the first point can be walked to and back from in time (when asked for) */
-  reach: HazardGrid | null
 }
 
-/** reachBudgetM: the walking budget, in flat-equivalent metres, for the safety envelope round the first point */
-export async function findSafePath(points: LngLat[], reachBudgetM: number | null, signal?: AbortSignal): Promise<SafePath> {
+export async function findSafePath(points: LngLat[], signal?: AbortSignal): Promise<SafePath> {
   const terrain = await terrainFor(points)
   signal?.throwIfAborted()
   const request: PathRequest = {
     grid: { width: terrain.width, height: terrain.height, bbox: terrain.bbox, values: terrain.values.slice() },
     points,
-    reach: reachBudgetM ? { from: points[0], budgetM: reachBudgetM } : undefined,
     obstacles: terrain.obstacles,
   }
   const res = await new Promise<PathResponse>((resolve, reject) => {
@@ -59,6 +55,5 @@ export async function findSafePath(points: LngLat[], reachBudgetM: number | null
     slope: { ...shape, values: res.slope },
     hazard: { ...shape, values: res.hazard },
     roughness: { ...shape, values: res.roughness },
-    reach: res.reach ? { ...shape, values: res.reach } : null,
   }
 }

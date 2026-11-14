@@ -14,7 +14,7 @@ Last updated: 2026-11-14 (v0.3.0, full idea bank merged)
 | # | Placeholder | Current value | Where | Done when |
 |---|---|---|---|---|
 | D1 | **Demo site** | Jezero Crater (Mars 2020) | `src/config/site.ts` → `SITE` | Team confirms Jezero or Gale. If Gale: update `SITE`, `GAZETTEER`, `SITE_BBOX` in `scripts/prefetch-tiles.mjs`, re-run `npm run prefetch-tiles`, replace `public/data/*` |
-| D2 | **Habitat (base) location** | `77.4508°E, 18.4447°N` (Perseverance landing point), named "Habitat (placeholder)" | `src/config/site.ts` → `SITE.base`, `SITE.baseName` | A real, defensible habitat spot is picked (flat, near science) and renamed |
+| D2 | ~~**Habitat (base) location**~~ | Resolved 2026-11-15: there is no placeholder habitat any more. Every route starts empty and its planner places the start (step 1, "Click the map to place"). `SITE.base` is kept only as Perseverance's landing point | `src/config/site.ts` → `SITE.base` | — |
 | D3 | **Map rendering library** | OpenLayers (as Frontend Spec §1) | `package.json` | Gen Spec still says "_TBD_"; update Gen Spec tech-stack line to match |
 | D4 | **Saved missions / Supabase** | **Live (v0.2.1):** env vars set in Vercel, schema present (mission lookup by code answers). Still to check: steps 3–4. Code wired in v0.2.0: accounts, save/open/delete missions by code (`#/globe/2d/plan/ABC-123`; the old `#/plan/ABC-123` still opens). Without keys the app says so and everything else works | `src/services/`, `src/state/AuthProvider.tsx`, `supabase/schema.sql`, `.env.example` | 1) Run `supabase/schema.sql` in the Supabase SQL Editor (skip if this project already runs MapaMars). 2) Put `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` in `.env.local` and in Vercel → Environment Variables. 3) Supabase → Authentication → URL Configuration: add the Vercel domain and `http://localhost:5173/**` (Security Spec §4). 4) Sign up, save a route, reopen it by code |
 | D5 | **Team names & roles** | "Team: TBD" | About page (`src/features/provenance/AboutPage.tsx`), Gen Spec "Team" table | Filled in |
@@ -40,7 +40,6 @@ Last updated: 2026-11-14 (v0.3.0, full idea bank merged)
 
 ## 3. Assumptions (all ESTIMATED, none validated)
 
-- **Safety envelope** uses the whole planned EVA (6 h) at the walking speed (2 km/h) as a there-and-back budget, on the same A* costs. ESTIMATED.
 - **Rocky ground limits:** steered round from 5 %, never entered from 25 % (share of a 20 m cell steeper than 30° at 1 m). Set from the map's own distribution, not validated.
 - **Roughness** is the spread (standard deviation) of slope within 100 m (`PATHFINDING.roughnessRadiusM`); a MAPA measure, not MOLA's own roughness product.
 - **A* route costs** (`src/config/assumptions.ts` → `PATHFINDING`): impassable at 25°, extra cost in the 10–15° and 15–25° bands, "deep" ground 15–60 m below the ground within 600 m steered round and never entered past 60 m, 3.3 flat metres per metre climbed. Tuned by eye on Jezero and Valles Marineris; not validated for a suited astronaut.

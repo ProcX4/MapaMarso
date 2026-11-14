@@ -33,11 +33,9 @@ export function DerivedProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // With only the habitat, the terrain round it is still mapped (hazards and the safety envelope), with no route
+  // With only the start placed, the terrain round it is still mapped (the hazard shading), with no route
   const points = useMemo(() => walkingOrder(state.stops, state.roundTrip).map((s) => s.at), [state.stops, state.roundTrip])
-  // The envelope's budget: the whole EVA at the walking speed, in flat-equivalent metres (climb is costed on top)
-  const reachBudgetM = state.maxEvaHours * state.walkingSpeedKmh * 1000
-  const safe = useSafePath(points, reachBudgetM)
+  const safe = useSafePath(points)
   const found = safe.value
 
   const data = useMemo<Datasets>(() => {
@@ -48,7 +46,6 @@ export function DerivedProvider({ children }: { children: ReactNode }) {
       slope: ready(found?.slope),
       hazard: ready(found?.hazard),
       roughness: ready(found?.roughness),
-      reach: ready(found?.reach ?? undefined),
       targets,
     }
   }, [found, safe.status, targets])

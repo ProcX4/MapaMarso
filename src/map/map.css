@@ -55,3 +55,31 @@
 .zoom-debug-note { margin-top: 8px !important; font-size: 10.5px; line-height: 1.4; }
 @media (max-width: 720px) { .zoom-debug { top: auto; bottom: 150px; } }
 
+/* The guide (science targets): bottom centre, above the day-and-night playbar; in Plan mode above the profile */
+.map-guide {
+  position: absolute;
+  left: 50%;
+  bottom: 84px;
+  z-index: 24;
+  width: min(380px, calc(100vw - 32px));
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--gray-1);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  transform: translateX(-50%);
+}
+.is-plan .map-guide { bottom: 230px; }
+.map-guide p { margin: 0; }
+.map-guide-kicker { margin-bottom: 4px !important; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ok); }
+.map-guide strong { color: var(--white); font-weight: 500; }
+.map-guide-dot { display: inline-block; width: 9px; height: 9px; border: 1.5px solid #000; border-radius: 50%; background: var(--ok); vertical-align: -1px; }
+.map-guide-actions { display: flex; gap: 8px; margin-top: 10px; }
+.map-guide-actions button { padding: 5px 12px; font: inherit; font-size: 12px; border-radius: 999px; cursor: pointer; }
+.map-guide-show { color: var(--black); background: var(--white); border: 0; }
+.map-guide-dismiss { color: var(--gray-1); background: none; border: 1px solid var(--line); }
+.map-guide-dismiss:hover { color: var(--white); border-color: rgba(255, 255, 255, 0.5); }
+@media (max-width: 720px) { .map-guide { bottom: 132px; } }
+

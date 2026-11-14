@@ -21,7 +21,6 @@
 export const TREK_LAYERS = {
   // Topographic
   Mars_MOLA_blend200ppx_HRSC_ClrShade_clon0dd_200mpp_lzw: { ext: 'jpg', maxZoom: 8 },
-  mola_roughness: { ext: 'png', maxZoom: 1 },
   // Optical
   Mars_Viking_MDIM21_ClrMosaic_global_232m: { ext: 'jpg', maxZoom: 7 },
   msss_atlas_simp_clon: { ext: 'png', maxZoom: 6 },

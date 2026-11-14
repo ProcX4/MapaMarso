@@ -54,7 +54,7 @@ export function ElevationProfile() {
   const stopMarks = route.order.map((s, i) => ({
     stop: s,
     d: route.legs.slice(0, i).reduce((sum, l) => sum + l.m, 0),
-    label: s.kind === 'base' ? 'H' : s.kind === 'destination' ? 'B' : String(i),
+    label: s.kind === 'base' ? 'A' : s.kind === 'destination' ? 'B' : String(i),
   }))
 
   const hoverIndex = hover ? profile.findIndex((p) => p.at === hover) : -1

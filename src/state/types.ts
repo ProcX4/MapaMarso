@@ -1,6 +1,9 @@
 export type LngLat = [lon: number, lat: number]
 
 export type StopKind = 'base' | 'waypoint' | 'science' | 'destination'
+
+/** What a click on the map does while planning: place that kind of stop, or just look ('look') */
+export type Placing = StopKind | 'look'
 export type Stop = { id: string; kind: StopKind; name: string; at: LngLat; note?: string }
 
 export type LayerState = { id: string; visible: boolean; opacity: number }
@@ -15,7 +18,8 @@ export type MarswalkState = {
   layers: LayerState[]
   selected: LngLat | null // last clicked point → site card
   pinned: LngLat | null // a point kept for comparing with the selected one
-  stops: Stop[] // walking order; base first
+  stops: Stop[] // walking order; base first once placed (a new route starts empty: the user places the start)
+  placing: Placing // planner: what the next map click places
   roundTrip: boolean // finish back at base
   routeOption: RouteOption // which of the two A* routes is walked
   walkingSpeedKmh: number // assumption, shown as ESTIMATED

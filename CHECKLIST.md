@@ -28,7 +28,7 @@ Height and shape of the ground, and the A* safe path round steep and deep terrai
 - [x] **Terrain roughness:** Trek's global MOLA roughness layer, plus a derived roughness (spread of slope within 100 m) along the route in the stats (PS §3, §4.2)
 - [x] **Nearby hazard on the site card:** "Steep ground (16.2°) about 500 m north", within 1 km, anywhere on Mars (PS §5)
 - [x] **Return route follows the A* path:** EVA's back-to-base distance and time go back along the path (or on round the loop if shorter), climb included (PS §2.3, A10)
-- [x] **Traverse safety envelope:** Topographic layer *Safety envelope*, the ground the habitat can be walked to and back from within the EVA (GS, PS §8)
+- [ ] ~~**Traverse safety envelope**~~: built (v0.5.2), then removed with the Safety envelope layer on 2026-11-15 at the team's request; the EVA margin in the planner's Review step still covers time to get back (GS, PS §8)
 - [x] **Alternative routes:** *Safest* vs *Most direct*, compared side by side in the planner; the other is drawn dashed on the map (PS §2.2, §16)
 - [x] **Error states:** with `/api/elevation` blocked, the planner says the elevation couldn't be loaded and legs are straight; the site card and stats show "No data"; nothing spins (SS §8)
 - [x] **Keyboard and colour check:** map takes focus, + zooms, arrows pan; route options reached by Tab and switched by Space; new shading and envelope have text legends (FS §8)
@@ -106,7 +106,7 @@ Infrared and mineral maps.
 ## 5. Decisions and docs (GS) · Jastini
 
 - [ ] Demo site: Jezero or Gale (D1)
-- [ ] Habitat location: a real spot, renamed from "Habitat (placeholder)" (D2)
+- [x] Habitat location (D2): no placeholder any more; every route's planner places its own start
 - [x] Gen Spec tech-stack line says OpenLayers (D3)
 - [ ] Team table: names and roles (D5; also "Team: TBD" on the About page)
 - [ ] Licence: add `LICENSE`, update Gen Spec (D6)
@@ -249,7 +249,7 @@ The 17 tasks in the three Todo images, with the owner from the section headings 
 
 ### Decisions the team still has to make
 - [ ] **7. Confirm the demo site** · Jastini (§5). Jezero is a placeholder; Gale and its boxwork is the alternative (D1).
-- [ ] **8. Pick a real habitat location** · Jastini (§5). Today it's the Perseverance landing point, "Habitat (placeholder)" (D2).
+- [x] **8. Pick a real habitat location** · Done 2026-11-15 differently: there is no fixed habitat; each route's planner places its start (D2).
 - [ ] **9. Fill in the team names and roles** on the About page and in Gen Spec · Jastini (§5) (D5).
 - [ ] **10. Add a licence file** · Jastini (§5) (D6).
 - [ ] **11. Decide whether space sound defaults to on** · Jastini (§5). It plays by default today (D7).

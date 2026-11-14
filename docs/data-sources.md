@@ -13,8 +13,6 @@ NASA data is used under NASA's media and data guidelines: https://www.nasa.gov/n
 | Steep, deep and rocky ground (`slope`) | — | Derived from the elevation above (Horn slope, depth below a 600 m box mean) and, at Jezero, rocky ground from the HiRISE DTMs below | Same as the elevation used | — | — | Derived | In use |
 | Rocky ground, Jezero (route finder) | `DTM_MOLAtopography_DeltaGeoid_Jezero_{C,CR_NORTH,CR_SOUTH,DL,E,N,W}_Edited_affine_1m_Eqc_latTs0_lon0` | HiRISE stereo · MRO (USGS Mars 2020 TRN) | 1 m/px in, 20 m/px out (`public/data/site-obstacles.bin`) | https://planetarymaps.usgs.gov/mosaic/mars2020_trn/HiRISE/ | USGS, public domain | Derived | In use |
 | Safe path (`route`) | — | A* over the same grid (`src/data/pathfind.worker.ts`) | Same as the elevation used | — | — | Derived | In use |
-| Safety envelope (`reach`) | — | Derived from the elevation above and the walking assumptions | Same as the elevation used | — | — | Estimated | In use |
-| Surface roughness (`mola-roughness`) | `mola_roughness` | MOLA · Mars Global Surveyor | tiles to zoom 1 | https://trek.nasa.gov/tiles/Mars/EQ/mola_roughness/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use |
 | **Optical** | | | | | | | |
 | Colour mosaic (`viking-color`) | `Mars_Viking_MDIM21_ClrMosaic_global_232m` | Viking Orbiter cameras · Viking 1 & 2 | 232 m/px (tiles to zoom 7) | https://trek.nasa.gov/tiles/Mars/EQ/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use |
 | Colour atlas (`moc-color`) | `msss_atlas_simp_clon` | MOC wide angle · Mars Global Surveyor | tiles to zoom 6 | https://trek.nasa.gov/tiles/Mars/EQ/msss_atlas_simp_clon/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use |

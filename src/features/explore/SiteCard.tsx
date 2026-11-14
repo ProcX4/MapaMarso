@@ -5,14 +5,11 @@ import { slopeBand } from '../../data/slope'
 import { NEARBY_HAZARD_M, TERRAIN_NOTE } from '../../data/terrain'
 import { distanceM } from '../../data/mars'
 import { formatDistance, formatLatLon, formatM, formatSlope, NO_DATA } from '../../lib/format'
-import { Button } from '../../components/Button'
 import { ProvenanceTag } from '../../components/ProvenanceTag'
-import { LIMITS, SLOPE_BANDS } from '../../config/assumptions'
+import { SLOPE_BANDS } from '../../config/assumptions'
 import { Icon } from '../../components/Icon'
 import { useNow } from '../../hooks/useNow'
 import { daylightText, sunElevation } from '../../data/daylight'
-import type { StopKind } from '../../state/types'
-import { MAP_PLAN } from '../../lib/missionPaths'
 import { RoverPhotos } from './RoverPhotos'
 import { CompareSites } from './CompareSites'
 
@@ -42,12 +39,6 @@ export function SiteCard() {
     .map((t) => ({ ...t, m: distanceM(t.at, at) }))
     .filter((t) => t.m <= NEARBY_M)
     .sort((a, b) => a.m - b.m)
-  const full = state.stops.length >= LIMITS.maxStops
-
-  const add = (kind: StopKind, name: string) => {
-    dispatch({ type: 'addStop', stop: { id: crypto.randomUUID(), kind, name, at } })
-  }
-
   return (
     <aside className="info-card site-card" aria-label="Site analysis">
       <button type="button" className="info-card-close" aria-label="Close site card" onClick={() => dispatch({ type: 'select', at: null })}>
@@ -105,25 +96,7 @@ export function SiteCard() {
 
       <RoverPhotos at={at} />
 
-      <div className="site-card-actions">
-        <Button disabled={full} onClick={() => add('waypoint', 'Waypoint')}>Add waypoint</Button>
-        <Button disabled={full} variant="ghost" onClick={() => add('science', 'Science stop')}>Add science stop</Button>
-        <Button
-          disabled={full}
-          variant="ghost"
-          onClick={() => {
-            add('destination', 'Destination')
-            if (state.mode !== 'plan') window.location.hash = MAP_PLAN
-          }}
-        >
-          Route here
-        </Button>
-        {/* A mission can start anywhere on Mars: this moves the route's start (A) here */}
-        <Button variant="ghost" onClick={() => dispatch({ type: 'setBase', at, name: `Start ${formatLatLon(at)}` })}>
-          Set as start
-        </Button>
-      </div>
-      {full && <p className="muted site-card-note">Route is full ({LIMITS.maxStops} stops max).</p>}
+      {/* Stops are added from the planner's left panel (its "Click the map to place" picker), not here */}
 
       {source && <p className="provenance-line">Elevation: {source}</p>}
     </aside>

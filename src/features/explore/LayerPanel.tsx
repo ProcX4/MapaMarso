@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useMarswalk } from '../../hooks/useMarswalk'
 import { useDatasets, useRoute } from '../../hooks/useDerived'
 import { TERRAIN_NOTE, type TerrainGrid } from '../../data/terrain'
 import type { SafePathState } from '../../hooks/useSafePath'
-import { GROUPS, LAYERS, provenanceLine, type LayerDef } from '../../map/layers/registry'
+import { GROUPS, LAYERS, provenanceLine, SUBGROUPS, type LayerDef } from '../../map/layers/registry'
+import { readJson, writeJson } from '../../lib/storage'
 import { SITE } from '../../config/site'
 import { Switch } from '../../components/Switch'
 import { useMapView } from '../../hooks/useMapView'
@@ -34,9 +35,8 @@ function usePathInfo(missionPath: SafePathState | null | undefined): PathInfo {
 }
 
 /** Which dataset feeds a layer, so the panel can say "No data loaded" honestly. */
-function layerStatus(def: LayerDef, path: PathInfo, targets: LoadStatus, reach: LoadStatus): LoadStatus | 'no-route' {
+function layerStatus(def: LayerDef, path: PathInfo, targets: LoadStatus): LoadStatus | 'no-route' {
   if (def.id === 'slope' || def.id === 'route') return path.status
-  if (def.id === 'reach') return reach
   if (def.id === 'science-targets') return targets
   return 'ready'
 }
@@ -79,7 +79,7 @@ function LayerRow({ def, path, view }: { def: LayerDef; path: PathInfo; view: Ma
   const { state, dispatch } = useMarswalk()
   const layer = state.layers.find((l) => l.id === def.id)!
   const data = useDatasets()
-  const status = layerStatus(def, path, data.targets.status, data.reach.status)
+  const status = layerStatus(def, path, data.targets.status)
   const topographic = def.id === 'slope' || def.id === 'route'
   const routing = def.id === 'route' ? ROUTING_TEXT[path.routing] : null
   // Switched on but not visible from here (too far out, too close, or another part of Mars): say why, rather than
@@ -167,6 +167,42 @@ type PanelProps = {
   missionPath?: SafePathState | null
 }
 
+/** Which group buttons are open, remembered per browser so the list opens the way it was left */
+const FOLDERS_KEY = 'mapa.layerFolders'
+
+/**
+ * A group of layers behind a button (Topographic, Optical, Spectral, and Spectral's own heat, mineral and dust
+ * groups): the button says how many of its layers are on, and opens to show them.
+ */
+function LayerFolder({ id, label, note, layers, level, children }: { id: string; label: string; note: string; layers: LayerDef[]; level: 'group' | 'subgroup'; children: ReactNode }) {
+  const { state } = useMarswalk()
+  const [open, setOpen] = useState(() => (readJson<string[]>(FOLDERS_KEY) ?? []).includes(id))
+  const on = layers.filter((d) => state.layers.find((l) => l.id === d.id)?.visible).length
+  const toggle = () => {
+    const next = !open
+    setOpen(next)
+    const saved = new Set(readJson<string[]>(FOLDERS_KEY) ?? [])
+    if (next) saved.add(id)
+    else saved.delete(id)
+    writeJson(FOLDERS_KEY, [...saved])
+  }
+  return (
+    <div className={`layer-folder is-${level}${open ? ' is-open' : ''}`}>
+      <button type="button" className="layer-folder-btn" aria-expanded={open} aria-controls={`layer-folder-${id}`} onClick={toggle}>
+        <span className="layer-folder-label">
+          {label}
+          <small>{note}</small>
+        </span>
+        <span className="layer-folder-count num">{on}/{layers.length}</span>
+        <Icon name="chevron" size={14} />
+      </button>
+      <div id={`layer-folder-${id}`} className="layer-folder-body" hidden={!open}>
+        {children}
+      </div>
+    </div>
+  )
+}
+
 /** The Layers button, lit while the list is out. */
 export function LayersButton({ open, onClick }: { open: boolean; onClick: () => void }) {
   return (
@@ -201,17 +237,31 @@ export function LayerPanel({ open: openProp, onOpenChange, button = true, blocke
           <span className="hud-count">{visible}/{LAYERS.length} on</span>
         </div>
         <div className="hud-panel-body">
-          {GROUPS.map((g) => (
-            <div key={g.id} className="layer-group">
-              <h3 className="layer-group-head">{g.label}</h3>
-              <p className="layer-group-note">{g.note}</p>
-              <ul>
-                {LAYERS.filter((l) => l.group === g.id).map((def) => (
-                  <LayerRow key={def.id} def={def} path={path} view={view} />
-                ))}
-              </ul>
-            </div>
-          ))}
+          {GROUPS.map((g) => {
+            const inGroup = LAYERS.filter((l) => l.group === g.id)
+            const subgroups = SUBGROUPS.filter((sg) => inGroup.some((l) => l.subgroup === sg.id))
+            return (
+              <LayerFolder key={g.id} id={g.id} label={g.label} note={g.note} layers={inGroup} level="group">
+                <ul>
+                  {inGroup.filter((l) => !l.subgroup).map((def) => (
+                    <LayerRow key={def.id} def={def} path={path} view={view} />
+                  ))}
+                </ul>
+                {subgroups.map((sg) => {
+                  const inSub = inGroup.filter((l) => l.subgroup === sg.id)
+                  return (
+                    <LayerFolder key={sg.id} id={sg.id} label={sg.label} note={sg.note} layers={inSub} level="subgroup">
+                      <ul>
+                        {inSub.map((def) => (
+                          <LayerRow key={def.id} def={def} path={path} view={view} />
+                        ))}
+                      </ul>
+                    </LayerFolder>
+                  )
+                })}
+              </LayerFolder>
+            )
+          })}
         </div>
       </section>
     </div>

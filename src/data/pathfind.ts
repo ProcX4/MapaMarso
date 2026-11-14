@@ -14,8 +14,6 @@ export type PathRequest = {
   grid: Grid
   /** Stops in walking order; one point (or none) just maps the terrain */
   points: [number, number][]
-  /** Mark the ground that can be walked to and back from `from` within `budgetM` flat-equivalent metres */
-  reach?: { from: [number, number]; budgetM: number }
   /** Rocky share per cell on the same grid, 0–100 %, 255 = not covered (the site's HiRISE-derived map) */
   obstacles?: Uint8Array
 }
@@ -27,8 +25,6 @@ export type PathResponse = {
   hazard: Uint8Array
   /** Per cell: spread (standard deviation) of slope within ROUGHNESS_RADIUS_M, in degrees: bumpy ground is high */
   roughness: Float32Array
-  /** Per cell: 1 where it can be reached and left again in time (null when no reach was asked for) */
-  reach: Uint8Array | null
 }
 
 /** How each cell of the terrain was judged */
