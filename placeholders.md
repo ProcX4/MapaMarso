@@ -67,4 +67,4 @@ All in `src/config/assumptions.ts` unless noted. Shown in the UI on hover of eve
 | V4 | Fonts from Google Fonts | `src/styles/tokens.css` | Keep, or self-host and drop the Google entries from the CSP |
 | V6 | Draco-compressed orbiter models under the deployed CSP (`wasm-unsafe-eval`) | `vercel.json` | Open an MRO or TGO card on the live globe and see the model, with no CSP error in the console |
 | V7 | JPL Horizons proxy on Vercel | `api/horizons.ts` | `/api/horizons?body=phobos&day=<yesterday>` returns a table on the live site |
-| V5 | Repo settings: secret scanning, push protection, Dependabot, branch protection on `main` | GitHub | Pushed to https://github.com/S-Urchin/MapaMarso. Still to do: turn these on in the repo settings (Security Spec §2, §6) |
+| V5 | Repo settings: secret scanning, push protection, Dependabot, branch protection on `main` | GitHub | Pushed to https://github.com/ProcX4/MapaMarso (moved from S-Urchin/MapaMarso). Still to do: turn these on in the repo settings (Security Spec §2, §6) |
