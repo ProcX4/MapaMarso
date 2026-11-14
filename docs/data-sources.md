@@ -50,5 +50,6 @@ Offline copies of the Trek tiles around the demo site live in `public/tiles/` (`
 | Mars Express, Hope | Stand-in shapes of their real size (no published model) | Labelled on their cards | Estimated |
 | Stars | Yale Bright Star Catalogue, 5th ed. (Hoffleit & Warren 1991) | Public | Observed |
 | Surface radiation (planner's Radiation panel) | MSL RAD at Gale crater: galactic cosmic ray dose equivalent 0.67 mSv/day, Aug 2012 to Jun 2013; Hassler et al., *Science* 2014 ("Mars' Surface Radiation Environment Measured with the Mars Science Laboratory's Curiosity Rover") | Published paper; NASA mission data | Estimated (measured elsewhere, inside a rover, near solar maximum) |
+| Place names (Search) | USGS Gazetteer of Planetary Nomenclature, Mars center points (https://planetarynames.wr.usgs.gov/shapefiles/MARS_nomenclature_center_pts.zip): 2,055 names adopted by the IAU, centres as the gazetteer gives them | USGS / IAU, public | Observed |
 | Landing sites | Published landing coordinates (`src/data/mars.ts`) | Public | Observed |
 | Viking 1 close-up terrain | Procedural ground around the real lander and trench positions | MAPA/MapaMars | Estimated |

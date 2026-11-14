@@ -92,7 +92,7 @@ Infrared and mineral maps.
 - [x] Route-deviation warning in EVA (PS §2.3): "OFF ROUTE · 89 m from the planned path" past 30 m (A14). The simulated position is always on the route, so a "Simulated drift off the route" slider moves it to the right to try the warning
 - [x] Route export to a file (PS §16): *Export route* in the planner downloads a GeoJSON of the walked path (with elevations) and the stops, on this device only; saving to Supabase works too
 - [ ] Site comparison (PS §16)
-- [ ] Search: replace the 2 hand-typed place names with the IAU gazetteer (P6)
+- [x] Search: all 2,055 IAU-adopted Mars names (P6), loaded when you start typing, accents ignored, zoom chosen from the feature's size; the landing site's NASA name is kept and marked as not IAU
 
 ### Frontend rules (FS §8, §10, definition of done)
 - [x] Every value tagged OBSERVED / DERIVED / ESTIMATED; estimates show their assumption; "No data" instead of a guess
@@ -257,7 +257,7 @@ The 17 tasks in the three Todo images, with the owner from the section headings 
 ### Data and content to finish
 - [ ] **12. Restore a geology or science layer** · *out of scope as a geology layer* (§7: the layers are Topographic, Optical and Spectral). The science side is covered by Spectral (#1 and the CRISM layer in §3).
 - [ ] **13. Add a rover traverse layer** · *out of scope* (§7; stretch goal P8).
-- [ ] **14. Replace the hand-typed place names with verified IAU gazetteer names** · everyone (§4). Two entries today (P6).
+- [x] **14. Replace the hand-typed place names with verified IAU gazetteer names** · everyone (§4). Done 2026-11-15 with all 2,055 IAU names (P6); the old hand-typed Jezero point was 0.1° off.
 - [ ] **15. Complete `docs/data-sources.md`** · Jastini (§5). Product ID, URL and licence for every layer; the science-targets row is still TBD (P9). Check the terms and load of `api/elevation.ts`, which reads a 2 GB USGS file (byte ranges only, cached a week).
 - [ ] **16. Add landing-site close-ups for other sites** if the demo needs them · everyone (§4). Only Viking 1 has one (P11).
 - [x] **17. Spot-check the slope maths against `gdaldem slope`** · Jim. Done 2026-11-15 by re-implementing GDAL's Horn formula: exact match. Note: plain `gdaldem` on this file reads ~0.14° low unless given the true pixel spacing (see §1).

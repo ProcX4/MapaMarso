@@ -11,7 +11,8 @@
     "prefetch-tiles": "node scripts/prefetch-tiles.mjs",
     "check-upstreams": "node scripts/check-upstreams.mjs",
     "build-science-targets": "node scripts/build-science-targets.mjs",
-    "check-api-abuse": "node scripts/check-api-abuse.mjs"
+    "check-api-abuse": "node scripts/check-api-abuse.mjs",
+    "build-gazetteer": "node scripts/build-gazetteer.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",
