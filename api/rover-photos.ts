@@ -212,8 +212,10 @@ function pick(photos: RoverPhoto[]) {
 export async function GET(request: Request): Promise<Response> {
   if (request.method !== 'GET') return text('Method not allowed', 405, { allow: 'GET' })
   const q = new URL(request.url).searchParams
-  const lon = Number(q.get('lon')), lat = Number(q.get('lat'))
-  const radius = q.has('radius') ? Number(q.get('radius')) : DEFAULT_RADIUS_M
+  // A missing or empty value must not count as 0 (Number(null) and Number('') are both 0)
+  const num = (v: string | null) => (v === null || v.trim() === '' ? NaN : Number(v))
+  const lon = num(q.get('lon')), lat = num(q.get('lat'))
+  const radius = q.has('radius') ? num(q.get('radius')) : DEFAULT_RADIUS_M
   if (!(lon >= -180 && lon <= 180 && lat >= -90 && lat <= 90)) return text('Bad point: lon (°E, -180..180) and lat (°N)', 400)
   if (!(radius > 0 && radius <= MAX_RADIUS_M)) return text(`Bad radius: 1..${MAX_RADIUS_M} m`, 400)
 

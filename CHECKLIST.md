@@ -148,8 +148,8 @@ Listed so nobody builds them by accident. Bring one back only if the scope chang
 - [ ] GitHub secret scanning and push protection on `ProcX4/MapaMarso`
 - [ ] Dependabot alerts on
 - [ ] Branch protection on `main`: PR required, one review, no force-push
-- [ ] Vercel installs with `npm ci` (lock file is committed)
-- [ ] `npm audit`: no high / critical runtime issues
+- [x] Vercel installs with `npm ci`: `installCommand` set in `vercel.json` (lock file is committed)
+- [x] `npm audit`: 0 vulnerabilities in runtime dependencies (2026-11-15)
 
 ### Proxies (§3)
 - [x] `api/tiles.ts`: fixed host, allow-listed layers, validated z/row/col, jpg/png, GET only, 10 s timeout + one retry, image type and 2 MB checks, nothing forwarded, week-long cache, plain error messages
@@ -171,19 +171,19 @@ Listed so nobody builds them by accident. Bring one back only if the scope chang
 - [x] No `dangerouslySetInnerHTML`, `innerHTML`, `eval`, `new Function` or string `setTimeout`; user text drawn as text; data-built links are internal; external links `noopener noreferrer`
 - [x] Input limits (coordinates, 12 stops, 80 / 500 chars, speed, EVA hours); CSP and security headers; storage reads in `try/catch`
 - [x] Email + username only; usernames shown, emails never; simulated EVA position; `geolocation=()`
-- [ ] About page explains **how to delete an account** (it says what's stored, and how to delete missions)
+- [ ] About page explains **how to delete an account**: it now says there is no button yet, asks the reader to ask the team, and lists what deletion removes (profile, missions, crew memberships, entries; checked against the `on delete cascade` links in `supabase/schema.sql`). Still to do: name a real contact, or add a self-service delete (a `security definer` function plus a button; needs Supabase to apply)
 
 ### Availability (§8)
 - [x] Pre-fetched demo tiles with fallback; DTM served from our own deployment; map and planning work signed out
 - [ ] Every network call has a visible error state (elevation / A* done, see §1; check the rest)
 
 ### Pre-demo checks (§9), run before judging
-- [ ] `git log -p | grep -iE "service_role|secret|password|api[_-]?key"` finds nothing that matters
+- [x] `git log -p | grep -iE "service_role|secret|password|api[_-]?key"` finds nothing that matters (checked 2026-11-15 over all branches: no added line holds a key; no `.env` file is tracked except the blank `.env.example`)
 - [ ] RLS on for every table
-- [ ] `/api/tiles/../../etc` and `/api/tiles/UnknownLayer/0/0/0.jpg` both return 400
+- [x] `/api/tiles/../../etc` and `/api/tiles/UnknownLayer/0/0/0.jpg` both return 400: `npm run check-api-abuse` covers these and 16 more bad requests to the three API handlers (found and fixed one: `/api/rover-photos` with no parameters answered 200 as if the point were 0°, 0°)
 - [ ] A mission named `<img src=x onerror=alert(1)>` shows as plain text everywhere
-- [ ] Security headers present on the live site
-- [ ] `npm audit` clean of high / critical runtime issues
+- [x] Security headers present on the live site (checked 2026-11-15: CSP, nosniff, referrer policy, permissions policy, HSTS)
+- [x] `npm audit` clean of high / critical runtime issues (0 vulnerabilities)
 - [ ] App works offline after first load (cached demo tiles)
 
 ---

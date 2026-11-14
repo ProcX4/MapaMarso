@@ -1,4 +1,5 @@
 {
+  "installCommand": "npm ci",
   "rewrites": [
     { "source": "/api/tiles/:path*", "destination": "/api/tiles" }
   ],
