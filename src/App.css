@@ -339,7 +339,7 @@
 }
 .tool.is-on { color: var(--black); background: var(--white); border-color: var(--white); }
 /* In Plan mode the tools sit above the elevation profile */
-.mode-plan .tool-dock { bottom: 230px; left: calc(var(--panel-w) + 40px); }
+.mode-plan .tool-dock { bottom: 272px; left: calc(var(--panel-w) + 40px); }
 
 /* Interface hidden: every panel, card and button fade away, leaving the map and the one button that
    brings everything back */

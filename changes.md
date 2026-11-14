@@ -61,6 +61,24 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.8 · Site card on terrain, hazards and pictures; elevation profile as a readable card
+
+**Changed: the site card (right panel)**
+- It now reads **Terrain → Hazards → Pictures**. The compare feature (pin a point, compare two) is removed, with its state and styles.
+- The science-target list is gone; when a target is within 500 m, the nearest one shows just above the pictures with its reason (kept to three lines, so the photos stay in view) and a count of the others. The photos heading is now **Pictures**.
+
+**Changed: the elevation profile**
+- It's a compact card beside the planner (up to 600 × 240 px) instead of a strip across the whole bottom: a long thin chart flattened every hill and covered the map. The chart fills the card.
+- Distance marks along the bottom (every 5 km on a 25 km walk), heights on round steps, and a faint fill under the line.
+- **"heights ×N"** says how much taller the hills are drawn than they are (×57 on a 25 km walk at Jezero), so a steep-looking stretch isn't mistaken for real steepness; the slope numbers are real. Hover still links the profile and the map.
+- The map's tool buttons and the guide card moved up so neither covers the profile.
+
+**Verified (headless Chrome on a production build; no page errors)**
+- Site card sections Terrain > Hazards > Pictures, no compare; at the Montdenier target: its reason, "and 5 more", and 8 photos in view.
+- Profile card 600 × 240 with height and distance marks, the stretch label and the fill; hover reads distance, height and slope; the guide and tool buttons don't overlap it.
+
+---
+
 ## 2026-11-15 · v0.5.7 · Planner in steps; stops placed from the left panel; layers behind group buttons; science-target guide
 
 **Changed: the planner, in three steps (the old mission form's layout)**

@@ -3,33 +3,58 @@ import { useHover, useRoute } from '../../hooks/useDerived'
 import { formatDistance, formatM, formatSlope, NO_DATA } from '../../lib/format'
 import { ProvenanceTag } from '../../components/ProvenanceTag'
 
-const H = 150
-const PAD = { top: 12, right: 16, bottom: 24, left: 64 }
+const PAD = { top: 16, right: 14, bottom: 26, left: 62 }
+
+/** A round step for axis marks: 1, 2 or 5 times a power of ten, giving about `count` marks over `span` */
+function niceStep(span: number, count: number) {
+  const raw = span / Math.max(1, count)
+  const pow = 10 ** Math.floor(Math.log10(raw))
+  const n = raw / pow
+  return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * pow
+}
+
+/** Marks from `min` to `max` on whole steps */
+function ticks(min: number, max: number, step: number) {
+  const out: number[] = []
+  for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-6; v += step) out.push(v)
+  return out
+}
 
 /**
- * Hand-drawn SVG profile. Hover links both ways: hovering here moves a marker on the
- * map, and hovering the route on the map moves the cursor here.
+ * Hand-drawn SVG profile that fills its card. Hover links both ways: hovering here moves a marker on the map,
+ * and hovering the route on the map moves the cursor here. Heights are stretched to fit the card; the
+ * stretch is printed, so a steep-looking stretch isn't taken for real steepness.
  */
 export function ElevationProfile() {
   const route = useRoute()
   const { hover, setHover } = useHover()
   const box = useRef<HTMLDivElement>(null)
-  const [width, setWidth] = useState(600)
+  const [size, setSize] = useState({ width: 520, height: 160 })
 
+  // The chart only exists once there's a route; measure it whenever it appears, and as the card resizes
+  const charted = route.order.length >= 2
   useEffect(() => {
     const el = box.current
     if (!el) return
-    const ro = new ResizeObserver(([e]) => setWidth(Math.max(240, e.contentRect.width)))
+    const ro = new ResizeObserver(([e]) => {
+      const next = { width: Math.max(240, Math.round(e.contentRect.width)), height: Math.max(110, Math.round(e.contentRect.height)) }
+      setSize((s) => (s.width === next.width && s.height === next.height ? s : next))
+    })
     ro.observe(el)
     return () => ro.disconnect()
-  }, [])
+  }, [charted])
+  const { width, height: H } = size
 
   const { profile, totalM } = route
   const elevs = profile.map((p) => p.elevM).filter((e): e is number => e !== null)
   const hasElev = elevs.length > 1
-  const min = hasElev ? Math.min(...elevs) : 0
-  const max = hasElev ? Math.max(...elevs) : 1
-  const span = max - min || 1
+  // A little headroom over the highest and lowest points, out to whole height steps
+  const lo = hasElev ? Math.min(...elevs) : 0
+  const hi = hasElev ? Math.max(...elevs) : 1
+  const yStep = niceStep(Math.max(hi - lo, 10), 3)
+  const min = Math.floor(lo / yStep) * yStep
+  const max = Math.max(Math.ceil(hi / yStep) * yStep, min + yStep)
+  const span = max - min
   const innerW = width - PAD.left - PAD.right
   const innerH = H - PAD.top - PAD.bottom
   const x = (d: number) => PAD.left + (totalM ? (d / totalM) * innerW : 0)
@@ -84,13 +109,28 @@ export function ElevationProfile() {
     )
   }
 
-  const gridYs = hasElev ? [min, min + span / 2, max] : []
+  const gridYs = hasElev ? ticks(min, max, yStep) : []
+  const xTicks = ticks(0, totalM, niceStep(totalM, Math.max(2, Math.floor(innerW / 110))))
+  // How much taller the hills are drawn than they are: horizontal metres per pixel over vertical metres per pixel
+  const stretch = hasElev && totalM ? totalM / innerW / (span / innerH) : 1
+  const linePath = hasElev ? pathFor(profile) : ''
+  // The ground under the line, faintly filled so the shape reads at a glance (only where elevation runs unbroken)
+  const firstElev = profile.find((p) => p.elevM !== null)
+  const lastElev = [...profile].reverse().find((p) => p.elevM !== null)
+  const unbroken = !!firstElev && !!lastElev && !profile.slice(profile.indexOf(firstElev), profile.indexOf(lastElev) + 1).some((p) => p.elevM === null)
+  const floorY = (PAD.top + innerH).toFixed(1)
+  const areaPath = hasElev && unbroken ? `${linePath}L${x(lastElev!.distM).toFixed(1)},${floorY}L${x(firstElev!.distM).toFixed(1)},${floorY}Z` : ''
 
   return (
     <div className="plan-profile">
       <div className="plan-profile-head">
         <h2 className="kicker">Elevation profile</h2>
         <ProvenanceTag category="derived" note="Sampled every 10 m along the A* safe path, from the Jezero CTX DTM at the site or MOLA elsewhere" />
+        {hasElev && stretch > 1.5 && (
+          <span className="plan-profile-stretch num" title="Heights are drawn taller than they are so small rises show; the slope numbers are real">
+            heights ×{stretch < 10 ? stretch.toFixed(1) : Math.round(stretch)}
+          </span>
+        )}
         {hp && (
           <span className="plan-profile-readout num">
             {formatDistance(hp.distM)} · {hp.elevM !== null ? formatM(hp.elevM) : NO_DATA} · {hp.slopeDeg !== null ? formatSlope(hp.slopeDeg) : NO_DATA}
@@ -116,12 +156,17 @@ export function ElevationProfile() {
             </g>
           ))}
           <line x1={PAD.left} x2={width - PAD.right} y1={PAD.top + innerH} y2={PAD.top + innerH} className="profile-grid" />
-          <text x={PAD.left} y={H - 6} className="profile-axis">0</text>
-          <text x={width - PAD.right} y={H - 6} textAnchor="end" className="profile-axis">{formatDistance(totalM)}</text>
+          {xTicks.map((d) => (
+            <g key={d}>
+              <line x1={x(d)} x2={x(d)} y1={PAD.top + innerH} y2={PAD.top + innerH + 4} className="profile-grid" />
+              <text x={x(d)} y={H - 6} textAnchor={d === 0 ? 'start' : 'middle'} className="profile-axis">{d === 0 ? '0' : formatDistance(d)}</text>
+            </g>
+          ))}
 
           {hasElev ? (
             <>
-              <path d={pathFor(profile)} className="profile-line" />
+              {areaPath && <path d={areaPath} className="profile-area" />}
+              <path d={linePath} className="profile-line" />
               {route.hazards.map((h) => (
                 <path key={h.fromM} d={pathFor(profile.filter((p) => p.distM >= h.fromM && p.distM <= h.toM))} className="profile-line" style={{ stroke: `var(--${h.token})`, strokeWidth: 3 }} />
               ))}

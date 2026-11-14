@@ -103,14 +103,18 @@
 }
 .form-footer-summary { margin: 0; font-size: 14px; }
 
-/* Elevation profile: along the bottom, to the right of the planner */
+/* Elevation profile: a compact card at the bottom, beside the planner. Not a full-width strip: a long thin
+   chart flattens every hill, and the strip covered the map */
 .plan-bottom {
   position: absolute;
   left: calc(var(--panel-w) + 32px);
-  right: 72px;
+  right: auto;
   bottom: 16px;
   z-index: 25;
-  height: 190px;
+  display: flex;
+  flex-direction: column;
+  width: min(600px, calc(100vw - var(--panel-w) - 220px));
+  height: 240px;
   padding: 12px 16px;
   background: var(--panel);
   border: 1px solid rgba(255, 255, 255, 0.16);
@@ -119,7 +123,12 @@
 }
 .plan-profile-head { display: flex; align-items: center; gap: 10px; }
 .plan-profile-readout { margin-left: auto; font-size: 12px; color: var(--gray-1); }
-.plan-profile-chart { margin-top: 6px; width: 100%; cursor: crosshair; touch-action: none; }
+/* The chart fills the card below its heading, so it's drawn as tall as the card allows */
+.plan-profile { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.plan-profile-chart { flex: 1; min-height: 0; margin-top: 6px; width: 100%; overflow: hidden; cursor: crosshair; touch-action: none; }
+.plan-profile-chart svg { display: block; }
+.plan-profile-stretch { font-size: 11px; color: var(--gray-2); }
+.profile-area { fill: rgba(255, 255, 255, 0.07); stroke: none; }
 .plan-profile-chart:focus-visible { outline: 1px solid var(--white); outline-offset: 2px; }
 .profile-grid { stroke: var(--line); stroke-width: 1; }
 .profile-axis { fill: var(--gray-2); font: 10px var(--mono); font-variant-numeric: tabular-nums; }
@@ -135,7 +144,7 @@
 
 @media (max-width: 720px) {
   .planner-panel { top: auto; left: 0; right: 0; bottom: 150px; width: auto; max-height: 45%; border-radius: 14px 14px 0 0; }
-  .plan-bottom { left: 0; right: 0; bottom: 0; height: 150px; border-radius: 0; }
+  .plan-bottom { left: 0; right: 0; bottom: 0; width: auto; height: 170px; border-radius: 0; }
   .mode-plan .info-card { bottom: 160px; }
 }
 

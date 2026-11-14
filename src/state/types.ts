@@ -17,7 +17,6 @@ export type MarswalkState = {
   mode: Mode
   layers: LayerState[]
   selected: LngLat | null // last clicked point → site card
-  pinned: LngLat | null // a point kept for comparing with the selected one
   stops: Stop[] // walking order; base first once placed (a new route starts empty: the user places the start)
   placing: Placing // planner: what the next map click places
   roundTrip: boolean // finish back at base
