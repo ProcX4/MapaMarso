@@ -61,6 +61,19 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.9 · Mission page on the shared NASA map
+
+**Changed**
+- The mission details page (`#/missions/<code>`) shows its route on the same NASA map as the globe page's 2D view (`src/map/MissionMap.tsx`): the colour backdrop, the CTX photos from zoom 10 and HiRISE at Jezero from zoom 12, and the route drawn the same way (green dashes along the A* safe path, start diamond, numbered phases, finish triangle). It opens framed on the whole route. Before, it used the older canvas map, which showed blurry Viking colour imagery zoomed far out with the stops piled together.
+
+**Removed**
+- The old canvas map (`src/globe/MarsMap2D.tsx`, `src/globe/map2d.css`), now used nowhere, its marker helper (`routeMarkers`) and the dead style rules for it.
+
+**Verified (headless Chrome on a production build, with a stand-in mission; nothing written to the database)**
+- The page shows the new map (900 × 560) with + / − and no old map; the route is framed with CTX imagery under it, along the safe path (14.0 km); the imagery credit sits under the map.
+
+---
+
 ## 2026-11-15 · v0.5.8 · Site card on terrain, hazards and pictures; elevation profile as a readable card
 
 **Changed: the site card (right panel)**

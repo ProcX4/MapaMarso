@@ -713,12 +713,9 @@ a.site-back { text-decoration: none; }
   .globe-page .missions-hud { top: 120px; }
   .globe-page .missions-bar { margin-right: 0; }
   .view-switch { right: 16px; bottom: 16px; }
-  .flat-view .map2d-scale,
-  .flat-view .map2d-readout { display: none; }
   /* Above the bottom-left buttons, on the flat map as on the globe */
   .daylight-bar,
   .globe-page:has(.flat-view) .daylight-bar { bottom: 74px; gap: 8px; }
-  .flat-view .map2d.is-fill .map2d-zoom { bottom: 128px; }
   .globe-page:has(.daylight-bar) .info-card { bottom: 132px; }
   .catalog-hud { top: 120px; bottom: 140px; left: 16px; }
   .missions-hud { right: 16px; bottom: 80px; }
