@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 
 /* The jump to light speed from the home page to the globe (from MapaMars), drawn on a 2D canvas. */
 
@@ -126,9 +127,11 @@ export function Hyperspace({ onDone }: { onDone: () => void }) {
     }
   }, [])
 
-  return (
+  // Rendered at the top of the page so it covers the whole window, menu bar included, whatever page starts it
+  return createPortal(
     <div className="hyperspace" aria-hidden="true">
       <canvas ref={canvasRef} />
-    </div>
+    </div>,
+    document.body,
   )
 }
