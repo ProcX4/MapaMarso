@@ -26,9 +26,10 @@ Last updated: 2026-11-14 (v0.3.0, full idea bank merged)
 | # | Placeholder | Current state | Where | Done when |
 |---|---|---|---|---|
 | P1 | ~~**Site elevation model (DTM)**~~ | **Done 2026-11-15.** USGS Mars 2020 CTX DTM of Jezero, 20 m/px (`JEZ_ctx_B_soc_008_DTM_MOLAtopography_DeltaGeoid_20m_Eqc_latTs0_lon0.tif`, 1596×1512, equirectangular metres on the Mars sphere, read as degrees by `src/data/elevation.ts`). Outside it, the global MOLA DEM (463 m/px) through `api/elevation.ts` | `public/data/site-dtm.tif`; `src/data/terrain.ts` | — |
-| P2 | **Slope and depth** | Done: worked out by the A* worker for the ground round each route (Horn slope, depth below a 600 m box mean). Still to do: spot-check against `gdaldem slope` on the same file | `src/data/pathfind.worker.ts` | Spot-checked |
+| P2 | ~~**Slope and depth**~~ | Done 2026-11-15: worked out by the A* worker (Horn slope, depth below a 600 m box mean). Spot-checked: GDAL's Horn formula re-implemented in NumPy matches MAPA exactly on the Jezero DTM. Plain `gdaldem slope` on that file reads ~0.14° low because it takes the 20 m projected pixels as ground metres (true east–west spacing at 18.4°N is 18.9 m) | `src/data/pathfind.worker.ts` | — |
 | P3 | **Surface imagery at walking scale** | Global Trek layers only (THEMIS 100 m/px is the sharpest). The global CTX (Caltech) and HiRISE mosaics are in the Trek catalogue but serve no tiles from the standard EQ tile endpoint | `src/map/layers/registry.ts` | A CTX or HiRISE layer is found that Trek serves as tiles (or a local tile set), allow-listed in `api/tiles.ts` and added under Optical |
 | P4 | ~~**Geologic units**~~ | Removed 2026-11-15: the layers are now Topographic, Optical and Spectral only; the empty `geology.geojson` and the site card's Geology row are gone | — | — |
+| P12 | **Rocky ground** | Derived from USGS's 1 m HiRISE DTMs: share of each 20 m cell steeper than 30° at 1 m, covering 31.5 % of the site DTM (`scripts/build-obstacles.mjs`). A proxy, not a rock count | `public/data/site-obstacles.bin`; `PATHFINDING.rockSoftPct` / `rockMaxPct` | A published rock-abundance or rock-count map for the site is found and used instead, or the proxy is checked against HiRISE images of a few boulder fields |
 | P5 | **Science targets** | `public/data/science-targets.geojson` is an **empty FeatureCollection** | `public/data/science-targets.geojson`; registry `science-targets` | Points with properties `name`, `reason` (e.g. "CRISM hydrated signature"), `source`. Every target needs a real, citable reason |
 | P6 | **Place names (gazetteer)** | 2 hand-typed entries: "Jezero" (77.58°E, 18.38°N) and "Octavia E. Butler Landing" | `src/config/site.ts` → `GAZETTEER` | Replaced with verified IAU gazetteer names inside the site |
 | P7 | ~~**Thermal / mineralogy map layers**~~ | Done 2026-11-15: Spectral group (THEMIS day and night IR, TES thermal inertia, pyroxene, plagioclase, sheet silicates). CRISM/OMEGA hydrous detections are in the Trek catalogue but serve no tiles | `src/map/layers/registry.ts` | — |
@@ -39,6 +40,9 @@ Last updated: 2026-11-14 (v0.3.0, full idea bank merged)
 
 ## 3. Assumptions (all ESTIMATED, none validated)
 
+- **Safety envelope** uses the whole planned EVA (6 h) at the walking speed (2 km/h) as a there-and-back budget, on the same A* costs. ESTIMATED.
+- **Rocky ground limits:** steered round from 5 %, never entered from 25 % (share of a 20 m cell steeper than 30° at 1 m). Set from the map's own distribution, not validated.
+- **Roughness** is the spread (standard deviation) of slope within 100 m (`PATHFINDING.roughnessRadiusM`); a MAPA measure, not MOLA's own roughness product.
 - **A* route costs** (`src/config/assumptions.ts` → `PATHFINDING`): impassable at 25°, extra cost in the 10–15° and 15–25° bands, "deep" ground 15–60 m below the ground within 600 m steered round and never entered past 60 m, 3.3 flat metres per metre climbed. Tuned by eye on Jezero and Valles Marineris; not validated for a suited astronaut.
 
 All in `src/config/assumptions.ts` unless noted. Shown in the UI on hover of every ESTIMATED tag and on the About page.
@@ -54,7 +58,7 @@ All in `src/config/assumptions.ts` unless noted. Shown in the UI on hover of eve
 | A7 | Site-card "nearby targets" radius | 500 m | `src/features/explore/SiteCard.tsx` → `NEARBY_M` |
 | A8 | EVA hazard look-ahead | 200 m | `src/features/eva/EvaView.tsx` |
 | A9 | EVA low-margin warning | under 30 min spare before turning back | `src/features/eva/HazardAlert.tsx` |
-| A10 | Return-to-base estimate | straight line to base, no climb | `src/features/eva/EvaView.tsx` — replace with route-back distance once terrain routing exists |
+| A10 | ~~Return-to-base estimate~~ | Done 2026-11-15: along the A* path (back the way you came, or on round the loop if shorter), climb included | `src/features/eva/EvaView.tsx`, `src/data/route.ts` → `returnAlongRoute` |
 | A12 | Daylight | Twilight until the Sun is 10° below the horizon; sunset found in 5-minute steps; the simulated EVA starts at the real current time | `src/data/daylight.ts`, `src/features/eva/EvaView.tsx` |
 | A13 | EVA daylight caution | under 1 h of daylight to spare after getting back | `src/features/eva/HazardAlert.tsx` |
 | A11 | Profile sample step | 10 m (coarsened to keep ≤ 5,000 samples) | `PROFILE_STEP_M` |

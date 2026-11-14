@@ -21,7 +21,7 @@ function usePathInfo(missionPath: SafePathState | null | undefined): PathInfo {
     const routing: Routing =
       missionPath.status === 'error' ? 'unavailable'
       : missionPath.status === 'loading' || !v ? 'finding'
-      : v.legs.every((l) => l.status === 'safe') ? 'safe'
+      : v.legs.safest.every((l) => l.status === 'safe') ? 'safe'
       : 'partial'
     return { status: v ? 'ready' : missionPath.status === 'error' ? 'missing' : 'loading', routing, terrain: v?.terrain ?? null }
   }
@@ -30,8 +30,9 @@ function usePathInfo(missionPath: SafePathState | null | undefined): PathInfo {
 }
 
 /** Which dataset feeds a layer, so the panel can say "No data loaded" honestly. */
-function layerStatus(def: LayerDef, path: PathInfo, targets: LoadStatus): LoadStatus | 'no-route' {
+function layerStatus(def: LayerDef, path: PathInfo, targets: LoadStatus, reach: LoadStatus): LoadStatus | 'no-route' {
   if (def.id === 'slope' || def.id === 'route') return path.status
+  if (def.id === 'reach') return reach
   if (def.id === 'science-targets') return targets
   return 'ready'
 }
@@ -39,15 +40,16 @@ function layerStatus(def: LayerDef, path: PathInfo, targets: LoadStatus): LoadSt
 const ROUTING_TEXT: Record<Routing, string | null> = {
   none: null,
   finding: 'Finding a safe path…',
-  safe: 'Safe path found round steep and deep ground',
+  safe: 'Safe path found round steep, deep and rocky ground',
   partial: 'Some legs have no safe way through: shown as straight lines',
-  unavailable: 'No elevation data here: legs shown as straight lines',
+  unavailable: "Elevation data couldn't be loaded: legs shown as straight lines",
 }
 
 function LayerRow({ def, path }: { def: LayerDef; path: PathInfo }) {
   const { state, dispatch } = useMarswalk()
   const layer = state.layers.find((l) => l.id === def.id)!
-  const status = layerStatus(def, path, useDatasets().targets.status)
+  const data = useDatasets()
+  const status = layerStatus(def, path, data.targets.status, data.reach.status)
   const topographic = def.id === 'slope' || def.id === 'route'
   const routing = def.id === 'route' ? ROUTING_TEXT[path.routing] : null
   return (

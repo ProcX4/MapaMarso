@@ -4,6 +4,8 @@ import { SLOPE_BANDS } from '../../config/assumptions'
 
 /** Map colours for deep ground (the slope bands use the caution / hazard / alert tokens) */
 export const DEEP_COLOURS = { soft: '#7aa7ff', deep: '#3b5bdb' }
+/** Map colours for rocky ground (boulders, blocky outcrop) */
+export const ROCK_COLOURS = { soft: '#d9b38c', rocky: '#9c6b3c' }
 
 export type LayerDef = {
   id: string
@@ -66,13 +68,13 @@ export const LAYERS: LayerDef[] = [
   },
   {
     id: 'slope',
-    name: 'Steep and deep ground',
+    name: 'Steep, deep and rocky ground',
     group: 'topographic',
     kind: 'cog',
     source: 'route',
     category: 'derived',
     provenance: {
-      derivedFrom: 'Calculated by MAPA around your route: slope (Horn method) and depth below the surrounding ground',
+      derivedFrom: 'Calculated by MAPA around your route: slope (Horn method), depth below the surrounding ground, and at Jezero rocky ground from the 1 m HiRISE DTMs',
       resolution: '20 m/px on the Jezero CTX DTM, 463 m/px on MOLA elsewhere',
     },
     defaultVisible: true,
@@ -84,7 +86,38 @@ export const LAYERS: LayerDef[] = [
       })),
       { label: 'Deep: steered round', color: DEEP_COLOURS.soft },
       { label: 'Deep: never entered', color: DEEP_COLOURS.deep },
+      { label: 'Rocky: steered round', color: ROCK_COLOURS.soft },
+      { label: 'Rocky: never entered', color: ROCK_COLOURS.rocky },
     ],
+  },
+  {
+    id: 'reach',
+    name: 'Safety envelope',
+    group: 'topographic',
+    kind: 'cog',
+    source: 'route',
+    category: 'estimated',
+    provenance: {
+      derivedFrom: 'Ground the habitat can be walked to and back from within the EVA, at the assumed walking speed, round steep and deep ground (A* costs)',
+      resolution: 'Same as the elevation used',
+    },
+    defaultVisible: false,
+    defaultOpacity: 0.6,
+    legend: [{ label: 'There and back within the EVA', color: 'var(--ok)' }],
+  },
+  {
+    id: 'mola-roughness',
+    name: 'Surface roughness (MOLA)',
+    group: 'topographic',
+    ...trek('mola_roughness'),
+    category: 'observed',
+    provenance: {
+      instrument: 'MOLA',
+      mission: 'Mars Global Surveyor',
+      product: 'mola_roughness (Mars Trek)',
+    },
+    defaultVisible: false,
+    defaultOpacity: 0.7,
   },
   {
     id: 'route',

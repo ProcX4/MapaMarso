@@ -1,4 +1,4 @@
-import type { LayerState, LngLat, MarswalkState, Mode, OpenMission, Stop } from './types'
+import type { LayerState, LngLat, MarswalkState, Mode, OpenMission, RouteOption, Stop } from './types'
 import { LAYERS } from '../map/layers/registry'
 import { EVA, LIMITS, WALKING } from '../config/assumptions'
 import { SITE } from '../config/site'
@@ -15,6 +15,7 @@ export type Action =
   | { type: 'removeStop'; id: string }
   | { type: 'reorderStops'; from: number; to: number }
   | { type: 'setRoundTrip'; value: boolean }
+  | { type: 'setRouteOption'; value: RouteOption }
   | { type: 'setEvaPosition'; at: LngLat }
   | { type: 'renameStop'; id: string; name: string }
   | { type: 'loadRoute'; stops: Stop[]; roundTrip: boolean; mission: OpenMission | null }
@@ -39,6 +40,7 @@ export function initialState(): MarswalkState {
     selected: null,
     stops: [baseStop()],
     roundTrip: true,
+    routeOption: 'safest',
     walkingSpeedKmh: clamp(WALKING.speedKmh, LIMITS.speedKmh),
     maxEvaHours: clamp(EVA.maxHours, LIMITS.evaHours),
     evaPosition: null,
@@ -115,6 +117,10 @@ export function reducer(state: MarswalkState, action: Action): MarswalkState {
     case 'setRoundTrip':
       return { ...state, roundTrip: action.value }
 
+    case 'setRouteOption':
+      if (action.value !== 'safest' && action.value !== 'direct') return state
+      return { ...state, routeOption: action.value }
+
     case 'setEvaPosition':
       if (!isLngLat(action.at)) return state
       return { ...state, evaPosition: action.at }
@@ -134,6 +140,6 @@ export function reducer(state: MarswalkState, action: Action): MarswalkState {
       return { ...state, mission: action.mission }
 
     case 'newRoute':
-      return { ...state, stops: [baseStop()], roundTrip: true, mission: null, evaPosition: null }
+      return { ...state, stops: [baseStop()], roundTrip: true, routeOption: 'safest', mission: null, evaPosition: null }
   }
 }
