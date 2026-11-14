@@ -118,6 +118,10 @@ export function SiteCard() {
         >
           Route here
         </Button>
+        {/* A mission can start anywhere on Mars: this moves the route's start (A) here */}
+        <Button variant="ghost" onClick={() => dispatch({ type: 'setBase', at, name: `Start ${formatLatLon(at)}` })}>
+          Set as start
+        </Button>
       </div>
       {full && <p className="muted site-card-note">Route is full ({LIMITS.maxStops} stops max).</p>}
 

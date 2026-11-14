@@ -5,9 +5,8 @@ import { Icon } from '../../components/Icon'
 import { fetchMissionByCode, fetchMissionById, type Mission } from '../../services/missions'
 import { MISSION_CODE_PATTERN } from '../../lib/missionCode'
 import { FindMission } from './FindMission'
-import { MissionForm } from './MissionForm'
 import { MissionView } from './MissionView'
-import { go, missionPath } from '../../lib/missionPaths'
+import { GLOBE_PLAN, go, missionPath, planPath } from '../../lib/missionPaths'
 import './missions.css'
 
 /* The missions pages (from MapaMars pages/missions/MissionsPage.tsx). */
@@ -55,7 +54,7 @@ export function MissionsPage() {
 }
 
 function MissionsScreen() {
-  const { user, loading: authLoading } = useAuth()
+  const { user } = useAuth()
   const screen = parse(useHash())
   const key = screen.kind === 'view' || screen.kind === 'edit' ? screen.key : null
   const code = screen.kind === 'view' || screen.kind === 'edit' ? screen.code : undefined
@@ -82,21 +81,15 @@ function MissionsScreen() {
   const current = lookup && lookup.key === key ? lookup : null
   const canManage = (m: Mission) => !!user && (m.ownerId === user.id || user.isAdmin)
 
-  const saved = (m: Mission) => {
-    setLookup({ key: `code:${m.code}`, status: 'found', mission: m })
-    setNotice(null)
-    go(missionPath(m.code ?? undefined))
-  }
-
   const deleted = (m: Mission) => {
     setLookup(null)
     setNotice(`Mission ${m.code ?? m.name} was deleted.`)
     go(missionPath())
   }
 
-  if (screen.kind === 'new') {
-    return <MissionForm user={user} authLoading={authLoading} onSaved={saved} onCancel={() => go(missionPath())} />
-  }
+  // New and edit both open the one mission planner on the 2D map (Plan Marswalk), so a mission is planned
+  // with the same map, layers, safe paths, stats and profile wherever you start from
+  if (screen.kind === 'new') return <Redirect to={GLOBE_PLAN} />
 
   if (key && !current) {
     return (
@@ -108,9 +101,7 @@ function MissionsScreen() {
 
   if (key && current?.status === 'found' && current.mission) {
     const mission = current.mission
-    if (screen.kind === 'edit' && canManage(mission)) {
-      return <MissionForm user={user} authLoading={authLoading} mission={mission} onSaved={saved} onCancel={() => go(missionPath(mission.code ?? undefined))} />
-    }
+    if (screen.kind === 'edit' && canManage(mission) && mission.code) return <Redirect to={planPath(mission.code)} />
     return (
       <MissionView
         mission={mission}
@@ -134,3 +125,10 @@ function MissionsScreen() {
 
   return <FindMission user={user} initialCode={code ?? ''} problem={problem} notice={notice} onDismissNotice={() => setNotice(null)} />
 }
+
+/** Swaps the address for another (no extra history entry), for old links to a screen that moved */
+function Redirect({ to }: { to: string }) {
+  useEffect(() => window.location.replace(to), [to])
+  return null
+}
+

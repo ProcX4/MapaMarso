@@ -9,6 +9,9 @@ import { AU_LIGHT_MIN, earthMarsDistanceAU, landingSites, marsClock } from '../.
 import { formatHours } from '../../lib/format'
 import { useNow } from '../../hooks/useNow'
 import { markWarpArrival } from '../../lib/warp'
+import { openMapAt } from '../../map/mapControl'
+import { SITE } from '../../config/site'
+import { GLOBE_2D, GLOBE_3D } from '../../lib/missionPaths'
 import './home.css'
 
 /* The home page (from MapaMars pages/HomePage.tsx), kept identical to it. */
@@ -34,12 +37,18 @@ const features = [
 
 // Matches the text-recede animation in home.css.
 const LEAVE_MS = 900
+// The Jezero showcase opens on the whole crater, close enough for the CTX photos (they start at zoom 10)
+const JEZERO_ZOOM = 10
+
+/** Where the jump lands: the 3D planet, or the demo site on the 2D map, where every tool is to hand */
+type Destination = 'globe' | 'jezero'
 
 export function HomePage() {
   const now = useNow()
   const { msd, mtc } = marsClock(now)
   const lightMinutes = earthMarsDistanceAU(now) * AU_LIGHT_MIN
   const [phase, setPhase] = useState<'idle' | 'leaving' | 'warping'>('idle')
+  const [destination, setDestination] = useState<Destination>('globe')
 
   useEffect(() => {
     if (phase !== 'leaving') return
@@ -80,17 +89,22 @@ export function HomePage() {
     }
   }, [])
 
-  const openGlobe = (e: MouseEvent<HTMLAnchorElement>) => {
+  const jump = (to: Destination) => (e: MouseEvent<HTMLAnchorElement>) => {
+    if (to === 'jezero') openMapAt(SITE.center, JEZERO_ZOOM)
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     e.preventDefault()
+    setDestination(to)
     setPhase('leaving')
   }
 
   const arrive = useCallback(() => {
-    markWarpArrival()
-    window.location.hash = '#/globe'
-  }, [])
+    // The globe glides in after the jump; the 2D map has no glide, so it opens straight onto the crater
+    if (destination === 'globe') {
+      markWarpArrival()
+      window.location.hash = GLOBE_3D
+    } else window.location.hash = GLOBE_2D
+  }, [destination])
 
   return (
     <main className={`home${phase !== 'idle' ? ' is-leaving' : ''}`}>
@@ -98,9 +112,15 @@ export function HomePage() {
         <div className="hero-copy">
           <h1>Mars, up close.</h1>
           <p>An interactive 3D globe of the red planet. Find where every NASA lander touched down and see what time it is there right now.</p>
-          <a className="button" href="#/globe" onClick={openGlobe}>
-            Open the globe →
-          </a>
+          <div className="hero-actions">
+            <a className="button" href={GLOBE_3D} onClick={jump('globe')}>
+              Explore Mars →
+            </a>
+            <a className="button-outline" href={GLOBE_2D} onClick={jump('jezero')}>
+              Explore {SITE.name}
+            </a>
+          </div>
+          <p className="hero-hint">{SITE.name} is where every tool comes together: NASA layers, safe routes, rover photos and EVA.</p>
         </div>
       </section>
       {phase === 'warping' && <Hyperspace onDone={arrive} />}

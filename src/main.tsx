@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client'
 import './styles/tokens.css'
 import './styles/base.css'
 import './components/components.css'
+// Form styles shared by the planner's save form, the account page and the mission pages
+import './styles/forms.css'
 import './features/explore/explore.css'
 import App from './App.tsx'
 import { MarswalkProvider } from './state/MarswalkContext'

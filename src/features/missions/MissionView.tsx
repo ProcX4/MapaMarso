@@ -10,7 +10,7 @@ import { formatCode } from '../../lib/missionCode'
 import type { User } from '../../services/auth'
 import { deleteMission, fetchCrew, fetchMissionById, joinMission, removeCrewMember, setMissionStatus, type CrewMember, type Mission } from '../../services/missions'
 import { MissionLogPanel } from './MissionLogPanel'
-import { go, missionPath, timeAgo } from '../../lib/missionPaths'
+import { go, missionPath, planPath, timeAgo } from '../../lib/missionPaths'
 
 /* One mission: its route, crew, log and the lead's controls (from MapaMars pages/missions/MissionView.tsx). */
 
@@ -300,7 +300,7 @@ export function MissionView({ mission, knownCode, user, canManage, onChanged, on
                 </div>
                 <div className="form-actions">
                   {code && (
-                    <button type="button" className="button-outline" onClick={() => go(missionPath(code, 'edit'))}>
+                    <button type="button" className="button-outline" onClick={() => go(planPath(code))}>
                       Edit
                     </button>
                   )}
