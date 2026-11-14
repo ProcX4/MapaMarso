@@ -21,6 +21,19 @@ Entry template:
 
 ---
 
+## 2026-11-14 · v0.2.1 · Supabase connected on the live site
+
+**Changed**
+- Supabase URL and publishable key moved from `.env.example` into `.env.local` (git-ignored); `.env.example` is blank again (Security Spec §2). Same two values added in Vercel → Environment Variables. The key was never committed.
+
+**Verified on mapamarso.vercel.app**
+- The deployed bundle includes the Supabase project URL; `#/account` shows the sign-in form.
+- `#/plan/ABC-123` answers "No mission has the code ABC-123", so `get_mission_by_code` exists: the schema is installed.
+- Tile proxy unchanged: unknown layer → 400, valid THEMIS tile → 200 image/png.
+
+**Not verified**
+- Sign-up, email confirmation, saving and reopening a mission (needs a real account). Supabase redirect URLs (placeholders.md D4 step 3) not confirmed.
+
 ## 2026-11-14 · v0.2.0 · Idea bank (MapaMars) merged: design, Mars time, accounts and saved missions
 
 Brought the useful parts of the team's idea bank, [S-Urchin/MapaMars](https://github.com/S-Urchin/MapaMars), into MAPA. Code was rewritten into MAPA's own modules and adapted to its structure (not copied in as separate reference files).
