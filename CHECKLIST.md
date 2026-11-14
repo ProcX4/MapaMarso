@@ -3,7 +3,7 @@
 **Scope: three layers only: Topographic, Optical and Spectral.** Every other layer the specs mention (geologic units, historical rover traverse) is out of scope (§7).
 **Team:** Jim (Topographic, in progress) · Jastini (Optical + UI) · Daril (Spectral) · Shin (Platform, EVA and release). See the team split below; §1–§3 are the three layers.
 
-Tasks come from the four spec documents and are ticked where the current build (v0.5.0) meets them.
+Tasks come from the four spec documents and are ticked where the current build (v0.5.1) meets them.
 Sources: **GS** = [Gen Spec.md](Gen%20Spec.md) · **PS** = [docs/MAPA_Marswalk_Product_Specification.md](docs/MAPA_Marswalk_Product_Specification.md) · **FS** = [Frontend Spec.md](Frontend%20Spec.md) · **SS** = [Security Spec.md](Security%20Spec.md).
 Details of each stand-in are in [placeholders.md](placeholders.md); what changed is in [changes.md](changes.md).
 
@@ -58,6 +58,7 @@ Infrared and mineral maps.
 ### Done
 - [x] THEMIS daytime and night-time infrared, 100 m/px (GS Data "Thermal")
 - [x] TES thermal inertia, high-calcium pyroxene, plagioclase, sheet silicates and glass (PS §4.2 thermal properties, §4.3 composition)
+- [x] TES dust cover index, dust cover index over relief, and surface albedo: global and coarse (about 3.5 and 7.4 km/px), from Mars Trek (v0.5.1)
 - [x] Provenance for each
 
 ### To do

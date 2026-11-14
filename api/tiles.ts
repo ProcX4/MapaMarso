@@ -31,6 +31,9 @@ export const TREK_LAYERS = {
   TES_Clinopyroxene: { ext: 'png', maxZoom: 1 },
   TES_Plagioclase: { ext: 'png', maxZoom: 1 },
   TES_Glass_Clay: { ext: 'png', maxZoom: 1 },
+  TES_Dust: { ext: 'png', maxZoom: 1 },
+  tes_ruffdust: { ext: 'png', maxZoom: 2 },
+  Mars_MGS_TES_Albedo_mosaic_global_7410m: { ext: 'png', maxZoom: 1 },
 } as const satisfies Record<string, { ext: 'jpg' | 'png'; maxZoom: number }>
 
 export type TrekLayerId = keyof typeof TREK_LAYERS

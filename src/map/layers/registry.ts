@@ -31,7 +31,7 @@ export type LayerDef = {
 export const GROUPS: { id: LayerDef['group']; label: string; note: string }[] = [
   { id: 'topographic', label: 'Topographic', note: 'Height and shape of the ground, and the A* safe path round steep and deep terrain' },
   { id: 'optical', label: 'Optical', note: 'The surface in visible light' },
-  { id: 'spectral', label: 'Spectral', note: 'Infrared and mineral maps' },
+  { id: 'spectral', label: 'Spectral', note: 'Infrared, mineral, dust and albedo maps' },
 ]
 
 const trek = (id: TrekLayerId) => ({ kind: 'xyz' as const, source: id, maxZoom: TREK_LAYERS[id].maxZoom })
@@ -157,6 +157,9 @@ export const LAYERS: LayerDef[] = [
   tes('tes-pyroxene', 'High-calcium pyroxene (TES)', 'TES_Clinopyroxene'),
   tes('tes-plagioclase', 'Plagioclase (TES)', 'TES_Plagioclase'),
   tes('tes-sheet-silicates', 'Sheet silicates and glass (TES)', 'TES_Glass_Clay'),
+  tes('tes-dust', 'Dust cover index (TES)', 'TES_Dust', '3.5 km/px'),
+  tes('tes-dust-relief', 'Dust cover index over relief (TES)', 'tes_ruffdust', '3.5 km/px'),
+  tes('tes-albedo', 'Surface albedo (TES)', 'Mars_MGS_TES_Albedo_mosaic_global_7410m', '7.4 km/px'),
   {
     id: 'science-targets',
     name: 'Science targets',
@@ -176,15 +179,15 @@ export const LAYERS: LayerDef[] = [
   },
 ]
 
-/** A global TES map: coarse (Trek serves it to zoom 1 only), so it's laid over the others half see-through */
-function tes(id: string, name: string, product: TrekLayerId): LayerDef {
+/** A global TES map: coarse (Trek serves it to zoom 1, or 2 for the dust-over-relief map), so it's laid over the others half see-through */
+function tes(id: string, name: string, product: TrekLayerId, resolution?: string): LayerDef {
   return {
     id,
     name,
     group: 'spectral',
     ...trek(product),
     category: 'observed',
-    provenance: { instrument: 'TES', mission: 'Mars Global Surveyor', product: `${product} (Mars Trek)` },
+    provenance: { instrument: 'TES', mission: 'Mars Global Surveyor', product: `${product} (Mars Trek)`, resolution },
     defaultVisible: false,
     defaultOpacity: 0.7,
   }
