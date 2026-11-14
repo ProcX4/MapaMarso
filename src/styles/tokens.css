@@ -1,0 +1,31 @@
+/* Design tokens (Gen Spec, "UI & design"), from MapaMars src/index.css plus status accents. */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Base */
+  --black:  #000;
+  --white:  #fff;
+  --gray-1: rgba(255, 255, 255, 0.72);  /* body text, secondary */
+  --gray-2: rgba(255, 255, 255, 0.5);   /* labels, hints, units */
+  --line:   rgba(255, 255, 255, 0.16);  /* every border and divider */
+  --panel:  rgba(8, 8, 8, 0.94);        /* floating cards and panels */
+
+  /* Type */
+  --sans: 'Space Grotesk', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+
+  /* Status accents: used sparingly, only to carry meaning */
+  --ok:      #8be3a8;  /* done, active, finish, safe */
+  --caution: #ffc861;  /* sun, sunrise, moderate terrain */
+  --hazard:  #ff8a5c;  /* sunset, steep terrain */
+  --alert:   #ff5a4f;  /* live indicator, critical warning */
+  --info:    #a9cdff;  /* Earth, links to external context */
+
+  color-scheme: dark;
+  font-family: var(--sans);
+  color: var(--white);
+  background: var(--black);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}

@@ -1,0 +1,23 @@
+.map { position: absolute; inset: 0; background: var(--black); }
+.map:focus-visible { outline: 2px solid var(--white); outline-offset: -2px; }
+
+/* OpenLayers controls in the console style: round icon buttons, thin lines */
+.map .ol-zoom { top: auto; bottom: 16px; left: auto; right: 16px; background: none; }
+.map .ol-zoom button {
+  width: 34px;
+  height: 34px;
+  margin: 4px 0 0;
+  color: var(--white);
+  font: 500 16px var(--mono);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.map .ol-zoom button:hover,
+.map .ol-zoom button:focus { background: rgba(255, 255, 255, 0.12); outline: none; }
+.map .ol-zoom button:focus-visible { outline: 2px solid var(--white); }
+.map .ol-attribution { bottom: 8px; right: 60px; background: transparent; }
+.map .ol-attribution ul { color: var(--gray-2); text-shadow: none; font: 10px var(--mono); }
+.map .ol-attribution button { display: none; }
+.map .ol-rotate { display: none; }

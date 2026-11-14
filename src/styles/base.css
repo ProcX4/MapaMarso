@@ -1,0 +1,36 @@
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body { margin: 0; min-width: 320px; background: var(--black); }
+button, input, select { font: inherit; color: inherit; }
+::selection { background: var(--white); color: var(--black); }
+a { color: var(--info); }
+a:focus-visible,
+button:focus-visible,
+input:focus-visible { outline: 2px solid var(--white); outline-offset: 2px; }
+
+.muted { color: var(--gray-2); }
+.mono, .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.kicker { margin: 0; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray-2); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Scroll bars: a thin pale line with no track or arrows (from MapaMars) */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:active { background: rgba(255, 255, 255, 0.5); }
+::-webkit-scrollbar-button { display: none; }
+@supports not selector(::-webkit-scrollbar) {
+  * { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.22) transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* Status text: only where the colour means something, always alongside a text label */
+.text-ok { color: var(--ok); }
+.text-caution { color: var(--caution); }
+.text-hazard { color: var(--hazard); }
+.text-alert { color: var(--alert); }

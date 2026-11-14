@@ -1,0 +1,44 @@
+.app { height: 100%; display: flex; flex-direction: column; }
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px clamp(16px, 3vw, 32px);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.nav-brand { color: var(--white); text-decoration: none; font-weight: 600; letter-spacing: 0.2em; font-size: 14px; }
+.nav-modes { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.nav-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: var(--white);
+  text-decoration: none;
+  background: rgba(10, 10, 10, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 50%;
+  transition: border-color 150ms;
+}
+.nav-menu-btn:hover,
+.nav-menu-btn.is-on { border-color: rgba(255, 255, 255, 0.6); }
+
+.stage { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+.stage-loading { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--gray-2); }
+
+/* Plan mode: the layer panel shares the left edge with nothing, but keep it clear of the profile */
+.mode-plan .explore-layers { max-height: calc(100% - 230px); }
+
+@media (max-width: 720px) {
+  .nav { gap: 8px; }
+  .nav-brand { font-size: 12px; }
+  .nav-modes .chip { padding: 5px 9px; font-size: 10px; }
+}

@@ -1,0 +1,29 @@
+/* EVA: same tokens, bigger. Max three facts, one alert, large pills. Designed for a landscape tablet. */
+.eva { position: absolute; inset: 0; z-index: 8; display: flex; flex-direction: column; justify-content: space-between; padding: 16px; pointer-events: none; }
+.eva > * { pointer-events: auto; }
+.eva-top { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.eva-sim { display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 6px 12px; font-size: 12px; letter-spacing: 0.14em; color: var(--gray-1); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; }
+.eva-alert { margin: 0; padding: 14px 20px; font-size: 18px; font-weight: 500; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+.eva-alert.is-alert { color: var(--alert); border-color: var(--alert); }
+.eva-alert.is-hazard { color: var(--hazard); border-color: var(--hazard); }
+.eva-alert.is-caution { color: var(--caution); border-color: var(--caution); }
+.eva-alert.is-ok { color: var(--ok); }
+
+.eva-facts { display: flex; gap: 12px; flex-wrap: wrap; margin-top: auto; margin-bottom: 12px; }
+.eva-fact { flex: 1 1 220px; padding: 16px 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+.eva-big { display: flex; align-items: center; gap: 12px; margin: 6px 0 4px; font-size: clamp(36px, 5vw, 52px); line-height: 1.1; }
+.eva-sub { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0; font-size: 14px; color: var(--gray-1); }
+.eva-arrow { display: inline-block; font-size: 0.8em; transition: transform 200ms; }
+
+.eva-bottom { display: flex; flex-direction: column; gap: 12px; padding: 14px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+.eva-progress { display: flex; align-items: center; gap: 14px; font-size: 13px; }
+.eva-progress span { flex: none; }
+.eva-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+.eva-empty { align-items: center; justify-content: center; gap: 20px; background: rgba(0, 0, 0, 0.7); }
+.eva-empty-text { font-size: 24px; margin: 0; }
+
+@media (max-width: 720px) {
+  .eva-actions { grid-template-columns: repeat(2, 1fr); }
+  .eva-big { font-size: 36px; }
+}
