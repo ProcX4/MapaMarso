@@ -8,8 +8,11 @@ type Handler = (request: Request) => Promise<Response>
 /** Serves an api/ function in dev and preview, as Vercel does in production. */
 function apiRoute(path: string, handler: Handler): Plugin {
   const handle = (server: { middlewares: Connect.Server }) => {
-    server.middlewares.use(path, async (req, res) => {
-      const response = await handler(new Request(new URL(req.originalUrl ?? req.url ?? '', 'http://localhost'), { method: req.method }))
+    server.middlewares.use(path, async (req, res, next) => {
+      // The prefix also matches the module itself (/api/tiles.ts), which the app imports in dev; let Vite serve that
+      const url = req.originalUrl ?? req.url ?? ''
+      if (!/^[/?]/.test(url.slice(path.length))) return next()
+      const response = await handler(new Request(new URL(url, 'http://localhost'), { method: req.method }))
       res.statusCode = response.status
       response.headers.forEach((value, key) => res.setHeader(key, value))
       res.end(Buffer.from(await response.arrayBuffer()))
