@@ -107,14 +107,14 @@ Infrared and mineral maps.
 
 - [ ] Demo site: Jezero or Gale (D1)
 - [ ] Habitat location: a real spot, renamed from "Habitat (placeholder)" (D2)
-- [ ] Gen Spec tech-stack line says OpenLayers (D3)
+- [x] Gen Spec tech-stack line says OpenLayers (D3)
 - [ ] Team table: names and roles (D5; also "Team: TBD" on the About page)
 - [ ] Licence: add `LICENSE`, update Gen Spec (D6)
-- [ ] Record the spec deviations in the specs or `changes.md`:
-  - [ ] layers are Topographic / Optical / Spectral (GS Layer 3 and FS §5.4 list geology and Base / Safety / Science / Route)
-  - [ ] whole-planet scope (GS asked for one site)
-  - [ ] routes live under `#/globe/2d` (FS §2)
-  - [ ] email confirmation off (SS §4)
+- [x] Record the spec deviations in the specs or `changes.md`: written up in a new *Deviations from this spec* section of `Gen Spec.md`:
+  - [x] layers are Topographic / Optical / Spectral (GS Layer 3 and FS §5.4 list geology and Base / Safety / Science / Route)
+  - [x] whole-planet scope (GS asked for one site)
+  - [x] routes live under `#/globe/2d` (FS §2)
+  - [x] email confirmation off (SS §4)
 
 ## 6. Demo story (GS, PS §15), rehearse end to end · led by Shin, everyone
 
@@ -215,8 +215,8 @@ Each unticked `- [ ]` box and each "TBD" in the spec documents, in the order it 
 
 ### Gen Spec.md · TBD
 - [ ] Demo site decision: Jezero or Gale
-- [ ] Data table status column: tick each in-scope layer as it lands (all still ☐ in the spec)
-- [ ] Tech stack: map rendering "_TBD_" → OpenLayers
+- [x] Data table status column: ticked in `Gen Spec.md` for every in-scope layer (mineralogy half-done: CRISM still to add)
+- [x] Tech stack: map rendering "_TBD_" → OpenLayers
 - [ ] Team table: names and roles (and "Team: TBD" on the About page)
 
 ### Frontend Spec.md · Definition of done (per feature)
