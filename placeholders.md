@@ -57,8 +57,8 @@ All in `src/config/assumptions.ts` unless noted. Shown in the UI on hover of eve
 
 | # | Item | Where | Done when |
 |---|---|---|---|
-| V1 | Vercel routes `/api/tiles/{layer}/{z}/{y}/{x}.{ext}` to `api/tiles.ts` via a rewrite | `vercel.json` | First deploy: request a tile through the deployed URL and get an image |
+| ~~V1~~ | ~~Vercel routes `/api/tiles/…` to `api/tiles.ts` via a rewrite~~ **Resolved v0.1.2:** works on mapamarso.vercel.app | `vercel.json` | Done |
 | ~~V2~~ | ~~`api/tiles.ts` imports `src/config/trekLayers.ts`~~ **Resolved v0.1.2:** the import crashed the function on Vercel; the allow-list now lives in `api/tiles.ts` | `api/tiles.ts` | Done |
-| V3 | CSP in `vercel.json` | `vercel.json` | Headers confirmed present on mapamarso.vercel.app (v0.1.2). Still to check in a browser: no "Refused to load" in the console, map renders |
+| ~~V3~~ | ~~CSP in `vercel.json`~~ **Resolved v0.1.2:** headers present and the map, imagery and fonts render on mapamarso.vercel.app (headless Chrome) | `vercel.json` | Done. Re-check if a new external host is added |
 | V4 | Fonts from Google Fonts | `src/styles/tokens.css` | Keep, or self-host and drop the Google entries from the CSP |
 | V5 | Repo settings: secret scanning, push protection, Dependabot, branch protection on `main` | GitHub | Pushed to https://github.com/S-Urchin/MapaMarso. Still to do: turn these on in the repo settings (Security Spec §2, §6) |

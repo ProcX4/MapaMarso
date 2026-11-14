@@ -32,8 +32,9 @@ Entry template:
 - `api/tiles.ts` copied alone into an empty folder and run in Node: unknown layer → 400, `../../etc` → 400, valid THEMIS tile → 200 `image/png`.
 - On the live deployment before this fix: page, security headers (CSP, nosniff, Referrer-Policy, Permissions-Policy) and the `public/tiles/` offline fallback all served correctly, so the map still showed imagery.
 
-**Still to do**
-- Redeploy, then re-check the proxy on the live URL (placeholders.md V1).
+**Verified after redeploy (mapamarso.vercel.app)**
+- Proxy: valid MOLA and THEMIS tiles → 200 image; unknown layer, `../../etc`, out-of-range tile, wrong extension → 400; POST → 405; past a layer's deepest zoom → 404; `cache-control: public, max-age=604800, immutable`, served from Vercel's cache, no `set-cookie`.
+- Explore screen renders with live THEMIS imagery, fonts and controls under the CSP (headless Chrome). placeholders.md V1 and V3 resolved.
 
 ## 2026-11-14 · v0.1.1 · Git repository
 
