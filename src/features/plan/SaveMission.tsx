@@ -7,6 +7,7 @@ import { CodeInput } from '../../components/CodeInput'
 import { Button } from '../../components/Button'
 import { LIMITS } from '../../config/assumptions'
 import { toOpenMission } from './useMissionFromCode'
+import { planPath } from '../../lib/missionPaths'
 
 /**
  * Save the route as a mission with a code (MapaMars mission form, cut down to what MAPA needs).
@@ -55,7 +56,7 @@ export function SaveMission() {
       const m = mine && open ? await updateMission(open.id, fields) : await createMission(fields)
       dispatch({ type: 'setMission', mission: toOpenMission(m) })
       setSaved(m.code)
-      if (m.code) window.history.replaceState(null, '', `#/plan/${m.code}`)
+      if (m.code) window.history.replaceState(null, '', planPath(m.code))
     } catch (err) {
       setError((err as Error).message)
     } finally {
@@ -116,7 +117,7 @@ export function SaveMission() {
       {error && <p className="form-error" role="alert">{error}</p>}
       {saved && (
         <p className="form-ok" role="status">
-          Saved as <span className="mono-code">{saved}</span>. Share the link: <span className="mono-code">#/plan/{saved}</span>
+          Saved as <span className="mono-code">{saved}</span>. Share the link: <span className="mono-code">{planPath(saved)}</span>
         </p>
       )}
       <Button type="submit" disabled={busy || code.length !== 6 || !name.trim() || state.stops.length < 2}>

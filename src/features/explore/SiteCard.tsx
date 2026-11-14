@@ -14,6 +14,7 @@ import { Icon } from '../../components/Icon'
 import { useNow } from '../../hooks/useNow'
 import { daylightText, sunElevation } from '../../data/daylight'
 import type { StopKind } from '../../state/types'
+import { MAP_PLAN } from '../../lib/missionPaths'
 
 const NEARBY_M = 500
 
@@ -94,7 +95,7 @@ export function SiteCard() {
           variant="ghost"
           onClick={() => {
             add('destination', 'Destination')
-            window.location.hash = '#/plan'
+            if (state.mode !== 'plan') window.location.hash = MAP_PLAN
           }}
         >
           Route here

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import type { MissionsState } from '../../hooks/useMissions'
 import type { Mission, MissionStatus } from '../../services/missions'
@@ -27,6 +28,8 @@ type HudProps = {
   showList: boolean
   /** Fly the globe to a mission */
   onSelect: (id: string) => void
+  /** More buttons at the start of the row (the 2D map's Layers) */
+  before?: ReactNode
 }
 
 const STATUSES: { id: MissionStatus; label: string }[] = [
@@ -38,7 +41,7 @@ const STATUSES: { id: MissionStatus; label: string }[] = [
  * Top-right of the globe: a quick "+" to start a new mission, and the Mission button, which slides the missions
  * list in from the right edge and back out. The list shows ongoing or completed missions, narrowed by a search.
  */
-export function MissionsHud({ missions, status, onStatus, owner, onOwner, signedIn, query, onQuery, open, onToggleOpen, showList, onSelect }: HudProps) {
+export function MissionsHud({ missions, status, onStatus, owner, onOwner, signedIn, query, onQuery, open, onToggleOpen, showList, onSelect, before }: HudProps) {
   const { user, available } = useAuth()
   const { list, error } = missions
   const ongoing = status === 'open'
@@ -46,6 +49,7 @@ export function MissionsHud({ missions, status, onStatus, owner, onOwner, signed
   return (
     <div className="missions-hud">
       <div className="missions-bar">
+        {before}
         <a
           className="missions-add"
           href={user ? GLOBE_PLAN : '#/account'}

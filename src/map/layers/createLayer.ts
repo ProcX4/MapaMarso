@@ -69,6 +69,26 @@ export function createLayer(def: LayerDef): BaseLayer {
   }
 }
 
+/**
+ * The whole planet in colour (the Viking mosaic) under every other layer, so the 2D map is never blank where a
+ * regional layer stops or while zoomed out. It wraps east-west with the map, and has no switch of its own.
+ */
+export function planetBackdrop() {
+  const id: TrekLayerId = 'Mars_Viking_MDIM21_ClrMosaic_global_232m'
+  const { maxZoom, ext } = TREK_LAYERS[id]
+  return new TileLayer({
+    zIndex: -1,
+    source: new XYZ({
+      projection: marsProjection,
+      tileGrid: marsTileGrid(maxZoom),
+      url: `/api/tiles/${id}/{z}/{y}/{x}.${ext}`,
+      tileLoadFunction: loadTileWithFallback,
+      wrapX: true,
+      attributions: 'NASA/JPL-Caltech Mars Trek',
+    }),
+  })
+}
+
 type Grid = { width: number; height: number; bbox: [number, number, number, number]; values: Float32Array }
 
 /** Paints a grid into an image source, one RGBA colour per cell (null = transparent). */

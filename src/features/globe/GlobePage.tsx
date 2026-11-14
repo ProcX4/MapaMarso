@@ -2,7 +2,6 @@ import { memo, useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { loadVikingLander, VIKING_MODEL_CREDIT } from '../../globe/landerModel'
 import { MarsGlobe, type GlobeLayers, type GlobeMarker, type GlobeRoute } from '../../globe/MarsGlobe'
-import { MarsMap2D, type MapRoute } from '../../globe/MarsMap2D'
 import { MARS_MODEL_CREDIT } from '../../globe/marsModel'
 import { MOON_SHAPE_CREDIT } from '../../globe/moonModel'
 import { SKY_CREDIT } from '../../globe/skyObjects'
@@ -17,12 +16,23 @@ import { useHash } from '../../hooks/useHash'
 import { useNow } from '../../hooks/useNow'
 import { useMissions } from '../../hooks/useMissions'
 import { formatAhead } from '../../data/daylight'
-import { viewFor, type LatLon } from '../../globe/mapView'
+import { viewFor } from '../../globe/mapView'
 import { routeStops } from '../../globe/missionRoute'
 import { readFlag, writeFlag } from '../../lib/storage'
 import type { MissionStatus } from '../../services/missions'
 import { clearWarpArrival, isWarpArrival } from '../../lib/warp'
-import { byOwner, GLOBE_2D, GLOBE_3D, GLOBE_PLAN, go, missionPath, type OwnerFilter } from '../../lib/missionPaths'
+import { byOwner, GLOBE_2D, GLOBE_3D, GLOBE_PLAN, go, MAP_EVA, MAP_PLAN, mapModeOf, missionPath, type OwnerFilter } from '../../lib/missionPaths'
+import { MapView } from '../../map/MapView'
+import { fitTo, flyTo, showArea } from '../../map/mapControl'
+import type { PlanetRoute as MapRoute } from '../../map/planetLayers'
+import { useMarswalk } from '../../hooks/useMarswalk'
+import { useRoute } from '../../hooks/useDerived'
+import { SITE } from '../../config/site'
+import { LayerPanel, LayersButton } from '../explore/LayerPanel'
+import { SiteCard } from '../explore/SiteCard'
+import { Search } from '../explore/Search'
+import { PlanPanel } from '../plan/PlanPanel'
+import { EvaView } from '../eva/EvaView'
 import { CatalogHud } from './CatalogHud'
 import { LandingSiteCard, MoonCard, TimeBar, ViewSwitch } from './GlobeOverlay'
 import { MissionCard, MissionsHud } from './MissionsHud'
@@ -32,14 +42,17 @@ import { Icon } from '../../components/Icon'
 import { LiveClock } from '../../components/LiveClock'
 import { ToolDock, type Tool } from '../../components/ToolDock'
 import { Tour } from '../../components/Tour'
-import { globeTourSteps } from '../../config/tourSteps'
+import { globeTourSteps, tourSteps } from '../../config/tourSteps'
 import { MissionForm } from '../missions/MissionForm'
 import './globe.css'
 
-/* The 3D globe and flat map of the whole planet (from MapaMars pages/GlobePage.tsx). */
+/*
+ * The 3D globe and the 2D map of the whole planet (from MapaMars pages/GlobePage.tsx). The 2D map is MAPA's
+ * NASA map: its layers, site analysis, the Marswalk planner and EVA all work on it, alongside the missions,
+ * catalog and day/night playback (the site map is no longer a tab of its own).
+ */
 
 const Globe = memo(MarsGlobe)
-const NO_POINTS: never[] = []
 
 // The globe's dive toward a landing site, then the cross-fade to its close-up (see .site-layer in globe.css)
 const DIVE_MS = 1300
@@ -88,8 +101,14 @@ export function GlobePage() {
   const { user, loading: authLoading } = useAuth()
   const hash = useHash()
   const planning = hash === GLOBE_PLAN
-  const flat = hash === GLOBE_2D || planning
-  const [mapFocus, setMapFocus] = useState<(LatLon & { span?: number }) | null>(null)
+  const flat = hash.startsWith(GLOBE_2D) || planning
+  // The 2D map's tools: site analysis (explore), the Marswalk planner or EVA
+  const mapMode = flat && !planning ? mapModeOf(hash) : 'explore'
+  const exploring = mapMode === 'explore'
+  const { state: walk, dispatch } = useMarswalk()
+  const walkRoute = useRoute()
+  // The NASA layers list shares the top right with the missions list on the 2D map: one opens at a time
+  const [layersOpen, setLayersOpen] = useState(false)
   // How far ahead of now the globe and flat map show day and night, in hours (0 = live), and the time-lapse
   const [aheadH, setAheadH] = useState(0)
   // Hours of Mars time per second of playback: 0 paused, or PLAY_RATE
@@ -146,8 +165,12 @@ export function GlobePage() {
     const open = !missionsOpen
     setMissionsOpen(open)
     writeFlag(MISSIONS_OPEN_KEY, open)
+    if (open) setLayersOpen(false)
     if (open && narrow()) setCatalogOpen(false)
   }
+  // The site card (a point picked on the 2D map) takes the same corner as the globe's cards
+  const clearSiteCard = () => dispatch({ type: 'select', at: null })
+  const layersShown = layersOpen && !walk.selected
 
   // Missions, on the globe and the flat map alike: ongoing ones unless the list is switched to completed,
   // narrowed by whose they are and by its search. What the list shows is what the globe and map show.
@@ -203,6 +226,13 @@ export function GlobePage() {
     }
     return { markers, routes, mapRoutes, fullMapRoutes }
   }, [missionList, selectedId, allRoutes])
+
+  // On the 2D map a picked landing site shows as a marker too
+  const siteRoutes = useMemo(() => {
+    const s = landingSites.find((l) => l.id === selectedId)
+    if (!s) return mapRoutes
+    return [...mapRoutes, { key: s.id, points: [{ key: s.id, lat: s.lat, lon: s.lon, badge: '', label: s.mission, variant: 'end' as const }] }]
+  }, [mapRoutes, selectedId])
 
   useEffect(() => {
     if (!preparing) return
@@ -303,9 +333,10 @@ export function GlobePage() {
     setOrbiterId(null)
     // Fetch the lander model now, so it's there by the time the close-up opens
     if (siteScenes[key]) void loadVikingLander().catch(() => {})
+    clearSiteCard()
     // On the flat map, bring the whole route into view
     const route = fullMapRoutes.get(key)
-    if (flat && route) setMapFocus(viewFor(route.points))
+    if (flat && route) showArea(viewFor(route.points))
   }
   const setFlat = (on: boolean) => {
     if (on) resetSite()
@@ -313,6 +344,7 @@ export function GlobePage() {
   }
   const selectMoon = (id: MoonId) => {
     resetSite()
+    clearSiteCard()
     setMoonId(id)
     setSelectedId(null)
     setOrbiterId(null)
@@ -320,6 +352,7 @@ export function GlobePage() {
   // An orbiter opens its card, with its 3D model; the globe view stays where it is
   const selectOrbiter = (id: OrbiterId) => {
     resetSite()
+    clearSiteCard()
     setOrbiterId(id)
     setSelectedId(null)
     setMoonId(null)
@@ -333,7 +366,8 @@ export function GlobePage() {
   // From the catalog: the whole planet, a moon (on the globe; the flat map has no moons) or a landing site
   const pickPlanet = () => {
     closeCard()
-    if (flat) setMapFocus({ lat: 0, lon: 0, span: 360 })
+    clearSiteCard()
+    if (flat) showArea({ lat: 0, lon: 0, span: 360 })
     else setResetKey((k) => k + 1)
     if (narrow()) setCatalogOpen(false)
   }
@@ -351,7 +385,15 @@ export function GlobePage() {
   const pickSite = (id: string) => {
     select(id)
     const s = landingSites.find((l) => l.id === id)
-    if (flat && s) setMapFocus({ lat: s.lat, lon: s.lon, span: 30 })
+    if (flat && s) showArea({ lat: s.lat, lon: s.lon, span: 30 })
+    if (narrow()) setCatalogOpen(false)
+  }
+  const toggleLayers = () => {
+    if (layersShown) return setLayersOpen(false)
+    clearSiteCard()
+    closeCard()
+    setLayersOpen(true)
+    setMissionsOpen(false)
     if (narrow()) setCatalogOpen(false)
   }
   const toggleLayer = (key: keyof GlobeLayers) => setLayers((l) => ({ ...l, [key]: !l[key] }))
@@ -388,7 +430,8 @@ export function GlobePage() {
       else if (selectedId || moonId || orbiterId) {
         if (inSite) closeSite()
         else closeCard()
-      } else setToolsOpen(false)
+      } else if (walk.selected) clearSiteCard()
+      else setToolsOpen(false)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -411,7 +454,15 @@ export function GlobePage() {
       },
     },
   ]
-  const mapTools: Tool[] = [{ id: 'routes', label: 'All routes', icon: 'route', on: allRoutes, onClick: () => setAllRoutes((a) => !a) }]
+  // The 2D map: the missions' routes, then MAPA's site tools (the planner and EVA open over the same map)
+  const mapTools: Tool[] = [
+    ...(exploring ? [{ id: 'routes', label: 'All routes', icon: 'route' as const, on: allRoutes, onClick: () => setAllRoutes((a) => !a) }] : []),
+    { id: 'plan', label: 'Plan Marswalk', icon: 'plan', on: mapMode === 'plan', onClick: () => go(mapMode === 'plan' ? GLOBE_2D : MAP_PLAN) },
+    { id: 'eva', label: 'EVA', icon: 'eva', on: mapMode === 'eva', onClick: () => go(mapMode === 'eva' ? GLOBE_2D : MAP_EVA) },
+    { id: 'site', label: 'Recentre on site', icon: 'target', onClick: () => flyTo(SITE.center, SITE.zoom) },
+    { id: 'fit', label: 'Fit route', icon: 'reset', onClick: () => fitTo(walkRoute.order.map((s) => s.at)) },
+    ...(mapMode === 'plan' ? [{ id: 'new', label: 'New route', icon: 'plus' as const, onClick: () => dispatch({ type: 'newRoute' }) }] : []),
+  ]
   const siteTools: Tool[] = [
     { id: 'back', label: 'Back to globe', icon: 'back', onClick: closeSite },
     { id: 'labels', label: 'Labels', icon: 'labels', on: siteLayers.labels, onClick: () => toggleSiteLayer('labels') },
@@ -491,18 +542,8 @@ export function GlobePage() {
       </div>
 
       {flat && !planning && (
-        <div className="flat-view">
-          <MarsMap2D
-            fill
-            points={site ? [{ key: site.id, lat: site.lat, lon: site.lon, badge: '', label: site.mission, variant: 'end' }] : NO_POINTS}
-            routes={mapRoutes}
-            selectedRoute={mission ? selectedId : null}
-            onSelectRoute={select}
-            onPick={closeCard}
-            focus={mapFocus}
-            sunAt={nightAt}
-            label={missionStatus === 'open' ? 'Map of ongoing missions' : 'Map of completed missions'}
-          />
+        <div className={`flat-view is-${mapMode}`}>
+          <MapView routes={siteRoutes} selectedRoute={mission ? selectedId : null} onSelectRoute={select} onPick={closeCard} sunAt={nightAt} />
         </div>
       )}
 
@@ -511,15 +552,28 @@ export function GlobePage() {
         <MissionForm layout="fullscreen" sunAt={nightAt} user={user} authLoading={authLoading} onSaved={(m) => go(missionPath(m.code ?? undefined))} onCancel={() => go(GLOBE_2D)} />
       )}
 
+      {/* MAPA's tools on the 2D map: the NASA layers and site analysis while exploring, the planner, or EVA */}
+      {landed && flat && !planning && (
+        <>
+          {exploring && <LayerPanel button={false} open={layersShown} onOpenChange={setLayersOpen} blocked={!!(site || mission || moonId)} />}
+          {exploring && <Search />}
+          {mapMode === 'plan' && <LayerPanel />}
+          {mapMode === 'plan' && <PlanPanel />}
+          {mapMode !== 'eva' && !site && !mission && !moonId && <SiteCard />}
+          {mapMode === 'eva' && <EvaView />}
+        </>
+      )}
+
       {landed && !planning && (
         <>
-          <LiveClock compact />
+          {exploring && <LiveClock compact />}
           {/* The ongoing-missions list makes way for a site, mission or moon card which opens in the same corner.
               A mission completed while its card is open drops out of the list, and the list comes back. */}
-          {!inSite && (
+          {!inSite && exploring && (
             <CatalogHud open={catalogOpen} onToggleOpen={toggleCatalog} selectedId={site?.id ?? moonId ?? orbiterId} onPlanet={pickPlanet} onMoon={pickMoon} onOrbiter={pickOrbiter} onSite={pickSite} />
           )}
-          <MissionsHud
+          {exploring && <MissionsHud
+            before={flat ? <LayersButton open={layersShown} onClick={toggleLayers} /> : undefined}
             missions={{ list: missionList, error: missions.error }}
             status={missionStatus}
             onStatus={setMissionStatus}
@@ -530,11 +584,11 @@ export function GlobePage() {
             onQuery={setMissionQuery}
             open={missionsOpen}
             onToggleOpen={toggleMissions}
-            showList={!inSite && !site && !mission && !moonId && !orbiterId}
+            showList={!inSite && !site && !mission && !moonId && !orbiterId && !(flat && walk.selected)}
             onSelect={(id) => select(MISSION_PREFIX + id)}
-          />
-          {!inSite && <ViewSwitch flat={flat} onFlat={setFlat} />}
-          {!inSite && <TimeBar aheadH={aheadH} maxH={SOL_H} onChange={setAheadH} rate={rate} playRate={PLAY_RATE} onRate={setRate} onNow={backToNow} />}
+          />}
+          {!inSite && mapMode !== 'eva' && <ViewSwitch flat={flat} onFlat={setFlat} />}
+          {!inSite && exploring && <TimeBar aheadH={aheadH} maxH={SOL_H} onChange={setAheadH} rate={rate} playRate={PLAY_RATE} onRate={setRate} onNow={backToNow} />}
           <ToolDock
             open={toolsOpen}
             onToggle={() => setToolsOpen((o) => !o)}
@@ -554,7 +608,8 @@ export function GlobePage() {
       )}
       {tourOpen && (
         <Tour
-          steps={globeTourSteps(flat ? 'map' : inSite ? 'site' : 'globe', [
+          key={mapMode}
+          steps={!exploring ? tourSteps(mapMode) : globeTourSteps(flat ? 'map' : inSite ? 'site' : 'globe', [
             MARS_MODEL_CREDIT,
             VIKING_MODEL_CREDIT,
             MOON_SHAPE_CREDIT,

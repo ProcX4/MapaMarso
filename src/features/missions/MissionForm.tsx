@@ -16,7 +16,7 @@ import type { Stop, StopKind } from '../../state/types'
 
 /*
  * Planning a mission anywhere on Mars on the flat map, in three steps (from MapaMars). Saves through the same
- * mission service as MAPA's route planner, so a walk planned here opens there too (#/plan/<code>).
+ * mission service as MAPA's route planner, so a walk planned here opens there too (#/globe/2d/plan/<code>).
  */
 
 type Props = {

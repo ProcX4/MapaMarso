@@ -11,9 +11,13 @@ import type { LngLat } from '../state/types'
 
 type Handlers = {
   onSelect: (at: LngLat) => void
+  /** A click on a mission's route or marker (features carrying a routeKey) */
+  onRoute: (key: string) => void
   onMoveStop: (id: string, at: LngLat) => void
   onPointer: (at: LngLat | null, pixel: number[] | null) => void
 }
+
+const routeAt = (map: Map, pixel: number[]) => map.forEachFeatureAtPixel(pixel, (f) => f.get('routeKey') as string | undefined, { hitTolerance: 6 })
 
 export function attachInteractions(map: Map, stopsLayer: VectorLayer, h: Handlers) {
   const translate = new Translate({ layers: [stopsLayer] })
@@ -29,7 +33,10 @@ export function attachInteractions(map: Map, stopsLayer: VectorLayer, h: Handler
 
   map.on('singleclick', (e) => {
     const onStop = map.hasFeatureAtPixel(e.pixel, { layerFilter: (l) => l === stopsLayer })
-    if (!onStop) h.onSelect([e.coordinate[0], e.coordinate[1]])
+    if (onStop) return
+    const route = routeAt(map, e.pixel)
+    if (route) h.onRoute(route)
+    else h.onSelect([e.coordinate[0], e.coordinate[1]])
   })
 
   map.on('pointermove', (e) => {
@@ -37,7 +44,7 @@ export function attachInteractions(map: Map, stopsLayer: VectorLayer, h: Handler
     h.onPointer([e.coordinate[0], e.coordinate[1]], e.pixel)
     const overStop = map.hasFeatureAtPixel(e.pixel, { layerFilter: (l) => l === stopsLayer })
     const target = map.getTargetElement()
-    if (target) target.style.cursor = overStop && translate.getActive() ? 'grab' : ''
+    if (target) target.style.cursor = overStop && translate.getActive() ? 'grab' : !overStop && routeAt(map, e.pixel) ? 'pointer' : ''
   })
   map.getViewport()?.addEventListener('pointerleave', () => h.onPointer(null, null))
 

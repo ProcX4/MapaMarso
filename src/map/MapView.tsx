@@ -12,10 +12,12 @@ import 'ol/ol.css'
 import { useMarswalk } from '../hooks/useMarswalk'
 import { useDatasets, useHover, useRoute } from '../hooks/useDerived'
 import { LAYERS } from './layers/registry'
-import { createLayer, gridSource } from './layers/createLayer'
+import { createLayer, gridSource, planetBackdrop } from './layers/createLayer'
 import { marsProjection, VIEW_RESOLUTIONS } from './projection'
 import { attachInteractions } from './interactions'
-import { registerMap } from './mapControl'
+import { currentZoom, fitTo, flyTo, registerMap } from './mapControl'
+import { daylightFeatures, daylightStyle, routeFeatures, routeStyle, type PlanetRoute } from './planetLayers'
+import { sunAt as subsolar } from '../data/daylight'
 import { cssVar, cursorStyle, evaPositionStyle, geologyStyle, hazardLineStyle, rgba, routeLineStyle, stopStyle, targetStyle } from './styles'
 import { slopeBand } from '../data/slope'
 import { pointAlong } from '../data/route'
@@ -24,6 +26,20 @@ import type { LngLat, Stop } from '../state/types'
 import './map.css'
 
 const HOVER_PX = 12
+// Below this zoom the walk-scale site is too small to see: planning or walking first zooms in to it
+const SITE_ZOOM = 6
+const NO_ROUTES: PlanetRoute[] = []
+
+type Props = {
+  /** Missions to draw across the planet; clicking one (its line or a marker) calls onSelectRoute */
+  routes?: PlanetRoute[]
+  selectedRoute?: string | null
+  onSelectRoute?: (key: string) => void
+  /** A click on open ground, after the site card has been given the point */
+  onPick?: () => void
+  /** Shade the night side as it is at this moment (ms), and mark where the Sun is overhead */
+  sunAt?: number | null
+}
 
 function badgeFor(stop: Stop, index: number) {
   if (stop.kind === 'base') return 'H'
@@ -32,15 +48,17 @@ function badgeFor(stop: Stop, index: number) {
 }
 
 /**
- * The single OpenLayers map. React creates it once and then only talks to it
- * (the map is the TV, React is the remote): layers are toggled, never rebuilt.
+ * The single OpenLayers map, the globe page's 2D view of the whole planet. React creates it once and then
+ * only talks to it (the map is the TV, React is the remote): layers are toggled, never rebuilt.
  */
-export function MapView() {
+export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRoute, onPick, sunAt = null }: Props) {
   const el = useRef<HTMLDivElement>(null)
   const map = useRef<Map | null>(null)
   const layers = useRef<Record<string, BaseLayer>>({})
   const stopsLayer = useRef(new VectorLayer({ source: new VectorSource(), style: stopStyle, zIndex: 20 }))
   const markerLayer = useRef(new VectorLayer({ source: new VectorSource(), zIndex: 30 }))
+  const missionLayer = useRef(new VectorLayer({ source: new VectorSource(), style: routeStyle, zIndex: 18 }))
+  const nightLayer = useRef(new VectorLayer({ source: new VectorSource(), style: daylightStyle, zIndex: 17, updateWhileInteracting: true }))
   const translate = useRef<Translate | null>(null)
 
   const { state, dispatch } = useMarswalk()
@@ -49,10 +67,10 @@ export function MapView() {
   const { hover, setHover } = useHover()
 
   // Latest values for the map's own event handlers, which are attached once.
-  const latest = useRef({ route, setHover, mode: state.mode })
+  const latest = useRef({ route, setHover, mode: state.mode, onSelectRoute, onPick })
   useEffect(() => {
-    latest.current = { route, setHover, mode: state.mode }
-  }, [route, setHover, state.mode])
+    latest.current = { route, setHover, mode: state.mode, onSelectRoute, onPick }
+  }, [route, setHover, state.mode, onSelectRoute, onPick])
 
   // Create once
   useEffect(() => {
@@ -65,20 +83,34 @@ export function MapView() {
 
     const m = new Map({
       target: el.current!,
-      layers: [...Object.values(layers.current), stopsLayer.current, markerLayer.current],
+      layers: [planetBackdrop(), ...Object.values(layers.current), nightLayer.current, missionLayer.current, stopsLayer.current, markerLayer.current],
       view: new View({
         projection: marsProjection,
         center: SITE.center,
         zoom: SITE.zoom,
         resolutions: VIEW_RESOLUTIONS,
         constrainResolution: true,
+        // East-west the planet wraps round; north-south the view stops at the poles
+        extent: [-1e6, -90, 1e6, 90],
       }),
     })
+    // Exploring opens on the whole planet; planning and EVA open on the walk-scale site
+    if (latest.current.mode === 'explore') {
+      m.getView().setCenter([0, 0])
+      m.getView().setZoom(0)
+    }
     map.current = m
     registerMap(m)
 
     translate.current = attachInteractions(m, stopsLayer.current, {
-      onSelect: (at) => dispatch({ type: 'select', at }),
+      onSelect: (at) => {
+        dispatch({ type: 'select', at })
+        latest.current.onPick?.()
+      },
+      onRoute: (key) => {
+        dispatch({ type: 'select', at: null })
+        latest.current.onSelectRoute?.(key)
+      },
       onMoveStop: (id, at) => dispatch({ type: 'moveStop', id, at }),
       onPointer: (_at, pixel) => {
         const { route: r, setHover: set, mode } = latest.current
@@ -110,10 +142,28 @@ export function MapView() {
     stopsLayer.current.setVisible(routeState?.visible ?? true)
   }, [state.layers])
 
-  // Dragging stops only while planning
+  // Dragging stops only while planning. Planning or walking from the whole planet first zooms in to the route.
   useEffect(() => {
     translate.current?.setActive(state.mode === 'plan')
+    if (state.mode === 'explore' || currentZoom() >= SITE_ZOOM) return
+    const stops = latest.current.route.order.map((s) => s.at)
+    if (stops.length > 1) fitTo(stops)
+    else flyTo(SITE.center, SITE.zoom)
   }, [state.mode])
+
+  // Missions across the planet
+  useEffect(() => {
+    const src = missionLayer.current.getSource()!
+    src.clear()
+    src.addFeatures(routeFeatures(routes, selectedRoute))
+  }, [routes, selectedRoute])
+
+  // Night side and the Sun
+  useEffect(() => {
+    const src = nightLayer.current.getSource()!
+    src.clear()
+    if (sunAt !== null) src.addFeatures(daylightFeatures(subsolar(sunAt)))
+  }, [sunAt])
 
   // Attach rasters once computed
   useEffect(() => {
@@ -196,5 +246,5 @@ export function MapView() {
     }
   }, [state.selected, state.mode, state.evaPosition, hover, route.profile])
 
-  return <div ref={el} className="map" tabIndex={0} aria-label="Map of the demo site. Arrow keys pan, plus and minus zoom." />
+  return <div ref={el} className="map" tabIndex={0} aria-label="Map of Mars with NASA layers and the demo site. Arrow keys pan, plus and minus zoom." />
 }

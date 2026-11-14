@@ -219,7 +219,7 @@ a.site-back { text-decoration: none; }
 
 /* Interface hidden: every panel, card, button and the menu bar fade away, leaving the 3D view (and its
    labels, which the Labels tool controls) and the one button that brings everything back */
-.globe-page.is-ui-hidden :is(.live-clock, .missions-hud, .catalog-hud, .view-switch, .daylight-bar, .info-card, .site-header, .tool-dock-row, .tool-dock-guide),
+.globe-page.is-ui-hidden :is(.live-clock, .missions-hud, .catalog-hud, .view-switch, .daylight-bar, .info-card, .site-header, .tool-dock-row, .tool-dock-guide, .layers-hud, .explore-search, .planner-panel, .plan-bottom, .eva),
 .app:has(.globe-page.is-ui-hidden) .nav {
   opacity: 0;
   visibility: hidden;
@@ -573,13 +573,15 @@ a.site-back { text-decoration: none; }
 
 /* The flat map fills the window, behind the floating controls */
 .flat-view { position: absolute; inset: 0; animation: fade-in 400ms ease both; }
-.flat-view .map2d-scale { left: auto; right: 24px; bottom: 84px; align-items: flex-end; }
-.flat-view .map2d-readout { right: 24px; bottom: 112px; }
-/* Browsing missions: clicks pick a mission rather than place a point */
-.flat-view .map2d-surface.is-pickable { cursor: grab; }
-.flat-view .map2d-surface.is-pickable:active { cursor: grabbing; }
-/* The day/night bar takes the bottom middle: lift the zoom buttons clear */
-.flat-view .map2d.is-fill .map2d-zoom { bottom: 140px; }
+/* The 3D/2D switch takes the bottom right: lift the zoom buttons clear */
+.flat-view .map .ol-zoom { right: 24px; bottom: 84px; }
+.flat-view .map .ol-attribution { right: 140px; }
+/* While planning, the elevation profile stops short of the 3D/2D switch and the zoom buttons */
+.globe-page .plan-bottom { right: 140px; }
+/* Exploring the 2D map: the Layers button sits in the missions row, and its list under it */
+.layers-hud.is-buttonless { top: 116px; }
+/* Search sits beside the Catalog button */
+.globe-page .explore-search { top: 128px; left: calc(clamp(16px, 4vw, 48px) + 122px); width: min(260px, calc(100vw - 32px)); }
 
 /* Day-and-night playback: a bare play/pause mark, a ring on a line through the next sol, and a way back to now.
    No backing of its own: the mark and the line carry a soft shadow, so they read over the globe and the bright
