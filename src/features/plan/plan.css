@@ -170,7 +170,7 @@
 .route-option-note { margin: 8px 0 0; font-size: 12px; }
 
 /* Step 1: what a click on the map places. Picked = white pill; the start's pick is marked like its stop */
-.plan-place { display: flex; flex-direction: column; gap: 8px; }
+.plan-place { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
 .plan-place-head { margin: 0; }
 .plan-place-picks { display: flex; flex-wrap: wrap; gap: 6px; }
 .plan-place-pick {
