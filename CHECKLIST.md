@@ -211,7 +211,7 @@ Each unticked `- [ ]` box and each "TBD" in the spec documents, in the order it 
 - [x] Traverse safety envelope (how far you can go and still return in time) · *Topographic*
 - [x] EVA mode
 - [x] Rover point-of-view photos at waypoints · *Optical* (site card, Perseverance stops within 250 m)
-- [ ] Space weather / radiation panel · *app-wide*
+- [x] Space weather / radiation panel · *app-wide* (the minimal radiation estimate; no live space weather)
 
 ### Gen Spec.md · TBD
 - [ ] Demo site decision: Jezero or Gale
@@ -241,7 +241,7 @@ The 17 tasks in the three Todo images, with the owner from the section headings 
 
 ### Must-do for the challenge
 - [x] **1. Fill the science targets** · Daril. Done 2026-11-15 with 27 Perseverance sample sites (see §3). `public/data/science-targets.geojson` is empty; it needs real points with `name`, `reason` (e.g. "CRISM hydrated signature") and `source`. Makes the science opportunity cards and the site card's nearby targets work (§3).
-- [ ] **2. Add a radiation / space-weather panel** · everyone (§4). A minimal panel with a cited source, labelled Estimated.
+- [x] **2. Add a radiation / space-weather panel** · everyone (§4). Done 2026-11-15 as the minimal version: a *Radiation* panel in the planner with the dose for the walk (0.67 mSv/day from Curiosity's RAD at Gale crater × the walk's duration), labelled Estimated, with the caveats in its tooltip. **Not** a live space-weather feed: solar storms are not included (a live feed would need a new proxy and CSP entry)
 - [ ] **3. Add point-of-view photos at waypoints and destinations** · Shin (§2). Perseverance raw images near each stop; only the unused `SITE.rawImagesUrl` exists today.
 - [x] **4. Add rock and boulder hazards** · Jim. Done 2026-11-15: HiRISE-derived rocky-ground map (`public/data/site-obstacles.bin`, built by `scripts/build-obstacles.mjs`) with A* costs; Jezero only, where the 1 m DTMs exist
 - [ ] **5. Get sharper imagery at walking scale** · Shin (§2). THEMIS 100 m/px is the sharpest; needs a CTX or HiRISE source that serves tiles, or a local tile set (P3).
