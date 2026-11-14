@@ -3,7 +3,7 @@
 **Scope: three layers only: Topographic, Optical and Spectral.** Every other layer the specs mention (geologic units, historical rover traverse) is out of scope (§7).
 **Team:** Jim (Topographic, in progress) · Shin (Optical, Security, leads the demo) · Daril (Spectral) · Jastini (Decisions and docs) · everyone (App-wide). §1–§3 are the three layers; §10 is the Todo list from `docs/Todo (1–3).png`.
 
-Tasks come from the four spec documents and are ticked where the current build (v0.5.6) meets them.
+Tasks come from the four spec documents and are ticked where the current build (v0.5.7) meets them.
 Sources: **GS** = [Gen Spec.md](Gen%20Spec.md) · **PS** = [docs/MAPA_Marswalk_Product_Specification.md](docs/MAPA_Marswalk_Product_Specification.md) · **FS** = [Frontend Spec.md](Frontend%20Spec.md) · **SS** = [Security Spec.md](Security%20Spec.md).
 Details of each stand-in are in [placeholders.md](placeholders.md); what changed is in [changes.md](changes.md).
 
@@ -98,7 +98,7 @@ Infrared and mineral maps.
 - [x] Every value tagged OBSERVED / DERIVED / ESTIMATED; estimates show their assumption; "No data" instead of a guess
 - [x] Numbers through `lib/format.ts` in mono; panels collapse below 720 px; reduced motion honoured
 - [x] One map instance; heavy maths in workers; About and EVA lazy-loaded; offline demo tiles
-- [ ] Keyboard pass over every control (map: arrows pan, + / − zoom)
+- [x] Keyboard pass over every control (map: arrows pan, + / − zoom): audited 2026-11-15 on explore, plan, EVA, About and account: every control has a name and is reachable by keyboard, nothing clickable is a non-control, images have alt text, focus is visible (the daylight bar shows a ring round its thumb). A human tab-through with a screen reader is still worth doing before judging
 - [ ] Lint and build before every push (passing now)
 - [ ] Branch per feature + PR into `main` with one reviewer (work has gone straight to `main`)
 - [ ] Each feature shown to one teammate who didn't build it
@@ -222,7 +222,7 @@ Each unticked `- [ ]` box and each "TBD" in the spec documents, in the order it 
 ### Frontend Spec.md · Definition of done (per feature)
 - [x] Works on the demo site at walking-scale zoom
 - [x] Every displayed value has a category tag and a source
-- [ ] Usable by keyboard; readable at 720 px wide (720 px done; keyboard pass to do)
+- [x] Usable by keyboard; readable at 720 px wide (keyboard audit done, see §4)
 - [x] Lint and build pass
 - [ ] Shown to one teammate who didn't build it
 

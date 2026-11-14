@@ -21,6 +21,19 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.7 · Place-name search from the IAU gazetteer, and comparing two points
+
+**Added**
+- **Search** now covers all 2,055 Mars names adopted by the IAU, from the USGS Gazetteer of Planetary Nomenclature (`public/data/gazetteer.json`, rebuilt by `npm run build-gazetteer`). The names load when you start typing, accents are ignored ("seitah" finds "Séítah" if it is an IAU name), and the zoom fits the feature's size. NASA's own name for the landing site stays, marked as not an IAU name. The old hand-typed "Jezero" point was wrong (77.58°E; the IAU centre is 77.687°E, 18.408°N).
+- **Site comparison:** *Pin to compare* on the site card. Click another point (or search a name) and the card shows both: place, elevation, slope, terrain band, distance and bearing apart, and the height difference.
+- Notes: the Esri CTX terms researched but not settled, and the size of an offline CTX and HiRISE tile set (CHECKLIST §2).
+
+**Verified**
+- Type check, lint and build pass. A keyboard and screen-reader audit of the explore, plan, EVA, About and account pages found every control named and keyboard reachable, no clickable non-controls, and alt text on every image.
+- In the browser: search for Jezero, Gale, Nili and an absent name; pinning Jezero then searching Neretva Vallis gave 28.6 km apart at bearing 287° and +698 m in height, matching a hand calculation.
+
+---
+
 ## 2026-11-15 · v0.5.6 · To-do sweep: science targets, EVA return time and off-route warning, route export, radiation estimate, security checks
 
 **Added**
