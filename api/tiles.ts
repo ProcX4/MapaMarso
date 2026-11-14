@@ -1,11 +1,34 @@
-import { MAX_ZOOM, TREK_LAYERS, TREK_UPSTREAM, type TrekLayerId } from '../src/config/trekLayers.ts'
-
 /*
  * Tile proxy for NASA Mars Trek (Security Spec §3).
  * Only ever calls the fixed Trek host, with an allow-listed layer and validated tile
  * coordinates, so it can't be used as an open proxy. Nothing from the caller (cookies,
  * auth, IP) is forwarded upstream, and nothing but the image and its type comes back.
+ *
+ * This file must not import local modules: Vercel compiles it on its own and does not
+ * rewrite import paths, so a local import crashes the function (FUNCTION_INVOCATION_FAILED).
+ * The browser reads the allow-list from here via src/config/trekLayers.ts instead.
  */
+
+/**
+ * The NASA Mars Trek EQ (equirectangular) layers MAPA is allowed to fetch.
+ * Shared by this proxy and the layer registry, so a layer can't be shown unless the
+ * proxy will also serve it.
+ *
+ * maxZoom: deepest zoom the layer has tiles for at the demo site (checked 2026-11-14
+ * against the Trek tile endpoint); beyond it, OpenLayers upscales the last level.
+ */
+export const TREK_LAYERS = {
+  Mars_MGS_MOLA_ClrShade_merge_global_463m: { ext: 'jpg', maxZoom: 7 },
+  Mars_Viking_MDIM21_ClrMosaic_global_232m: { ext: 'jpg', maxZoom: 7 },
+  THEMIS_DayIR_ControlledMosaics_100m_v2_oct2018: { ext: 'png', maxZoom: 9 },
+} as const satisfies Record<string, { ext: 'jpg' | 'png'; maxZoom: number }>
+
+export type TrekLayerId = keyof typeof TREK_LAYERS
+
+export const TREK_UPSTREAM = 'https://trek.nasa.gov/tiles/Mars/EQ'
+
+/** Deepest zoom the map and the proxy accept. */
+export const MAX_ZOOM = 18
 
 const TIMEOUT_MS = 10_000
 const MAX_BYTES = 2_000_000

@@ -58,7 +58,7 @@ All in `src/config/assumptions.ts` unless noted. Shown in the UI on hover of eve
 | # | Item | Where | Done when |
 |---|---|---|---|
 | V1 | Vercel routes `/api/tiles/{layer}/{z}/{y}/{x}.{ext}` to `api/tiles.ts` via a rewrite | `vercel.json` | First deploy: request a tile through the deployed URL and get an image |
-| V2 | `api/tiles.ts` imports `src/config/trekLayers.ts` (shared allow-list) | `api/tiles.ts` | First deploy builds the function without a module error (else move the list into `api/`) |
-| V3 | CSP in `vercel.json` | `vercel.json` | Tested in the deployed app: no "Refused to load" in the console, map renders |
+| ~~V2~~ | ~~`api/tiles.ts` imports `src/config/trekLayers.ts`~~ **Resolved v0.1.2:** the import crashed the function on Vercel; the allow-list now lives in `api/tiles.ts` | `api/tiles.ts` | Done |
+| V3 | CSP in `vercel.json` | `vercel.json` | Headers confirmed present on mapamarso.vercel.app (v0.1.2). Still to check in a browser: no "Refused to load" in the console, map renders |
 | V4 | Fonts from Google Fonts | `src/styles/tokens.css` | Keep, or self-host and drop the Google entries from the CSP |
 | V5 | Repo settings: secret scanning, push protection, Dependabot, branch protection on `main` | GitHub | Pushed to https://github.com/S-Urchin/MapaMarso. Still to do: turn these on in the repo settings (Security Spec §2, §6) |

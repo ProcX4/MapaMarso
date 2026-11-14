@@ -21,6 +21,20 @@ Entry template:
 
 ---
 
+## 2026-11-14 · v0.1.2 · Fix tile proxy crash on Vercel
+
+**Fixed**
+- Deployed tile proxy (`https://mapamarso.vercel.app/api/tiles/…`) returned `500 FUNCTION_INVOCATION_FAILED` for every request. Cause: `api/tiles.ts` imported `../src/config/trekLayers.ts`; Vercel compiles each function file on its own and does not rewrite import paths, so the import failed when the function loaded.
+- The Trek allow-list now lives in `api/tiles.ts` (no local imports), and `src/config/trekLayers.ts` re-exports it for the app. Still one copy of the list. `tsconfig.node.json` no longer includes `src/config/trekLayers.ts`.
+
+**Verified**
+- Lint and build pass; the proxy's handler code is not in the browser bundle (only the layer list is).
+- `api/tiles.ts` copied alone into an empty folder and run in Node: unknown layer → 400, `../../etc` → 400, valid THEMIS tile → 200 `image/png`.
+- On the live deployment before this fix: page, security headers (CSP, nosniff, Referrer-Policy, Permissions-Policy) and the `public/tiles/` offline fallback all served correctly, so the map still showed imagery.
+
+**Still to do**
+- Redeploy, then re-check the proxy on the live URL (placeholders.md V1).
+
 ## 2026-11-14 · v0.1.1 · Git repository
 
 **Added**
