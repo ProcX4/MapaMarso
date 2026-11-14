@@ -3,7 +3,7 @@
 **Scope: three layers only: Topographic, Optical and Spectral.** Every other layer the specs mention (geologic units, historical rover traverse) is out of scope (§7).
 **Team:** Jim (Topographic, in progress) · Shin (Optical, Security, leads the demo) · Daril (Spectral) · Jastini (Decisions and docs) · everyone (App-wide). §1–§3 are the three layers; §10 is the Todo list from `docs/Todo (1–3).png`.
 
-Tasks come from the four spec documents and are ticked where the current build (v0.5.3) meets them.
+Tasks come from the four spec documents and are ticked where the current build (v0.5.6) meets them.
 Sources: **GS** = [Gen Spec.md](Gen%20Spec.md) · **PS** = [docs/MAPA_Marswalk_Product_Specification.md](docs/MAPA_Marswalk_Product_Specification.md) · **FS** = [Frontend Spec.md](Frontend%20Spec.md) · **SS** = [Security Spec.md](Security%20Spec.md).
 Details of each stand-in are in [placeholders.md](placeholders.md); what changed is in [changes.md](changes.md).
 

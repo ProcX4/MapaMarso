@@ -21,6 +21,33 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.6 · To-do sweep: science targets, EVA return time and off-route warning, route export, radiation estimate, security checks
+
+**Added**
+- **Science targets:** 27 Perseverance sample sites (sealed cores) in `public/data/science-targets.geojson`, each with a reason and source, rebuilt by `npm run build-science-targets` from NASA's Mars Rock Samples page and stop list (positions within about 300 m). Science opportunity cards and the site card's nearby targets now have data. The layer is labelled as rover cores, not CRISM.
+- **EVA:** "Back at base about 16:42 LMST" under *Back to base*; an OFF ROUTE alert past 30 m (new assumption A14) and a *Simulated drift off the route* slider to try it.
+- **Planner:** *Export route* (GeoJSON, on this device only) and a *Radiation* panel (0.67 mSv/day from Curiosity's RAD at Gale crater × the walk's duration, Estimated, not a live feed; A15).
+- `docs/assumptions-sources.md`: sources and how well each was checked for A1–A4, and the 20° vs 25° slope conflict.
+- `npm run check-api-abuse`: 20 bad requests to the three API handlers.
+- `docs/todo-sweep.md`: what was done in this sweep, how each part works, and what was not done.
+
+**Changed**
+- `Gen Spec.md`: tech stack says OpenLayers; data table status filled in; new *Deviations from this spec* section.
+- About page: says there is no delete-account button yet and what deleting an account removes.
+- `vercel.json`: `installCommand` is `npm ci`.
+
+**Fixed**
+- `/api/rover-photos` with no parameters answered 200 as if the point were 0°, 0°; it now answers 400.
+
+**Spec deviations**
+- Recorded in `Gen Spec.md` (three layer groups, whole planet, routes under `#/globe/2d`, email confirmation off).
+
+**Verified**
+- Type check, lint and build pass; `npm run check-upstreams` and `npm run check-api-abuse` pass; `npm audit` finds 0 vulnerabilities; history holds no keys; the live site sends the security headers.
+- In the browser: science opportunities, the LMST line, the off-route alert, the export file and the radiation figure, with the numbers in `docs/todo-sweep.md`.
+
+---
+
 ## 2026-11-15 · v0.5.5 · Debug: zoom points
 
 **Added**
