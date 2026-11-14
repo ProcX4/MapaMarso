@@ -279,7 +279,12 @@
   align-items: flex-start;
   gap: 10px;
   animation: fade-in 700ms ease both;
+  /* The closed tray still takes up its full width, invisibly, over whatever is beside the dock (the day and
+     night playback): only the buttons themselves take clicks */
+  pointer-events: none;
 }
+.tool-dock-mini,
+.tool-dock-toggle { pointer-events: auto; }
 .tool-dock-row { display: flex; align-items: center; gap: 10px; }
 /* Centred over the 46px tools button */
 .tool-dock-side { display: flex; flex-direction: column; gap: 8px; margin-left: 4px; }
