@@ -3,7 +3,7 @@
 **Scope: three layers only: Topographic, Optical and Spectral.** Every other layer the specs mention (geologic units, historical rover traverse) is out of scope (§7).
 **Team:** Jim (Topographic, in progress) · Shin (Optical, Security, leads the demo) · Daril (Spectral) · Jastini (Decisions and docs) · everyone (App-wide). §1–§3 are the three layers; §10 is the Todo list from `docs/Todo (1–3).png`.
 
-Tasks come from the four spec documents and are ticked where the current build (v0.5.3) meets them.
+Tasks come from the four spec documents and are ticked where the current build (v0.5.7) meets them.
 Sources: **GS** = [Gen Spec.md](Gen%20Spec.md) · **PS** = [docs/MAPA_Marswalk_Product_Specification.md](docs/MAPA_Marswalk_Product_Specification.md) · **FS** = [Frontend Spec.md](Frontend%20Spec.md) · **SS** = [Security Spec.md](Security%20Spec.md).
 Details of each stand-in are in [placeholders.md](placeholders.md); what changed is in [changes.md](changes.md).
 
@@ -62,8 +62,8 @@ The surface in visible light.
 
 ### To do
 - [ ] **Check by hand in a deployed preview:** the CTX/HiRISE tiles and rover photos with the production CSP, and that CTX lines up with the other layers closely enough at Jezero
-- [ ] **Offline demo:** `npm run prefetch-tiles` doesn't fetch CTX or HiRISE (HiRISE alone would be millions of tiles at full zoom); decide whether to pre-fetch a small walking area round the base
-- [ ] **Esri terms:** confirm Esri's terms allow proxying the public OnMars service (the Murray Lab allows free use with credit)
+- [ ] **Offline demo:** `npm run prefetch-tiles` doesn't fetch CTX or HiRISE (HiRISE alone would be millions of tiles at full zoom); decide whether to pre-fetch a small walking area round the base. Sizing worked out 2026-11-15: a 4 km square round the base needs only a handful of CTX tiles per level (a 512 px CTX tile at level 12 covers about 2.6 km), so CTX is cheap to keep; HiRISE is the costly one (a 256 px tile at zoom 17 covers about 80 m, so 4 km square is over 2,000 tiles there, or about 500 at zoom 16). Suggest: CTX for the base area, HiRISE only to zoom 15 within 1 km. Needs a decision, then an extension to the prefetch script
+- [ ] **Esri terms:** researched 2026-11-15, not settled. The service itself says `accessInformation: None` and `copyrightText: Source: NASA/JPL/MSSS/Caltech Murray Lab/Esri`; the Murray Lab's mosaic is free to use with credit (found by search; the page itself was not opened here). No separate Esri terms for the public OnMars service turned up, so this stays open for someone to read Esri's terms of use or ask. Also note the service is the preliminary **beta01** mosaic, and the Murray Lab has a later V01
 
 ## 3. Spectral · Daril
 
@@ -78,8 +78,8 @@ Infrared and mineral maps.
 
 ### To do
 - [ ] **CRISM mineralogy layer** (GS Layer 3, GS Data "Mineralogy"). Trek's CRISM/OMEGA hydrous-mineral map serves no tiles; needs another source
-- [ ] **Science targets:** fill `public/data/science-targets.geojson` with real CRISM targets, each with a citable reason (P5); then replace the `TBD` product in the registry and in `docs/data-sources.md`
-- [ ] **Science opportunity cards** come alive once targets exist (built: `ScienceOpportunity.tsx`, detour time, reason) (GS, PS §7)
+- [x] **Science targets** (P5): 27 Perseverance sample sites in `public/data/science-targets.geojson`, each with a reason and source, built by `npm run build-science-targets` from NASA's Mars Rock Samples page and stop list (within about 300 m). Orbital CRISM detections are still to add
+- [x] **Science opportunity cards** (GS, PS §7): list targets within 1 km of the route with a reason and detour time; tested with a walk past the Ha'ahóni and Atsá cores
 - [ ] **Site card mineral / hydration rows**, shown only where the data supports them (PS §5)
 - [x] **Legends for the TES maps:** a colour bar with low and high labels under each (v0.5.3). The labels are words, not numbers; Trek publishes no value range
 
@@ -88,17 +88,17 @@ Infrared and mineral maps.
 ### Planner and EVA
 - [x] Start, destination, waypoints, science stops, end or round trip; review before EVA
 - [x] EVA: simulated position, next waypoint (distance, bearing, elevation change), distance to base, return estimate, one hazard alert at a time, Next / Science / Route / Return to base
-- [ ] Estimated return as a clock time, e.g. "16:42 LMST" (PS §3 example)
-- [ ] Route-deviation warning in EVA (PS §2.3)
-- [ ] Route export to a file (PS §16; saving to Supabase works)
-- [ ] Site comparison (PS §16)
-- [ ] Search: replace the 2 hand-typed place names with the IAU gazetteer (P6)
+- [x] Estimated return as a clock time, e.g. "16:42 LMST" (PS §3 example): "Back at base about 16:42 LMST" in EVA, at the base's longitude, from the real current time plus the walk back
+- [x] Route-deviation warning in EVA (PS §2.3): "OFF ROUTE · 89 m from the planned path" past 30 m (A14). The simulated position is always on the route, so a "Simulated drift off the route" slider moves it to the right to try the warning
+- [x] Route export to a file (PS §16): *Export route* in the planner downloads a GeoJSON of the walked path (with elevations) and the stops, on this device only; saving to Supabase works too
+- [x] Site comparison (PS §16): *Pin to compare* on the site card; click another point (or search a name) and the card shows both side by side: place, elevation, slope, terrain band, distance and bearing apart, height difference
+- [x] Search: all 2,055 IAU-adopted Mars names (P6), loaded when you start typing, accents ignored, zoom chosen from the feature's size; the landing site's NASA name is kept and marked as not IAU
 
 ### Frontend rules (FS §8, §10, definition of done)
 - [x] Every value tagged OBSERVED / DERIVED / ESTIMATED; estimates show their assumption; "No data" instead of a guess
 - [x] Numbers through `lib/format.ts` in mono; panels collapse below 720 px; reduced motion honoured
 - [x] One map instance; heavy maths in workers; About and EVA lazy-loaded; offline demo tiles
-- [ ] Keyboard pass over every control (map: arrows pan, + / − zoom)
+- [x] Keyboard pass over every control (map: arrows pan, + / − zoom): audited 2026-11-15 on explore, plan, EVA, About and account: every control has a name and is reachable by keyboard, nothing clickable is a non-control, images have alt text, focus is visible (the daylight bar shows a ring round its thumb). A human tab-through with a screen reader is still worth doing before judging
 - [ ] Lint and build before every push (passing now)
 - [ ] Branch per feature + PR into `main` with one reviewer (work has gone straight to `main`)
 - [ ] Each feature shown to one teammate who didn't build it
@@ -107,14 +107,14 @@ Infrared and mineral maps.
 
 - [ ] Demo site: Jezero or Gale (D1)
 - [ ] Habitat location: a real spot, renamed from "Habitat (placeholder)" (D2)
-- [ ] Gen Spec tech-stack line says OpenLayers (D3)
+- [x] Gen Spec tech-stack line says OpenLayers (D3)
 - [ ] Team table: names and roles (D5; also "Team: TBD" on the About page)
 - [ ] Licence: add `LICENSE`, update Gen Spec (D6)
-- [ ] Record the spec deviations in the specs or `changes.md`:
-  - [ ] layers are Topographic / Optical / Spectral (GS Layer 3 and FS §5.4 list geology and Base / Safety / Science / Route)
-  - [ ] whole-planet scope (GS asked for one site)
-  - [ ] routes live under `#/globe/2d` (FS §2)
-  - [ ] email confirmation off (SS §4)
+- [x] Record the spec deviations in the specs or `changes.md`: written up in a new *Deviations from this spec* section of `Gen Spec.md`:
+  - [x] layers are Topographic / Optical / Spectral (GS Layer 3 and FS §5.4 list geology and Base / Safety / Science / Route)
+  - [x] whole-planet scope (GS asked for one site)
+  - [x] routes live under `#/globe/2d` (FS §2)
+  - [x] email confirmation off (SS §4)
 
 ## 6. Demo story (GS, PS §15), rehearse end to end · led by Shin, everyone
 
@@ -148,8 +148,8 @@ Listed so nobody builds them by accident. Bring one back only if the scope chang
 - [ ] GitHub secret scanning and push protection on `ProcX4/MapaMarso`
 - [ ] Dependabot alerts on
 - [ ] Branch protection on `main`: PR required, one review, no force-push
-- [ ] Vercel installs with `npm ci` (lock file is committed)
-- [ ] `npm audit`: no high / critical runtime issues
+- [x] Vercel installs with `npm ci`: `installCommand` set in `vercel.json` (lock file is committed)
+- [x] `npm audit`: 0 vulnerabilities in runtime dependencies (2026-11-15)
 
 ### Proxies (§3)
 - [x] `api/tiles.ts`: fixed host, allow-listed layers, validated z/row/col, jpg/png, GET only, 10 s timeout + one retry, image type and 2 MB checks, nothing forwarded, week-long cache, plain error messages
@@ -171,19 +171,19 @@ Listed so nobody builds them by accident. Bring one back only if the scope chang
 - [x] No `dangerouslySetInnerHTML`, `innerHTML`, `eval`, `new Function` or string `setTimeout`; user text drawn as text; data-built links are internal; external links `noopener noreferrer`
 - [x] Input limits (coordinates, 12 stops, 80 / 500 chars, speed, EVA hours); CSP and security headers; storage reads in `try/catch`
 - [x] Email + username only; usernames shown, emails never; simulated EVA position; `geolocation=()`
-- [ ] About page explains **how to delete an account** (it says what's stored, and how to delete missions)
+- [ ] About page explains **how to delete an account**: it now says there is no button yet, asks the reader to ask the team, and lists what deletion removes (profile, missions, crew memberships, entries; checked against the `on delete cascade` links in `supabase/schema.sql`). Still to do: name a real contact, or add a self-service delete (a `security definer` function plus a button; needs Supabase to apply)
 
 ### Availability (§8)
 - [x] Pre-fetched demo tiles with fallback; DTM served from our own deployment; map and planning work signed out
 - [ ] Every network call has a visible error state (elevation / A* done, see §1; check the rest)
 
 ### Pre-demo checks (§9), run before judging
-- [ ] `git log -p | grep -iE "service_role|secret|password|api[_-]?key"` finds nothing that matters
+- [x] `git log -p | grep -iE "service_role|secret|password|api[_-]?key"` finds nothing that matters (checked 2026-11-15 over all branches: no added line holds a key; no `.env` file is tracked except the blank `.env.example`)
 - [ ] RLS on for every table
-- [ ] `/api/tiles/../../etc` and `/api/tiles/UnknownLayer/0/0/0.jpg` both return 400
+- [x] `/api/tiles/../../etc` and `/api/tiles/UnknownLayer/0/0/0.jpg` both return 400: `npm run check-api-abuse` covers these and 16 more bad requests to the three API handlers (found and fixed one: `/api/rover-photos` with no parameters answered 200 as if the point were 0°, 0°)
 - [ ] A mission named `<img src=x onerror=alert(1)>` shows as plain text everywhere
-- [ ] Security headers present on the live site
-- [ ] `npm audit` clean of high / critical runtime issues
+- [x] Security headers present on the live site (checked 2026-11-15: CSP, nosniff, referrer policy, permissions policy, HSTS)
+- [x] `npm audit` clean of high / critical runtime issues (0 vulnerabilities)
 - [ ] App works offline after first load (cached demo tiles)
 
 ---
@@ -207,22 +207,22 @@ Each unticked `- [ ]` box and each "TBD" in the spec documents, in the order it 
 ### Gen Spec.md · If time allows
 - [x] Hazard warnings (slope above a threshold along the route) · *Topographic*
 - [x] Terrain-aware routing (avoid steep cells instead of drawing straight lines) · *Topographic*
-- [ ] Science opportunity cards ("hydrated minerals 420 m off route, +11 min detour") · *Spectral: needs target data*
+- [x] Science opportunity cards ("hydrated minerals 420 m off route, +11 min detour") · *Spectral*
 - [x] Traverse safety envelope (how far you can go and still return in time) · *Topographic*
 - [x] EVA mode
 - [x] Rover point-of-view photos at waypoints · *Optical* (site card, Perseverance stops within 250 m)
-- [ ] Space weather / radiation panel · *app-wide*
+- [x] Space weather / radiation panel · *app-wide* (the minimal radiation estimate; no live space weather)
 
 ### Gen Spec.md · TBD
 - [ ] Demo site decision: Jezero or Gale
-- [ ] Data table status column: tick each in-scope layer as it lands (all still ☐ in the spec)
-- [ ] Tech stack: map rendering "_TBD_" → OpenLayers
+- [x] Data table status column: ticked in `Gen Spec.md` for every in-scope layer (mineralogy half-done: CRISM still to add)
+- [x] Tech stack: map rendering "_TBD_" → OpenLayers
 - [ ] Team table: names and roles (and "Team: TBD" on the About page)
 
 ### Frontend Spec.md · Definition of done (per feature)
 - [x] Works on the demo site at walking-scale zoom
 - [x] Every displayed value has a category tag and a source
-- [ ] Usable by keyboard; readable at 720 px wide (720 px done; keyboard pass to do)
+- [x] Usable by keyboard; readable at 720 px wide (keyboard audit done, see §4)
 - [x] Lint and build pass
 - [ ] Shown to one teammate who didn't build it
 
@@ -230,8 +230,8 @@ Each unticked `- [ ]` box and each "TBD" in the spec documents, in the order it 
 All boxes from §2–§9 are in §8 above, with the same ticks.
 
 ### docs/data-sources.md · TBD
-- [ ] Science targets (`science-targets`): product ID, source URL and licence TBD (CRISM detections); the file is empty · *Spectral*
-- [ ] Same TBD in `src/map/layers/registry.ts` → `science-targets` → `product: 'TBD: CRISM mineral detections for the site'` · *Spectral*
+- [x] Science targets (`science-targets`): row filled in `docs/data-sources.md` · *Spectral*
+- [x] Same TBD in `src/map/layers/registry.ts` replaced with the real product · *Spectral*
 
 ---
 
@@ -240,12 +240,12 @@ All boxes from §2–§9 are in §8 above, with the same ticks.
 The 17 tasks in the three Todo images, with the owner from the section headings above and today's status.
 
 ### Must-do for the challenge
-- [ ] **1. Fill the science targets** · Daril. `public/data/science-targets.geojson` is empty; it needs real points with `name`, `reason` (e.g. "CRISM hydrated signature") and `source`. Makes the science opportunity cards and the site card's nearby targets work (§3).
-- [ ] **2. Add a radiation / space-weather panel** · everyone (§4). A minimal panel with a cited source, labelled Estimated.
+- [x] **1. Fill the science targets** · Daril. Done 2026-11-15 with 27 Perseverance sample sites (see §3). `public/data/science-targets.geojson` is empty; it needs real points with `name`, `reason` (e.g. "CRISM hydrated signature") and `source`. Makes the science opportunity cards and the site card's nearby targets work (§3).
+- [x] **2. Add a radiation / space-weather panel** · everyone (§4). Done 2026-11-15 as the minimal version: a *Radiation* panel in the planner with the dose for the walk (0.67 mSv/day from Curiosity's RAD at Gale crater × the walk's duration), labelled Estimated, with the caveats in its tooltip. **Not** a live space-weather feed: solar storms are not included (a live feed would need a new proxy and CSP entry)
 - [ ] **3. Add point-of-view photos at waypoints and destinations** · Shin (§2). Perseverance raw images near each stop; only the unused `SITE.rawImagesUrl` exists today.
 - [x] **4. Add rock and boulder hazards** · Jim. Done 2026-11-15: HiRISE-derived rocky-ground map (`public/data/site-obstacles.bin`, built by `scripts/build-obstacles.mjs`) with A* costs; Jezero only, where the 1 m DTMs exist
 - [ ] **5. Get sharper imagery at walking scale** · Shin (§2). THEMIS 100 m/px is the sharpest; needs a CTX or HiRISE source that serves tiles, or a local tile set (P3).
-- [ ] **6. Source the mobility and safety assumptions** · everyone, with Jim for the A* costs. Walking speed 2 km/h, climb penalty, slope bands, 6 h EVA and the A* costs need citations or a team decision (A1–A4).
+- [ ] **6. Source the mobility and safety assumptions** · everyone, with Jim for the A* costs. Researched 2026-11-15 in `docs/assumptions-sources.md`: 2 km/h and 6 h are in line with Apollo and ISS figures, the climb penalty has no source, and NASA's 20° suit slope figure conflicts with the 25° impassable limit. **Still needs the team's decision** (A1–A4); two figures need opening and confirming.
 
 ### Decisions the team still has to make
 - [ ] **7. Confirm the demo site** · Jastini (§5). Jezero is a placeholder; Gale and its boxwork is the alternative (D1).
@@ -257,7 +257,7 @@ The 17 tasks in the three Todo images, with the owner from the section headings 
 ### Data and content to finish
 - [ ] **12. Restore a geology or science layer** · *out of scope as a geology layer* (§7: the layers are Topographic, Optical and Spectral). The science side is covered by Spectral (#1 and the CRISM layer in §3).
 - [ ] **13. Add a rover traverse layer** · *out of scope* (§7; stretch goal P8).
-- [ ] **14. Replace the hand-typed place names with verified IAU gazetteer names** · everyone (§4). Two entries today (P6).
+- [x] **14. Replace the hand-typed place names with verified IAU gazetteer names** · everyone (§4). Done 2026-11-15 with all 2,055 IAU names (P6); the old hand-typed Jezero point was 0.1° off.
 - [ ] **15. Complete `docs/data-sources.md`** · Jastini (§5). Product ID, URL and licence for every layer; the science-targets row is still TBD (P9). Check the terms and load of `api/elevation.ts`, which reads a 2 GB USGS file (byte ranges only, cached a week).
 - [ ] **16. Add landing-site close-ups for other sites** if the demo needs them · everyone (§4). Only Viking 1 has one (P11).
 - [x] **17. Spot-check the slope maths against `gdaldem slope`** · Jim. Done 2026-11-15 by re-implementing GDAL's Horn formula: exact match. Note: plain `gdaldem` on this file reads ~0.14° low unless given the true pixel spacing (see §1).

@@ -30,8 +30,8 @@ Last updated: 2026-11-14 (v0.3.0, full idea bank merged)
 | P3 | **Surface imagery at walking scale** | Global Trek layers only (THEMIS 100 m/px is the sharpest). The global CTX (Caltech) and HiRISE mosaics are in the Trek catalogue but serve no tiles from the standard EQ tile endpoint | `src/map/layers/registry.ts` | A CTX or HiRISE layer is found that Trek serves as tiles (or a local tile set), allow-listed in `api/tiles.ts` and added under Optical |
 | P4 | ~~**Geologic units**~~ | Removed 2026-11-15: the layers are now Topographic, Optical and Spectral only; the empty `geology.geojson` and the site card's Geology row are gone | — | — |
 | P12 | **Rocky ground** | Derived from USGS's 1 m HiRISE DTMs: share of each 20 m cell steeper than 30° at 1 m, covering 31.5 % of the site DTM (`scripts/build-obstacles.mjs`). A proxy, not a rock count | `public/data/site-obstacles.bin`; `PATHFINDING.rockSoftPct` / `rockMaxPct` | A published rock-abundance or rock-count map for the site is found and used instead, or the proxy is checked against HiRISE images of a few boulder fields |
-| P5 | **Science targets** | `public/data/science-targets.geojson` is an **empty FeatureCollection** | `public/data/science-targets.geojson`; registry `science-targets` | Points with properties `name`, `reason` (e.g. "CRISM hydrated signature"), `source`. Every target needs a real, citable reason |
-| P6 | **Place names (gazetteer)** | 2 hand-typed entries: "Jezero" (77.58°E, 18.38°N) and "Octavia E. Butler Landing" | `src/config/site.ts` → `GAZETTEER` | Replaced with verified IAU gazetteer names inside the site |
+| P5 | ~~**Science targets**~~ | Done 2026-11-15: 27 Perseverance sample sites (sealed cores) from NASA's Mars Rock Samples page, placed at the rover's last stop before sealing (within about 300 m). Built by `npm run build-science-targets`. Orbital CRISM detections are still not in the app (see the Spectral to-do) | `public/data/science-targets.geojson`; registry `science-targets` | — |
+| P6 | ~~**Place names for Search**~~ | Done 2026-11-15: all 2,055 Mars names adopted by the IAU, from the USGS Gazetteer of Planetary Nomenclature (`npm run build-gazetteer`), plus NASA's own name for the landing site, marked as not IAU. The old hand-typed "Jezero" point was wrong (77.58°E; the IAU centre is 77.687°E, 18.408°N) | `public/data/gazetteer.json`; `src/data/gazetteer.ts`; `src/config/site.ts` | — |
 | P7 | ~~**Thermal / mineralogy map layers**~~ | Done 2026-11-15: Spectral group (THEMIS day and night IR, TES thermal inertia, pyroxene, plagioclase, sheet silicates). CRISM/OMEGA hydrous detections are in the Trek catalogue but serve no tiles | `src/map/layers/registry.ts` | — |
 | P8 | **Rover traverse layer** | Not started (stretch goal) | — | Perseverance traverse from PDS added as a `route`-group vector layer |
 | P9 | **Data sources record** | Only the three Trek layers are recorded | `docs/data-sources.md` | Every layer in use has product ID, resolution, URL and licence |
@@ -49,10 +49,10 @@ All in `src/config/assumptions.ts` unless noted. Shown in the UI on hover of eve
 
 | # | Assumption | Value | Done when |
 |---|---|---|---|
-| A1 | Walking speed (flat) | 2 km/h | Sourced or agreed by the team |
-| A2 | Climb penalty | +1 min per 10 m climbed | Sourced or agreed |
-| A3 | Planned EVA length | 6 h | Sourced or agreed |
-| A4 | Slope bands | < 10° walkable · 10–15° caution · 15–25° avoid · > 25° impassable | Sourced or agreed |
+| A1 | Walking speed (flat) | 2 km/h | Researched 2026-11-15: in line with Apollo 15 crews' EVA 2 pace, but that figure was seen only in a search summary. See [docs/assumptions-sources.md](docs/assumptions-sources.md). Team to agree |
+| A2 | Climb penalty | +1 min per 10 m climbed | No source found. Team to agree (see docs/assumptions-sources.md) |
+| A3 | Planned EVA length | 6 h | Researched 2026-11-15: ISS spacewalks run about 5 to 7 h. Earth-orbit, not Mars. Team to agree (see docs/assumptions-sources.md) |
+| A4 | Slope bands | < 10° walkable · 10–15° caution · 15–25° avoid · > 25° impassable | Researched 2026-11-15: a NASA test document lists 20° as the suit's slope capability (seen in a search summary only), which conflicts with the 25° limit. Team to decide (see docs/assumptions-sources.md) |
 | A5 | Limits | 12 stops (base + 10 between + end, the saved-mission limit), names 80 chars, notes 500 chars, speed 0.5–5 km/h, EVA 1–8 h | Confirmed |
 | A6 | Science opportunity search radius | 1 km from the route | `src/data/route.ts` → `scienceOpportunities(…, withinM = 1000)` |
 | A7 | Site-card "nearby targets" radius | 500 m | `src/features/explore/SiteCard.tsx` → `NEARBY_M` |
@@ -61,6 +61,8 @@ All in `src/config/assumptions.ts` unless noted. Shown in the UI on hover of eve
 | A10 | ~~Return-to-base estimate~~ | Done 2026-11-15: along the A* path (back the way you came, or on round the loop if shorter), climb included | `src/features/eva/EvaView.tsx`, `src/data/route.ts` → `returnAlongRoute` |
 | A12 | Daylight | Twilight until the Sun is 10° below the horizon; sunset found in 5-minute steps; the simulated EVA starts at the real current time | `src/data/daylight.ts`, `src/features/eva/EvaView.tsx` |
 | A13 | EVA daylight caution | under 1 h of daylight to spare after getting back | `src/features/eva/HazardAlert.tsx` |
+| A14 | EVA off-route warning distance | 30 m from the planned path (`EVA.offRouteWarnM`); distance is to the nearest sampled point of the route (10 m steps) | `src/config/assumptions.ts`, `src/features/eva/HazardAlert.tsx` |
+| A15 | Radiation dose rate | 0.67 mSv/day (Curiosity RAD at Gale crater) × walk duration; no solar storms, no suit shielding, no live feed | `src/config/assumptions.ts` → `RADIATION`, `src/features/plan/RadiationEstimate.tsx` |
 | A11 | Profile sample step | 10 m (coarsened to keep ≤ 5,000 samples) | `PROFILE_STEP_M` |
 
 ## 4. Deployment items not yet verified

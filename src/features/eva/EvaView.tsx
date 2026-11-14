@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useMarswalk } from '../../hooks/useMarswalk'
 import { useRoute } from '../../hooks/useDerived'
-import { nextStop, pointAlong, returnAlongRoute, walkMinutes } from '../../data/route'
+import { nearestOnRoute, nextStop, pointAlong, returnAlongRoute, walkMinutes } from '../../data/route'
+import { bearingDeg, lmstAt, offsetFromHeading } from '../../data/mars'
 import { centerOn } from '../../map/mapControl'
 import { daylightText, minutesToSunset, sunElevation } from '../../data/daylight'
 import { Button } from '../../components/Button'
 import { Slider } from '../../components/Slider'
-import { formatDistance } from '../../lib/format'
+import { formatDistance, formatHours } from '../../lib/format'
+import { EVA } from '../../config/assumptions'
 import { NextWaypoint } from './NextWaypoint'
 import { ReturnEstimate } from './ReturnEstimate'
 import { HazardAlert } from './HazardAlert'
@@ -24,18 +26,28 @@ export function EvaView() {
   const route = useRoute()
   const [alongM, setAlongM] = useState(0)
   const [returning, setReturning] = useState(false)
+  // Simulated drift to the right of the planned path, to try the off-route warning (the simulated position is otherwise always on the route)
+  const [driftM, setDriftM] = useState(0)
   // The simulated walk starts now, so daylight is real: the Sun keeps moving as the crew walks
   const [startMs] = useState(() => Date.now())
   const total = route.totalM
 
   const here = useMemo(() => pointAlong(route.profile, alongM), [route.profile, alongM])
   const base = state.stops[0]
+  // Where the crew is: on the route, or driftM metres to the right of it
+  const at = useMemo(() => {
+    if (!here) return null
+    if (!driftM) return here.at
+    const ahead = pointAlong(route.profile, alongM + 20)
+    const heading = ahead && ahead !== here ? bearingDeg(here.at, ahead.at) : (bearingDeg(pointAlong(route.profile, alongM - 20)?.at ?? here.at, here.at))
+    return offsetFromHeading(here.at, heading, driftM)
+  }, [here, driftM, route.profile, alongM])
 
   useEffect(() => {
-    if (!here) return
-    dispatch({ type: 'setEvaPosition', at: here.at })
-    centerOn(here.at)
-  }, [here, dispatch])
+    if (!at) return
+    dispatch({ type: 'setEvaPosition', at })
+    centerOn(at)
+  }, [at, dispatch])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -66,6 +78,8 @@ export function EvaView() {
   const simMs = startMs + elapsedMin * 60_000
   const sun = sunElevation(here.at, simMs)
   const sunsetMin = minutesToSunset(here.at, simMs)
+  const offRouteM = at ? (nearestOnRoute(route.profile, at)?.offM ?? 0) : 0
+  const backAtLmst = formatHours(lmstAt(simMs + toBaseMin * 60_000, base.at[0])).slice(0, 5)
   const hazardAhead = route.hazards.find((h) => h.toM >= alongM && h.fromM <= alongM + 200) ?? null
 
   const jumpToNext = (kind?: 'science') => {
@@ -82,18 +96,22 @@ export function EvaView() {
         <p className="eva-sim">
           <span className="live-dot" aria-hidden /> SIMULATION · position along planned route · {daylightText(sun)}
         </p>
-        <HazardAlert returnMin={toBaseMin} leftMin={leftMin} sunUp={sun >= 0} sunsetMin={sunsetMin} hazard={hazardAhead} hazardStartsInM={hazardAhead ? Math.max(0, hazardAhead.fromM - alongM) : null} />
+        <HazardAlert returnMin={toBaseMin} leftMin={leftMin} sunUp={sun >= 0} sunsetMin={sunsetMin} hazard={hazardAhead} hazardStartsInM={hazardAhead ? Math.max(0, hazardAhead.fromM - alongM) : null} offRouteM={offRouteM} />
       </div>
 
       <div className="eva-facts">
-        <NextWaypoint from={here} next={next} />
-        <ReturnEstimate toBaseM={toBaseM} toBaseMin={toBaseMin} leftMin={leftMin} way={home.way} safe={route.routing === 'safe'} />
+        <NextWaypoint from={{ ...here, at: at ?? here.at }} next={next} />
+        <ReturnEstimate toBaseM={toBaseM} toBaseMin={toBaseMin} leftMin={leftMin} way={home.way} safe={route.routing === 'safe'} backAtLmst={backAtLmst} />
       </div>
 
       <div className="eva-bottom">
         <div className="eva-progress">
           <Slider label="Simulated position along route" value={alongM} min={0} max={total} step={1} valueText={`${formatDistance(alongM)} of ${formatDistance(total)}`} onChange={setAlongM} />
           <span className="num muted">{formatDistance(alongM)} / {formatDistance(total)}</span>
+        </div>
+        <div className="eva-progress eva-drift">
+          <Slider label="Simulated drift off the route" value={driftM} min={0} max={150} step={5} valueText={driftM ? `${driftM} m to the right` : 'On the route'} onChange={setDriftM} />
+          <span className="num muted">{driftM ? `${driftM} m off · warns past ${EVA.offRouteWarnM} m` : `Drift off route: warns past ${EVA.offRouteWarnM} m`}</span>
         </div>
         <div className="eva-actions">
           <Button size="large" onClick={() => { setReturning(false); jumpToNext() }}>Next</Button>

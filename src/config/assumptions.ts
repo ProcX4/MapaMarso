@@ -14,6 +14,21 @@ export const WALKING = {
 export const EVA = {
   /** Default planned EVA length. */
   maxHours: 6,
+  /** EVA warns that you have left the planned route from this far off it (ESTIMATED: a team choice, not sourced). */
+  offRouteWarnM: 30,
+}
+
+/**
+ * Radiation on the surface, from the one set of measurements made there: the Radiation Assessment Detector (RAD)
+ * on Curiosity at Gale crater (Hassler et al., Science 2014). Average galactic cosmic ray dose equivalent
+ * 0.67 mSv per day, August 2012 to June 2013 (absorbed dose 0.21 mGy per day). It is a measurement at another
+ * place, inside a rover, near solar maximum, so for a suited walk elsewhere it is only an ESTIMATE:
+ * - Jezero is about 1.8 km higher than Gale, so slightly less air above it: expect somewhat more.
+ * - Suit shielding is different from the rover's. Solar storms are not included.
+ */
+export const RADIATION = {
+  doseEquivMsvPerDay: 0.67,
+  source: 'MSL RAD at Gale crater, Hassler et al. 2014 (Science)',
 }
 
 /** Slope bands for the slope layer, route hazards and alerts (Frontend Spec §6.2). */

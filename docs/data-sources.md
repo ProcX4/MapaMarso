@@ -28,11 +28,13 @@ NASA data is used under NASA's media and data guidelines: https://www.nasa.gov/n
 | Dust cover index (`tes-dust`) | `TES_Dust` | TES · Mars Global Surveyor (Ruff & Christensen 2002, JGR 107, E12, 5127) | 16 pixels/degree, about 3.5 km/px (tiles to zoom 1) | https://trek.nasa.gov/tiles/Mars/EQ/TES_Dust/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use |
 | Dust cover index over relief (`tes-dust-relief`) | `tes_ruffdust` | TES · Mars Global Surveyor (same index, shown over shaded relief) | About 3.5 km/px (tiles to zoom 2) | https://trek.nasa.gov/tiles/Mars/EQ/tes_ruffdust/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use |
 | Surface albedo (`tes-albedo`) | `Mars_MGS_TES_Albedo_mosaic_global_7410m` | TES · Mars Global Surveyor | 7.4 km/px (tiles to zoom 1) | https://trek.nasa.gov/tiles/Mars/EQ/Mars_MGS_TES_Albedo_mosaic_global_7410m/1.0.0/WMTSCapabilities.xml | NASA, public | Observed | In use |
-| Science targets (`science-targets`) | TBD (CRISM detections) | CRISM · MRO | — | TBD | TBD | Observed | **Empty file** |
+| Science targets (`science-targets`) | Sealed sample cores 2–28 (sample no. as NASA numbers them) | Perseverance rover · Mars 2020 | Within about 300 m of the real hole | https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/ (sample facts); https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints.json (positions); rebuilt with `npm run build-science-targets` | NASA, public | Observed | In use (`public/data/science-targets.geojson`) |
 
 Layer IDs come from the Mars Trek catalogue (`https://trek.nasa.gov/mars/TrekServices/ws/index/eq/searchItems`, field `productLabel`), checked 2026-11-15. The global CTX and HiRISE mosaics and the CRISM/OMEGA hydrous mineral map are listed there but serve no tiles from the EQ tile endpoint.
 
 Tile grid for all Trek EQ layers verified against `WMTSCapabilities.xml` on 2026-11-14: TopLeftCorner `-180 90`, 256 px tiles, level 0 = 2 × 1 tiles. Deepest zoom with tiles at Jezero checked by requesting tiles directly.
+
+CTX terms (researched 2026-11-15): the Esri service reports `copyrightText` "Source: NASA/JPL/MSSS/Caltech Murray Lab/Esri" and `accessInformation` "None". The Murray Lab's mosaic is described by third-party catalogues as free to use with credit. The service serves the preliminary **beta01** mosaic. No separate Esri terms for the public OnMars service were found: still to confirm (CHECKLIST §2).
 
 Offline copies of the Trek tiles around the demo site live in `public/tiles/` (`npm run prefetch-tiles`).
 
@@ -49,5 +51,7 @@ Offline copies of the Trek tiles around the demo site live in `public/tiles/` (`
 | MRO, Odyssey, TGO models | NASA 3D Resources; NASA Visualization Technology Applications and Development | NASA, public | Observed |
 | Mars Express, Hope | Stand-in shapes of their real size (no published model) | Labelled on their cards | Estimated |
 | Stars | Yale Bright Star Catalogue, 5th ed. (Hoffleit & Warren 1991) | Public | Observed |
+| Surface radiation (planner's Radiation panel) | MSL RAD at Gale crater: galactic cosmic ray dose equivalent 0.67 mSv/day, Aug 2012 to Jun 2013; Hassler et al., *Science* 2014 ("Mars' Surface Radiation Environment Measured with the Mars Science Laboratory's Curiosity Rover") | Published paper; NASA mission data | Estimated (measured elsewhere, inside a rover, near solar maximum) |
+| Place names (Search) | USGS Gazetteer of Planetary Nomenclature, Mars center points (https://planetarynames.wr.usgs.gov/shapefiles/MARS_nomenclature_center_pts.zip): 2,055 names adopted by the IAU, centres as the gazetteer gives them | USGS / IAU, public | Observed |
 | Landing sites | Published landing coordinates (`src/data/mars.ts`) | Public | Observed |
 | Viking 1 close-up terrain | Procedural ground around the real lander and trench positions | MAPA/MapaMars | Estimated |

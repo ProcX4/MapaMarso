@@ -19,10 +19,10 @@ export const SITE = {
 }
 
 /**
- * Place names for Search. PLACEHOLDER: a hand-typed subset; replace with the IAU
- * gazetteer (planetarynames.wr.usgs.gov) entries inside the site and verify each one.
+ * Place names for Search that are NOT IAU names. The IAU names (public/data/gazetteer.json) come from the USGS
+ * gazetteer; NASA's own names for where its missions work, like the landing site, are not in it.
+ * The coordinates are Perseverance's first stop (site 3, drive 0) in NASA's Mars 2020 stop list.
  */
 export const GAZETTEER: { name: string; at: LngLat; note: string }[] = [
-  { name: 'Jezero', at: [77.58, 18.38], note: 'Crater, centre' },
-  { name: 'Octavia E. Butler Landing', at: [77.4508, 18.4447], note: 'Perseverance landing site' },
+  { name: 'Octavia E. Butler Landing', at: [77.4509, 18.4446], note: 'Perseverance landing site (NASA name)' },
 ]

@@ -10,10 +10,12 @@ type Props = {
   way: 'back' | 'on'
   /** The route is the A* safe path all the way (not straight legs) */
   safe: boolean
+  /** Local mean solar time at the base when you get back, as "16:42" */
+  backAtLmst: string
 }
 
 /** Distance and time back to base along the route, against the EVA time left. */
-export function ReturnEstimate({ toBaseM, toBaseMin, leftMin, way, safe }: Props) {
+export function ReturnEstimate({ toBaseM, toBaseMin, leftMin, way, safe, backAtLmst }: Props) {
   const along = way === 'back' ? 'back the way you came' : 'on round the rest of the loop'
   const note = `${safe ? 'Along the A* safe path' : 'Along the route (some legs straight, not checked for hazards)'}, ${along}, climb included. ${walkingAssumption()}`
   return (
@@ -23,6 +25,10 @@ export function ReturnEstimate({ toBaseM, toBaseMin, leftMin, way, safe }: Props
         <p className="eva-big num">{formatDuration(toBaseMin)}</p>
         <p className="eva-sub num">
           {formatDistance(toBaseM)} <ProvenanceTag category="estimated" note={note} />
+        </p>
+        <p className="eva-sub num">
+          Back at base about {backAtLmst} LMST{' '}
+          <ProvenanceTag category="estimated" note="Local mean solar time at the base if you start back now and walk at the planned speed. A Mars hour is 1.027 Earth hours; the simulated walk starts at the real current time." />
         </p>
       </div>
       <div className="eva-fact">
