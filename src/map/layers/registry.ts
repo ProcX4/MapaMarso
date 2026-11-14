@@ -289,14 +289,13 @@ export const LAYERS: LayerDef[] = [
     source: '/data/science-targets.geojson',
     category: 'observed',
     provenance: {
-      instrument: 'CRISM',
-      mission: 'Mars Reconnaissance Orbiter',
-      product: 'TBD: CRISM mineral detections for the site',
+      instrument: 'Perseverance rock cores',
+      mission: 'Mars 2020',
+      product: "Sealed sample cores, NASA Mars Rock Samples page; position from NASA's stop list (within about 300 m)",
     },
     defaultVisible: true,
     defaultOpacity: 1,
-    legend: [{ label: 'Science target', color: 'var(--ok)' }],
-    placeholder: 'Empty file: add targets with a reason each',
+    legend: [{ label: 'Perseverance sample site', color: 'var(--ok)' }],
   },
 ]
 

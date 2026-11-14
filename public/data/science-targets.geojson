@@ -1,5 +1,438 @@
 {
   "type": "FeatureCollection",
-  "name": "PLACEHOLDER science targets: replace with points for the demo site (properties: name, reason, source)",
-  "features": []
+  "name": "Perseverance sample sites: sealed cores from NASA's Mars Rock Samples page, placed at the rover's last stop before sealing (within about 300 m)",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "m20-sample-2",
+      "properties": {
+        "name": "Montdenier (Rochette)",
+        "reason": "Perseverance's sample 2, sealed on sol 194 at Rochette, Artuby Ridge. NASA lists the rock as: igneous. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 7 drive 0, sol 180"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.44437,
+          18.43074
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-3",
+      "properties": {
+        "name": "Montagnac (Rochette)",
+        "reason": "Perseverance's sample 3, sealed on sol 196 at Rochette, Artuby Ridge. NASA lists the rock as: igneous. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 7 drive 0, sol 180"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.44437,
+          18.43074
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-4",
+      "properties": {
+        "name": "Salette (Brac)",
+        "reason": "Perseverance's sample 4, sealed on sol 262 at Brac, South Séítah. NASA lists the rock as: igneous. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 8 drive 0, sol 248"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.44302,
+          18.43396
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-5",
+      "properties": {
+        "name": "Coulettes (Brac)",
+        "reason": "Perseverance's sample 5, sealed on sol 271 at Brac, South Séítah. NASA lists the rock as: igneous. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 8 drive 0, sol 248"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.44302,
+          18.43396
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-6",
+      "properties": {
+        "name": "Robine (Issole)",
+        "reason": "Perseverance's sample 6, sealed on sol 298 at Issole, South Séítah. NASA lists the rock as: igneous. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 9 drive 0, sol 286"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.44137,
+          18.43266
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-7",
+      "properties": {
+        "name": "Malay (Issole)",
+        "reason": "Perseverance's sample 7, sealed on sol 337 at Issole, South Séítah. NASA lists the rock as: igneous. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 9 drive 276, sol 335"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.44131,
+          18.43261
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-8",
+      "properties": {
+        "name": "Ha'ahóni (Sid)",
+        "reason": "Perseverance's sample 8, sealed on sol 371 at Sid, Octavia E. Butler Landing / Ch’ał outcrop. NASA lists the rock as: igneous. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 11 drive 108, sol 362"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.45243,
+          18.4439
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-9",
+      "properties": {
+        "name": "Atsá (Sid)",
+        "reason": "Perseverance's sample 9, sealed on sol 377 at Sid, Octavia E. Butler Landing / Ch’ał outcrop. NASA lists the rock as: igneous. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 11 drive 108, sol 362"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.45243,
+          18.4439
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-10",
+      "properties": {
+        "name": "Swift Run (Skinner Ridge)",
+        "reason": "Perseverance's sample 10, sealed on sol 490 at Skinner Ridge, Delta Front. NASA lists the rock as: sedimentary. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 26 drive 1004, sol 477"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.40617,
+          18.4589
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-11",
+      "properties": {
+        "name": "Skyland (Skinner Ridge)",
+        "reason": "Perseverance's sample 11, sealed on sol 495 at Skinner Ridge, Delta Front. NASA lists the rock as: sedimentary. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 26 drive 1004, sol 477"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.40617,
+          18.4589
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-12",
+      "properties": {
+        "name": "Hazeltop (Wildcat Ridge)",
+        "reason": "Perseverance's sample 12, sealed on sol 509 at Wildcat Ridge, Delta Front. NASA lists the rock as: sedimentary. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 26 drive 1222, sol 502"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.40592,
+          18.45865
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-13",
+      "properties": {
+        "name": "Bearwallow (Wildcat Ridge)",
+        "reason": "Perseverance's sample 13, sealed on sol 516 at Wildcat Ridge, Delta Front. NASA lists the rock as: sedimentary. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 26 drive 1222, sol 502"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.40592,
+          18.45865
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-14",
+      "properties": {
+        "name": "Shuyak (Amalik)",
+        "reason": "Perseverance's sample 14, sealed on sol 575 at Amalik, Delta Front. NASA lists the rock as: sedimentary. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 29 drive 0, sol 565"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.40144,
+          18.45073
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-15",
+      "properties": {
+        "name": "Mageik (Amalik)",
+        "reason": "Perseverance's sample 15, sealed on sol 619 at Amalik, Delta Front. NASA lists the rock as: sedimentary. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 30 drive 1172, sol 609"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.39915,
+          18.45364
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-16",
+      "properties": {
+        "name": "Kukaklek (Hidden Harbor)",
+        "reason": "Perseverance's sample 16, sealed on sol 631 at Hidden Harbor, Delta Front. NASA lists the rock as: sedimentary. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 30 drive 2188, sol 629"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.40144,
+          18.45163
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-17",
+      "properties": {
+        "name": "Atmo Mountain (Observation Mountain)",
+        "reason": "Perseverance's sample 17, sealed on sol 634 at Observation Mountain, Delta Front. NASA lists the rock as: regolith, likely mixed sedimentary and igneous grains. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 30 drive 2310, sol 632"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.40134,
+          18.45136
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-18",
+      "properties": {
+        "name": "Crosswind Lake (Observation Mountain)",
+        "reason": "Perseverance's sample 18, sealed on sol 639 at Observation Mountain, Delta Front. NASA lists the rock as: regolith, likely mixed sedimentary and igneous grains. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 30 drive 2310, sol 632"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.40134,
+          18.45136
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-19",
+      "properties": {
+        "name": "Melyn (Berea)",
+        "reason": "Perseverance's sample 19, sealed on sol 749 at Berea, Upper Fan. NASA lists the rock as: sedimentary. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 36 drive 3398, sol 736"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.38399,
+          18.47021
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-20",
+      "properties": {
+        "name": "Otis Peak (Emerald Lake)",
+        "reason": "Perseverance's sample 20, sealed on sol 832 at Emerald Lake, Upper Fan. NASA lists the rock as: sedimentary. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 40 drive 132, sol 821"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.36819,
+          18.48299
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-21",
+      "properties": {
+        "name": "Pilot Mountain (Dream Lake)",
+        "reason": "Perseverance's sample 21, sealed on sol 913 at Dream Lake, Upper Fan. NASA lists the rock as: sedimentary. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 44 drive 4982, sol 911"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.35078,
+          18.48344
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-22",
+      "properties": {
+        "name": "Pelican Point (Hans Amundsen Memorial Workspace)",
+        "reason": "Perseverance's sample 22, sealed on sol 923 at Hans Amundsen Memorial Workspace, Margin Unit. NASA lists the rock as: sedimentary. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 44 drive 4982, sol 911"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.35078,
+          18.48344
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-23",
+      "properties": {
+        "name": "Lefroy Bay (Turquoise Bay)",
+        "reason": "Perseverance's sample 23, sealed on sol 949 at Turquoise Bay, Margin Unit. NASA lists the rock as: sedimentary. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 46 drive 0, sol 933"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.34704,
+          18.48871
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-24",
+      "properties": {
+        "name": "Comet Geyser (Bunsen Peak)",
+        "reason": "Perseverance's sample 24, sealed on sol 1088 at Bunsen Peak, Margin Unit. NASA lists the rock as: silica-cemented carbonate. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 51 drive 0, sol 1084"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.3272,
+          18.49183
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-25",
+      "properties": {
+        "name": "Sapphire Canyon (Cheyava Falls)",
+        "reason": "Perseverance's sample 25, sealed on sol 1215 at Cheyava Falls, Neretva Vallis. NASA lists the rock as: sedimentary. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 55 drive 434, sol 1210"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.30527,
+          18.49751
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-26",
+      "properties": {
+        "name": "Silver Mountain (Shallow Bay)",
+        "reason": "Perseverance's sample 26, sealed on sol 1401 at Shallow Bay, Crater rim (Witch Hazel Hill). NASA lists the rock as: igneous or impactite. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 66 drive 0, sol 1400"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.26475,
+          18.46055
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-27",
+      "properties": {
+        "name": "Green Gardens (Tablelands)",
+        "reason": "Perseverance's sample 27, sealed on sol 1433 at Tablelands, Crater rim (Witch Hazel Hill). NASA lists the rock as: serpentinite. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 69 drive 2000, sol 1431"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.2592,
+          18.46141
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "m20-sample-28",
+      "properties": {
+        "name": "Main River (Broom Point)",
+        "reason": "Perseverance's sample 28, sealed on sol 1441 at Broom Point, Crater rim (Witch Hazel Hill). NASA lists the rock as: igneous or impactite. A core worth reaching if you want the rock the rover chose to keep.",
+        "source": "NASA Mars Rock Samples (https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/); position from NASA's Mars 2020 stop list, site 69 drive 2124, sol 1435"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.2585,
+          18.46173
+        ]
+      }
+    }
+  ]
 }
