@@ -4,10 +4,15 @@ import { formatDistance, formatLatLon } from '../../lib/format'
 import { flyTo } from '../../map/mapControl'
 import { LIMITS } from '../../config/assumptions'
 import type { Placing, Stop } from '../../state/types'
+import { Icon } from '../../components/Icon'
 
 const KIND_LABEL: Record<Stop['kind'], string> = { base: 'Start', waypoint: 'Waypoint', science: 'Science stop', destination: 'Destination' }
 
-/** What the next click on the map places: the left panel is where stops are added (the site card only shows) */
+/**
+ * What the next click on the map places: the left panel is where stops are added (the site card only shows).
+ * Each is an icon button, drawn like the stop it places (the badges in the list and on the map); hovering or
+ * focusing one shows its name and what a click does.
+ */
 const PICKS: { id: Placing; label: string; hint: string }[] = [
   { id: 'base', label: 'Start', hint: 'Click the map where the walk starts. Click again to move it.' },
   { id: 'waypoint', label: 'Waypoint', hint: 'Each click on the map adds a waypoint to the end of the route.' },
@@ -15,6 +20,17 @@ const PICKS: { id: Placing; label: string; hint: string }[] = [
   { id: 'destination', label: 'Destination', hint: 'Click the map where the walk ends.' },
   { id: 'look', label: 'Just look', hint: "Clicks only open the site card on the right: nothing's added." },
 ]
+
+/** The picker's icon for a pick: the same badge its stop gets in the list and on the map, or an eye for Just look */
+function PickIcon({ id }: { id: Placing }) {
+  if (id === 'look') return <Icon name="eye" size={18} />
+  const text = id === 'base' ? 'A' : id === 'destination' ? 'B' : id === 'waypoint' ? '1' : ''
+  return (
+    <span className={`stop-pick is-${id}`} aria-hidden>
+      {text}
+    </span>
+  )
+}
 
 function badge(stop: Stop, i: number) {
   if (stop.kind === 'base') return 'A'
@@ -43,20 +59,28 @@ export function StopList() {
       <div className="plan-place">
         <p className="kicker plan-place-head">Click the map to place</p>
         <div className="plan-place-picks" role="radiogroup" aria-label="What a click on the map places">
-          {PICKS.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              role="radio"
-              aria-checked={placing === p.id}
-              className={`plan-place-pick is-${p.id}${placing === p.id ? ' is-on' : ''}`}
-              disabled={!hasStart && p.id !== 'base'}
-              title={!hasStart && p.id !== 'base' ? 'Place the start first' : p.hint}
-              onClick={() => dispatch({ type: 'setPlacing', placing: p.id })}
-            >
-              {p.label}
-            </button>
-          ))}
+          {PICKS.map((p) => {
+            const locked = !hasStart && p.id !== 'base'
+            return (
+              <button
+                key={p.id}
+                type="button"
+                role="radio"
+                aria-checked={placing === p.id}
+                aria-label={p.label}
+                aria-describedby={`pick-tip-${p.id}`}
+                className={`plan-place-pick is-${p.id}${placing === p.id ? ' is-on' : ''}`}
+                disabled={locked}
+                onClick={() => dispatch({ type: 'setPlacing', placing: p.id })}
+              >
+                <PickIcon id={p.id} />
+                <span id={`pick-tip-${p.id}`} className="plan-pick-tip" role="tooltip">
+                  <strong>{p.label}</strong>
+                  {locked ? 'Place the start first.' : p.hint}
+                </span>
+              </button>
+            )
+          })}
         </div>
         <p className={`muted plan-hint${full ? ' is-warning' : ''}`} role="status">
           {full ? `The route is full (${LIMITS.maxStops} stops): remove one to add more.` : hasStart ? pick.hint : 'Start by clicking the map where the walk begins.'}

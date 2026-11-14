@@ -61,6 +61,18 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.10 · Planner picker as icons with info boxes
+
+**Changed**
+- The planner's "Click the map to place" picker is five round icon buttons instead of words, each drawn like the stop it places so it matches the stop list and the map: **A** (Start), **1** (Waypoint), a green dot (Science stop), **B** (Destination), and an eye (Just look). The picked one has a white ring.
+- Hovering an icon, or reaching it with Tab, shows an **info box** with its name and what a click does ("Each click on the map adds a science stop to the end of the route"). Before the start is placed, the others are dimmed and their box says "Place the start first."
+- The boxes open under the row of icons, all in the same spot, and stay inside the panel. The line under the icons still says what the current pick does.
+
+**Verified (headless Chrome on a production build; no page errors)**
+- All five boxes show on hover, inside the panel, before and after the start is placed; Tab focus shows the box; clicking the science-stop icon picks it.
+
+---
+
 ## 2026-11-15 · v0.5.9 · Mission page on the shared NASA map
 
 **Changed**
