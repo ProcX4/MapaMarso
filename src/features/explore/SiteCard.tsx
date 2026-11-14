@@ -13,6 +13,7 @@ import { useNow } from '../../hooks/useNow'
 import { daylightText, sunElevation } from '../../data/daylight'
 import type { StopKind } from '../../state/types'
 import { MAP_PLAN } from '../../lib/missionPaths'
+import { RoverPhotos } from './RoverPhotos'
 
 const NEARBY_M = 500
 
@@ -81,6 +82,8 @@ export function SiteCard() {
           <ProvenanceTag category="estimated" note="Slope thresholds are assumptions for a suited astronaut" />
         </dd>
       </dl>
+
+      <RoverPhotos at={at} />
 
       <div className="site-card-actions">
         <Button disabled={full} onClick={() => add('waypoint', 'Waypoint')}>Add waypoint</Button>
