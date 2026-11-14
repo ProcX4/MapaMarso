@@ -8,6 +8,7 @@ import { useNow } from '../../hooks/useNow'
 import { useMarswalk } from '../../hooks/useMarswalk'
 import { useRoute } from '../../hooks/useDerived'
 import { fitTo } from '../../map/mapControl'
+import { GROUPS, LAYERS } from '../../map/layers/registry'
 import { formatCode, MISSION_CODE_PATTERN } from '../../lib/missionCode'
 import type { OpenMission, Stop } from '../../state/types'
 import { deleteMission, fetchCrew, fetchMissionByCode, fetchMissionById, joinMission, removeCrewMember, setMissionStatus, type CrewMember, type Mission } from '../../services/missions'
@@ -21,7 +22,7 @@ import './missions.css'
  * this panel on the left sums it up, with its crew, its log, and buttons to walk it in EVA or edit it.
  */
 
-type Tab = 'summary' | 'crew' | 'log'
+type Tab = 'summary' | 'layers' | 'crew' | 'log'
 type Lookup = { key: string; status: 'found' | 'missing' | 'error'; mission?: Mission; error?: string }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -125,6 +126,7 @@ type Props = {
 
 function MissionSummary({ mission, knownCode, shown, onChanged, onDeleted }: Props) {
   const { user } = useAuth()
+  const { state, dispatch } = useMarswalk()
   const now = useNow(30_000)
   const route = useRoute()
   const [tab, setTab] = useState<Tab>('summary')
@@ -256,6 +258,7 @@ function MissionSummary({ mission, knownCode, shown, onChanged, onDeleted }: Pro
 
   const tabs: { id: Tab; label: string; count?: number }[] = [
     { id: 'summary', label: 'Summary' },
+    { id: 'layers', label: 'Layers', count: state.layers.filter((l) => l.visible).length },
     { id: 'crew', label: 'Crew', count: crewCount },
     { id: 'log', label: 'Log' },
   ]
@@ -346,6 +349,12 @@ function MissionSummary({ mission, knownCode, shown, onChanged, onDeleted }: Pro
           </ol>
 
           <dl className="kv mission-dates">
+            <dt>Crew</dt>
+            <dd>
+              <button type="button" className="link-button mission-crew-link" onClick={() => setTab('crew')}>
+                {[`${mission.commander} (lead)`, ...(crew ?? []).map((c) => c.username)].join(', ')}
+              </button>
+            </dd>
             {mission.date && (
               <>
                 <dt>Planned</dt>
@@ -362,6 +371,27 @@ function MissionSummary({ mission, knownCode, shown, onChanged, onDeleted }: Pro
             )}
           </dl>
           <p className="muted plan-note">Click the map for the terrain, hazards and pictures at any point. The layers are in the top right.</p>
+        </div>
+      )}
+
+      {/* The NASA layers over the route, switched on and off here (the full list, with opacity and sources,
+          is behind the Layers button in the top right) */}
+      {tab === 'layers' && (
+        <div className="planner-stage mission-layers" role="tabpanel">
+          {GROUPS.map((g) => (
+            <fieldset key={g.id}>
+              <legend>{g.label}</legend>
+              {LAYERS.filter((l) => l.group === g.id).map((def) => {
+                const on = !!state.layers.find((l) => l.id === def.id)?.visible
+                return (
+                  <label key={def.id} className={on ? 'is-on' : ''}>
+                    <input type="checkbox" checked={on} onChange={() => dispatch({ type: 'toggleLayer', id: def.id })} />
+                    <span>{def.name}</span>
+                  </label>
+                )
+              })}
+            </fieldset>
+          ))}
         </div>
       )}
 

@@ -21,7 +21,7 @@ import { routeStops } from '../../globe/missionRoute'
 import { readFlag, writeFlag } from '../../lib/storage'
 import type { MissionStatus } from '../../services/missions'
 import { clearWarpArrival, isWarpArrival } from '../../lib/warp'
-import { byOwner, GLOBE_2D, GLOBE_3D, GLOBE_PLAN, go, MAP_EVA, MAP_PLAN, mapModeOf, type OwnerFilter } from '../../lib/missionPaths'
+import { byOwner, GLOBE_2D, GLOBE_3D, GLOBE_PLAN, go, MAP_EVA, MAP_PLAN, mapModeOf, missionMapIdPath, missionMapPath, type OwnerFilter } from '../../lib/missionPaths'
 import { MapView } from '../../map/MapView'
 import { fitTo, flyTo, showArea } from '../../map/mapControl'
 import type { PlanetRoute as MapRoute } from '../../map/planetLayers'
@@ -93,6 +93,8 @@ const siteMarkers: GlobeMarker[] = landingSites.map((s) => ({
 // Missions share the globe's marker selection with the landing sites, told apart by this prefix.
 // A mission's stops add '#' and the stop, e.g. 'mission:<id>#2', and select the mission.
 const MISSION_PREFIX = 'mission:'
+// A saved mission's view shows only its own route, so the others' markers are left off the map
+const NO_ROUTES: MapRoute[] = []
 
 // Whether each side panel was left open, remembered between visits
 const MISSIONS_OPEN_KEY = 'mapa.globe.missionsOpen'
@@ -351,6 +353,13 @@ export function GlobePage() {
   const select = (id: string) => {
     // A mission's stop selects the whole mission
     const key = id.startsWith(MISSION_PREFIX) ? id.split('#')[0] : id
+    // On the flat map a mission opens its own view: the map locked onto its route, with its summary, crew, log,
+    // EVA and edit (the globe keeps its card, to fly there first)
+    const picked = flat && exploring && key.startsWith(MISSION_PREFIX) ? missionList?.find((m) => MISSION_PREFIX + m.id === key) : undefined
+    if (picked) {
+      go(picked.code ? missionMapPath(picked.code) : missionMapIdPath(picked.id))
+      return
+    }
     resetSite()
     setSelectedId(key)
     setMoonId(null)
@@ -567,7 +576,7 @@ export function GlobePage() {
 
       {flat && (
         <div className={`flat-view is-${mapMode}`}>
-          <MapView routes={siteRoutes} selectedRoute={mission ? selectedId : null} onSelectRoute={select} onPick={closeCard} sunAt={mapMode === 'eva' && walk.evaTimeMs !== null ? walk.evaTimeMs : nightAt} missionPath={safeLine ? missionSafe.value : null} />
+          <MapView routes={mapMode === 'mission' ? NO_ROUTES : siteRoutes} selectedRoute={mission ? selectedId : null} onSelectRoute={select} onPick={closeCard} sunAt={mapMode === 'eva' && walk.evaTimeMs !== null ? walk.evaTimeMs : nightAt} missionPath={safeLine ? missionSafe.value : null} />
         </div>
       )}
 
