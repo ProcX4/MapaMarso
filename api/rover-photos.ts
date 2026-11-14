@@ -57,6 +57,8 @@ export type RoverPhoto = {
   takenAt: string
   thumbUrl: string
   largeUrl: string
+  /** The original, full resolution (the viewer swaps it in once you zoom); the large copy when there's none */
+  fullUrl: string
   pageUrl: string
   /** Compass bearing the camera looked toward (rover heading + mast azimuth), when known */
   azimuth?: number
@@ -121,7 +123,7 @@ type FeedImage = {
   credit?: string
   link?: string
   camera?: { instrument?: string }
-  image_files?: { small?: string; large?: string }
+  image_files?: { small?: string; large?: string; full_res?: string }
   extended?: { mastAz?: string; mastEl?: string; dimension?: string; subframeRect?: string }
 }
 
@@ -178,6 +180,7 @@ function normalise(img: FeedImage, yaw: number): RoverPhoto {
     takenAt: img.date_taken_utc ?? '',
     thumbUrl: img.image_files!.small!,
     largeUrl: img.image_files!.large!,
+    fullUrl: img.image_files!.full_res?.startsWith(IMAGE_PREFIX) ? img.image_files!.full_res : img.image_files!.large!,
     pageUrl: img.link?.startsWith(PAGE_PREFIX) ? img.link : `${PAGE_PREFIX}${encodeURIComponent(img.imageid!)}`,
     azimuth: Number.isFinite(bearing) ? Math.round(((bearing % 360) + 360) % 360) : undefined,
     siteDrive: `${img.site}_${img.drive}`,

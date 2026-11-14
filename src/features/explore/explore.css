@@ -26,6 +26,26 @@
 .layer-row-body { margin: 8px 0 0 46px; }
 .layer-row .provenance-line { margin: 4px 0 0 46px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .layer-status { margin: 4px 0 0 46px; font: 11px var(--mono); color: var(--gray-2); }
+/* What the layer shows and how to use it: the first thing under its name, in plain words */
+.layer-howto { margin: 4px 0 0 46px; font-size: 12px; line-height: 1.45; color: var(--gray-1); }
+/* Switched on but not visible from here: why, and the way to see it */
+.layer-hint { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 6px 0 0 46px; font-size: 12px; line-height: 1.4; color: var(--info); }
+.layer-hint-go {
+  padding: 3px 10px;
+  font: inherit;
+  font-size: 11.5px;
+  color: var(--black);
+  background: var(--white);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.layer-hint-go:hover { background: var(--gray-1); }
+/* Instrument, mission, resolution and coverage, folded away until asked for */
+.layer-source { margin: 6px 0 0 46px; }
+.layer-source summary { width: max-content; font-size: 11px; color: var(--gray-2); cursor: pointer; }
+.layer-source summary:hover { color: var(--white); }
+.layer-source .layer-status, .layer-source .provenance-line { margin-left: 0; }
 .layer-legend { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 3px; font-size: 11px; color: var(--gray-2); }
 .layer-legend li { display: flex; align-items: center; gap: 6px; }
 .layer-ramp { margin: 6px 0 0; font-size: 11px; color: var(--gray-2); }
@@ -87,7 +107,28 @@
   overflow: hidden;
 }
 .rover-viewer::backdrop { background: rgba(0, 0, 0, 0.78); }
-.rover-viewer img { display: block; max-width: 100%; max-height: calc(94vh - 72px); margin: 0 auto; }
+/* The photo's frame: exactly the size of the fitted photo, which zooms and pans inside it */
+.rover-viewer-stage { width: fit-content; max-width: 100%; margin: 0 auto; overflow: hidden; cursor: zoom-in; touch-action: none; user-select: none; }
+.rover-viewer-stage.is-zoomed { cursor: grab; }
+.rover-viewer-stage.is-zoomed:active { cursor: grabbing; }
+.rover-viewer-stage img { display: block; max-width: 100%; max-height: calc(94vh - 116px); transform-origin: 0 0; will-change: transform; }
+.rover-viewer-zoom { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 8px 14px 0; font-size: 12px; }
+.rover-viewer-zoom button {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: none;
+  color: var(--white);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+.rover-viewer-zoom button:disabled { opacity: 0.4; cursor: default; }
+.rover-viewer-zoom .rover-viewer-fit { font-size: 12px; }
+.rover-viewer-zoom .num { min-width: 42px; text-align: center; }
+.rover-viewer-help { margin-left: auto; font-size: 11.5px; }
 .rover-viewer .info-card-close { position: absolute; top: 10px; right: 10px; }
 .rover-viewer-bar { display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
 .rover-viewer-bar p { flex: 1; margin: 0; display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
