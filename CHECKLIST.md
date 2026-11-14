@@ -1,9 +1,9 @@
 # MAPA · To-do list (from the specs)
 
 **Scope: three layers only: Topographic, Optical and Spectral.** Every other layer the specs mention (geologic units, historical rover traverse) is out of scope (§7).
-**Team:** Jim (Topographic, in progress) · Jastini (Optical + UI) · Daril (Spectral) · Shin (Platform, EVA and release). See the team split below; §1–§3 are the three layers.
+**Team:** Jim (Topographic, in progress) · Shin (Optical, Security, leads the demo) · Daril (Spectral) · Jastini (Decisions and docs) · everyone (App-wide). §1–§3 are the three layers; §10 is the Todo list from `docs/Todo (1–3).png`.
 
-Tasks come from the four spec documents and are ticked where the current build (v0.5.0) meets them.
+Tasks come from the four spec documents and are ticked where the current build (v0.5.1) meets them.
 Sources: **GS** = [Gen Spec.md](Gen%20Spec.md) · **PS** = [docs/MAPA_Marswalk_Product_Specification.md](docs/MAPA_Marswalk_Product_Specification.md) · **FS** = [Frontend Spec.md](Frontend%20Spec.md) · **SS** = [Security Spec.md](Security%20Spec.md).
 Details of each stand-in are in [placeholders.md](placeholders.md); what changed is in [changes.md](changes.md).
 
@@ -23,20 +23,21 @@ Height and shape of the ground, and the A* safe path round steep and deep terrai
 - [x] Elevation profile along the safe path, linked to the map on hover (GS MVP, PS §6)
 - [x] Site card: elevation and slope anywhere on Mars, with the source model (PS §5)
 - [x] Provenance for every Topographic layer; data recorded in `docs/data-sources.md`
+- [x] **Slope spot-check** (FS §6.2, P2): GDAL's Horn formula, re-implemented in NumPy, matches MAPA's slope exactly on all 2.4 M interior cells of the Jezero DTM. Plain `gdaldem slope` on the file would read about 0.14° low on average (18% fewer cells at 25° or more), because it takes the 20 m pixels as ground metres while at 18.4°N they are 18.9 m east–west; use `-s` or a reprojected file when comparing with GDAL itself
+- [x] **Average slope** in the route stats (PS §2.2)
+- [x] **Terrain roughness:** Trek's global MOLA roughness layer, plus a derived roughness (spread of slope within 100 m) along the route in the stats (PS §3, §4.2)
+- [x] **Nearby hazard on the site card:** "Steep ground (16.2°) about 500 m north", within 1 km, anywhere on Mars (PS §5)
+- [x] **Return route follows the A* path:** EVA's back-to-base distance and time go back along the path (or on round the loop if shorter), climb included (PS §2.3, A10)
+- [x] **Traverse safety envelope:** Topographic layer *Safety envelope*, the ground the habitat can be walked to and back from within the EVA (GS, PS §8)
+- [x] **Alternative routes:** *Safest* vs *Most direct*, compared side by side in the planner; the other is drawn dashed on the map (PS §2.2, §16)
+- [x] **Error states:** with `/api/elevation` blocked, the planner says the elevation couldn't be loaded and legs are straight; the site card and stats show "No data"; nothing spins (SS §8)
+- [x] **Keyboard and colour check:** map takes focus, + zooms, arrows pan; route options reached by Tab and switched by Space; new shading and envelope have text legends (FS §8)
+- [x] **A* on a saved mission:** tested with a stand-in mission served to the browser in place of Supabase's mission list (Habitat → Delta top → Western rim): it appears in the list, picking it draws the A* path round steep and deep ground, the card reads "13.9 km on foot, round steep and deep ground · Jezero CTX DTM", and the shading follows the mission. Nothing was written to the database; re-check once the team has a real mission
 
 ### To do
-- [ ] **Test A* on a real saved mission** picked on the 2D map (no missions existed to test with)
-- [ ] **Spot-check slope** against `gdaldem slope` on `public/data/site-dtm.tif` (FS §6.2, P2)
 - [ ] **Agree the A* limits** in `src/config/assumptions.ts` → `PATHFINDING` (25° impassable, deep past 60 m never entered…); tuned by eye, not validated
-- [ ] **Average slope** in the route stats (PS §2.2)
-- [ ] **Terrain roughness:** as a layer and as a route variable (PS §3, §4.2; Trek has `mola_roughness`)
-- [ ] **Nearby hazard on the site card** with distance and direction, e.g. "Steep terrain about 320 m east" (PS §5)
-- [ ] **Return route follows the A* path** back to base, not a straight line (PS §2.3, A10)
-- [ ] **Traverse safety envelope:** the area still reachable with time to get back, drawn on the map (GS, PS §8)
-- [ ] **Alternative routes** to compare (PS §2.2, §16)
-- [ ] **Error states:** with `/api/elevation` down, routes fall back to straight lines; check the message is clear and nothing spins forever (SS §8)
-- [ ] **Hazard shading beyond the route:** today it covers only the ground round the planned route or picked mission; decide whether it should follow the view instead
-- [ ] **Keyboard and colour check** for the new controls and shading (FS §8: colour is never the only signal)
+- [x] **Rock and boulder hazards** (Todo #4): `scripts/build-obstacles.mjs` built `public/data/site-obstacles.bin` (2.4 MB) from USGS's 1 m HiRISE DTMs of Jezero: the share of each 20 m cell steeper than 30° at 1 m, covering 31.5 % of the site (habitat, delta, most of the crater floor). Thresholds set from its distribution: A* steers round from 5 % and never enters 25 % or more (about the rockiest 4 % and 0.6 % of ground). Delta top → western rim no longer crosses a 32 % cell (now 7 % max, +40 m); smooth-floor routes unchanged. Outside Jezero there is no rock data.
+- [ ] **Hazard shading beyond the route:** it now covers the habitat's surroundings before any stop is added, then the ground round the route or picked mission; decide whether it should follow the view anywhere on Mars instead
 
 ## 2. Optical · Shin
 
@@ -159,7 +160,7 @@ Listed so nobody builds them by accident. Bring one back only if the scope chang
 
 ### Availability (§8)
 - [x] Pre-fetched demo tiles with fallback; DTM served from our own deployment; map and planning work signed out
-- [ ] Every network call has a visible error state (see §1, elevation / A*)
+- [ ] Every network call has a visible error state (elevation / A* done, see §1; check the rest)
 
 ### Pre-demo checks (§9), run before judging
 - [ ] `git log -p | grep -iE "service_role|secret|password|api[_-]?key"` finds nothing that matters
@@ -192,7 +193,7 @@ Each unticked `- [ ]` box and each "TBD" in the spec documents, in the order it 
 - [x] Hazard warnings (slope above a threshold along the route) · *Topographic*
 - [x] Terrain-aware routing (avoid steep cells instead of drawing straight lines) · *Topographic*
 - [ ] Science opportunity cards ("hydrated minerals 420 m off route, +11 min detour") · *Spectral: needs target data*
-- [ ] Traverse safety envelope (how far you can go and still return in time) · *Topographic*
+- [x] Traverse safety envelope (how far you can go and still return in time) · *Topographic*
 - [x] EVA mode
 - [ ] Rover point-of-view photos at waypoints · *Optical*
 - [ ] Space weather / radiation panel · *app-wide*
@@ -216,3 +217,32 @@ All boxes from §2–§9 are in §8 above, with the same ticks.
 ### docs/data-sources.md · TBD
 - [ ] Science targets (`science-targets`): product ID, source URL and licence TBD (CRISM detections); the file is empty · *Spectral*
 - [ ] Same TBD in `src/map/layers/registry.ts` → `science-targets` → `product: 'TBD: CRISM mineral detections for the site'` · *Spectral*
+
+---
+
+## 10. Todo list from `docs/Todo (1–3).png`
+
+The 17 tasks in the three Todo images, with the owner from the section headings above and today's status.
+
+### Must-do for the challenge
+- [ ] **1. Fill the science targets** · Daril. `public/data/science-targets.geojson` is empty; it needs real points with `name`, `reason` (e.g. "CRISM hydrated signature") and `source`. Makes the science opportunity cards and the site card's nearby targets work (§3).
+- [ ] **2. Add a radiation / space-weather panel** · everyone (§4). A minimal panel with a cited source, labelled Estimated.
+- [ ] **3. Add point-of-view photos at waypoints and destinations** · Shin (§2). Perseverance raw images near each stop; only the unused `SITE.rawImagesUrl` exists today.
+- [x] **4. Add rock and boulder hazards** · Jim. Done 2026-11-15: HiRISE-derived rocky-ground map (`public/data/site-obstacles.bin`, built by `scripts/build-obstacles.mjs`) with A* costs; Jezero only, where the 1 m DTMs exist
+- [ ] **5. Get sharper imagery at walking scale** · Shin (§2). THEMIS 100 m/px is the sharpest; needs a CTX or HiRISE source that serves tiles, or a local tile set (P3).
+- [ ] **6. Source the mobility and safety assumptions** · everyone, with Jim for the A* costs. Walking speed 2 km/h, climb penalty, slope bands, 6 h EVA and the A* costs need citations or a team decision (A1–A4).
+
+### Decisions the team still has to make
+- [ ] **7. Confirm the demo site** · Jastini (§5). Jezero is a placeholder; Gale and its boxwork is the alternative (D1).
+- [ ] **8. Pick a real habitat location** · Jastini (§5). Today it's the Perseverance landing point, "Habitat (placeholder)" (D2).
+- [ ] **9. Fill in the team names and roles** on the About page and in Gen Spec · Jastini (§5) (D5).
+- [ ] **10. Add a licence file** · Jastini (§5) (D6).
+- [ ] **11. Decide whether space sound defaults to on** · Jastini (§5). It plays by default today (D7).
+
+### Data and content to finish
+- [ ] **12. Restore a geology or science layer** · *out of scope as a geology layer* (§7: the layers are Topographic, Optical and Spectral). The science side is covered by Spectral (#1 and the CRISM layer in §3).
+- [ ] **13. Add a rover traverse layer** · *out of scope* (§7; stretch goal P8).
+- [ ] **14. Replace the hand-typed place names with verified IAU gazetteer names** · everyone (§4). Two entries today (P6).
+- [ ] **15. Complete `docs/data-sources.md`** · Jastini (§5). Product ID, URL and licence for every layer; the science-targets row is still TBD (P9). Check the terms and load of `api/elevation.ts`, which reads a 2 GB USGS file (byte ranges only, cached a week).
+- [ ] **16. Add landing-site close-ups for other sites** if the demo needs them · everyone (§4). Only Viking 1 has one (P11).
+- [x] **17. Spot-check the slope maths against `gdaldem slope`** · Jim. Done 2026-11-15 by re-implementing GDAL's Horn formula: exact match. Note: plain `gdaldem` on this file reads ~0.14° low unless given the true pixel spacing (see §1).
