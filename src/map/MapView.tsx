@@ -18,9 +18,9 @@ import { attachInteractions } from './interactions'
 import { currentZoom, fitTo, flyTo, registerMap } from './mapControl'
 import { daylightFeatures, daylightStyle, routeFeatures, routeStyle, type PlanetRoute } from './planetLayers'
 import { sunAt as subsolar } from '../data/daylight'
-import { cssVar, cursorStyle, evaPositionStyle, hazardLineStyle, rgba, routeLineStyle, stopStyle, targetStyle } from './styles'
+import { cssVar, cursorStyle, evaPositionStyle, hazardLineStyle, otherRouteStyle, rgba, routeLineStyle, stopStyle, targetStyle } from './styles'
 import { HAZARD } from '../data/pathfind'
-import { DEEP_COLOURS } from './layers/registry'
+import { DEEP_COLOURS, ROCK_COLOURS } from './layers/registry'
 import type { SafePath } from '../data/safePath'
 import { pointAlong } from '../data/route'
 import { SITE } from '../config/site'
@@ -78,8 +78,10 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
 
   // Create once
   useEffect(() => {
-    // Imagery at the bottom in list order, then the overlays drawn from data (hazards, targets) above all of it
-    const imagery = LAYERS.filter((d) => d.kind === 'xyz' || d.kind === 'wmts')
+    // Imagery at the bottom: opaque base maps first, then the see-through ones (elevation colour, roughness, TES)
+    // so they show over whichever base is on; then the overlays drawn from data (hazards, envelope, targets) on top
+    const tiles = LAYERS.filter((d) => d.kind === 'xyz' || d.kind === 'wmts')
+    const imagery = [...tiles.filter((d) => d.defaultOpacity >= 1), ...tiles.filter((d) => d.defaultOpacity < 1)]
     LAYERS.forEach((def) => {
       const layer = createLayer(def)
       const i = imagery.indexOf(def)
@@ -183,10 +185,21 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
       [HAZARD.steep]: rgba(cssVar('alert'), 210),
       [HAZARD.deepSoft]: rgba(DEEP_COLOURS.soft, 150),
       [HAZARD.deep]: rgba(DEEP_COLOURS.deep, 200),
+      [HAZARD.rockySoft]: rgba(ROCK_COLOURS.soft, 150),
+      [HAZARD.rocky]: rgba(ROCK_COLOURS.rocky, 210),
     }
     // Easy ground and no-data stay transparent
     layer.setSource(gridSource({ ...hazard, values: Float32Array.from(hazard.values) }, (v) => colours[v] ?? null) as never)
   }, [hazard])
+
+  // The safety envelope round the habitat
+  const reach = data.reach.value
+  useEffect(() => {
+    const layer = layers.current['reach'] as ImageLayer<never>
+    if (!reach) return layer.setSource(null)
+    const ok = rgba(cssVar('ok'), 110)
+    layer.setSource(gridSource({ ...reach, values: Float32Array.from(reach.values) }, (v) => (v ? ok : null)) as never)
+  }, [reach])
 
   useEffect(() => {
     const layer = layers.current['science-targets'] as VectorLayer
@@ -201,6 +214,12 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
     const src = (layers.current['route'] as VectorLayer).getSource()!
     src.clear()
     if (route.order.length > 1) {
+      // The route option not taken, faint and dashed underneath, for comparison
+      if (route.otherPath) {
+        const other = new Feature(new LineString(route.otherPath))
+        other.setStyle(otherRouteStyle())
+        src.addFeature(other)
+      }
       // The A* safe path, leg by leg (each a straight line until its path is in)
       const line = new Feature(new LineString(route.legs.flatMap((l, i) => (i ? l.path.slice(1) : l.path))))
       line.setStyle(routeLineStyle())

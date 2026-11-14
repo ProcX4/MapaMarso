@@ -1,6 +1,6 @@
 import { metresPerDegree } from './mars'
 import { PATHFINDING as P, SLOPE_BANDS } from '../config/assumptions'
-import { HAZARD, type PathRequest, type PathResponse } from './pathfind'
+import { HAZARD, NO_OBSTACLE_DATA, type LegResult, type PathRequest, type PathResponse, type RouteOption } from './pathfind'
 
 /*
  * The Topographic route finder: A* across an elevation grid, steering round steep ground and deep ground.
@@ -9,10 +9,16 @@ import { HAZARD, type PathRequest, type PathResponse } from './pathfind'
  * 1. Slope for every cell (Horn's method, as `gdaldem slope`), with each row's own east-west spacing.
  * 2. Depth: how far a cell sits below the average of the ground around it (a box mean from a summed-area table).
  *    Pits, channels and small craters come out deep; a wide, flat crater floor does not.
- * 3. A cost to walk each cell: 1 on easy ground, more in the caution and hazard slope bands and on deep ground,
- *    impassable at the slope limit or the depth limit. Each step also pays for the metres it climbs.
+ *    Roughness: how much the slope varies nearby (box standard deviation of slope), so a boulder field reads
+ *    rough and a steady ramp smooth.
+ * 3. A cost to walk each cell: 1 on easy ground, more in the caution and hazard slope bands, on deep ground and
+ *    (where the site's HiRISE-derived rock map covers it) on rocky ground; impassable at the slope, depth or rock
+ *    limit. Each step also pays for the metres it climbs.
  * 4. A* (8 directions, no cutting corners past blocked cells), then the zigzag of grid steps is pulled straight
- *    wherever a straight line crosses no harder ground than the steps it replaces.
+ *    wherever a straight line crosses no harder ground than the steps it replaces. Done twice: the safest route
+ *    (the costs above) and the most direct one (only impassable ground avoided), so the two can be compared.
+ * 5. Optionally, the safety envelope: Dijkstra out from base, marking every cell that can be walked to and back
+ *    within the EVA's time budget.
  */
 
 const cautionMin = SLOPE_BANDS.find((b) => b.token === 'caution')!.min
@@ -20,10 +26,11 @@ const hazardMin = SLOPE_BANDS.find((b) => b.token === 'hazard')!.min
 
 self.onmessage = (e: MessageEvent<PathRequest>) => {
   const res = solve(e.data)
-  ;(self as unknown as { postMessage(m: unknown, t: Transferable[]): void }).postMessage(res satisfies PathResponse, [res.slope.buffer, res.hazard.buffer])
+  const transfer = [res.slope.buffer, res.hazard.buffer, res.roughness.buffer, ...(res.reach ? [res.reach.buffer] : [])]
+  ;(self as unknown as { postMessage(m: unknown, t: Transferable[]): void }).postMessage(res satisfies PathResponse, transfer)
 }
 
-function solve({ grid, points }: PathRequest): PathResponse {
+function solve({ grid, points, reach, obstacles }: PathRequest): PathResponse {
   const { width: W, height: H, bbox, values: z } = grid
   const [west, south, east, north] = bbox
   const dLon = (east - west) / W
@@ -47,35 +54,51 @@ function solve({ grid, points }: PathRequest): PathResponse {
     }
   }
 
-  // 2. Depth below the surrounding mean, from summed-area tables of height and of valid-cell count
-  const r = Math.max(2, Math.round(P.depthRadiusM / dyM))
-  const sum = new Float64Array((W + 1) * (H + 1))
-  const cnt = new Float64Array((W + 1) * (H + 1))
-  for (let y = 0; y < H; y++) {
-    let rs = 0, rc = 0
-    for (let x = 0; x < W; x++) {
-      const v = z[y * W + x]
-      if (!Number.isNaN(v)) { rs += v; rc++ }
-      const i = (y + 1) * (W + 1) + x + 1
-      sum[i] = sum[i - W - 1] + rs
-      cnt[i] = cnt[i - W - 1] + rc
+  // 2. Box statistics from summed-area tables: mean height (for depth), and mean and mean square of slope (roughness)
+  const table = (v: (i: number) => number) => {
+    const t = new Float64Array((W + 1) * (H + 1))
+    for (let y = 0; y < H; y++) {
+      let row = 0
+      for (let x = 0; x < W; x++) {
+        row += v(y * W + x)
+        const i = (y + 1) * (W + 1) + x + 1
+        t[i] = t[i - W - 1] + row
+      }
     }
+    return t
   }
+  const valid = (v: number) => (Number.isNaN(v) ? 0 : v)
+  const zSum = table((i) => valid(z[i]))
+  const zCount = table((i) => (Number.isNaN(z[i]) ? 0 : 1))
+  const sSum = table((i) => valid(slope[i]))
+  const sSq = table((i) => valid(slope[i]) ** 2)
+  const sCount = table((i) => (Number.isNaN(slope[i]) ? 0 : 1))
   const box = (t: Float64Array, x0: number, y0: number, x1: number, y1: number) =>
     t[(y1 + 1) * (W + 1) + x1 + 1] - t[y0 * (W + 1) + x1 + 1] - t[(y1 + 1) * (W + 1) + x0] + t[y0 * (W + 1) + x0]
+  const depthR = Math.max(2, Math.round(P.depthRadiusM / dyM))
+  const roughR = Math.max(1, Math.round(P.roughnessRadiusM / dyM))
 
-  // 3. Hazard class and walking cost per cell
+  // 3. Hazard class, roughness and walking cost per cell
   const hazard = new Uint8Array(W * H)
+  const roughness = new Float32Array(W * H)
   const cost = new Float32Array(W * H)
   for (let y = 0; y < H; y++) {
-    const y0 = Math.max(0, y - r), y1 = Math.min(H - 1, y + r)
     for (let x = 0; x < W; x++) {
       const i = y * W + x
       const v = z[i], s = slope[i]
-      if (Number.isNaN(v) || Number.isNaN(s)) { hazard[i] = HAZARD.noData; cost[i] = Infinity; continue }
-      const x0 = Math.max(0, x - r), x1 = Math.min(W - 1, x + r)
-      const n = box(cnt, x0, y0, x1, y1)
-      const depth = n ? box(sum, x0, y0, x1, y1) / n - v : 0
+      if (Number.isNaN(v) || Number.isNaN(s)) {
+        hazard[i] = HAZARD.noData
+        roughness[i] = NaN
+        cost[i] = Infinity
+        continue
+      }
+      let [x0, y0, x1, y1] = [Math.max(0, x - roughR), Math.max(0, y - roughR), Math.min(W - 1, x + roughR), Math.min(H - 1, y + roughR)]
+      const sn = box(sCount, x0, y0, x1, y1)
+      const mean = sn ? box(sSum, x0, y0, x1, y1) / sn : s
+      roughness[i] = sn ? Math.sqrt(Math.max(0, box(sSq, x0, y0, x1, y1) / sn - mean * mean)) : 0
+      ;[x0, y0, x1, y1] = [Math.max(0, x - depthR), Math.max(0, y - depthR), Math.min(W - 1, x + depthR), Math.min(H - 1, y + depthR)]
+      const n = box(zCount, x0, y0, x1, y1)
+      const depth = n ? box(zSum, x0, y0, x1, y1) / n - v : 0
       let c = 1
       let cls: number = HAZARD.none
       if (s >= P.maxSlopeDeg) { cls = HAZARD.steep; c = Infinity }
@@ -86,10 +109,20 @@ function solve({ grid, points }: PathRequest): PathResponse {
         if (cls === HAZARD.none) cls = HAZARD.deepSoft
         c += (P.depthPenalty * (depth - P.depthSoftM)) / (P.depthMaxM - P.depthSoftM)
       }
+      const rock = obstacles ? obstacles[i] : NO_OBSTACLE_DATA
+      if (rock !== NO_OBSTACLE_DATA) {
+        if (rock >= P.rockMaxPct) { if (c !== Infinity) cls = HAZARD.rocky; c = Infinity }
+        else if (rock >= P.rockSoftPct) {
+          if (cls === HAZARD.none) cls = HAZARD.rockySoft
+          c += (P.rockPenalty * (rock - P.rockSoftPct)) / (P.rockMaxPct - P.rockSoftPct)
+        }
+      }
       hazard[i] = cls
       cost[i] = c
     }
   }
+  // The most direct route only steers round what can't be crossed at all
+  const directCost = cost.map((c) => (c === Infinity ? Infinity : 1))
 
   const cellOf = ([lon, lat]: [number, number]) => {
     const x = Math.floor((lon - west) / dLon), y = Math.floor((north - lat) / dLat)
@@ -97,26 +130,36 @@ function solve({ grid, points }: PathRequest): PathResponse {
   }
   const centre = (x: number, y: number): [number, number] => [west + (x + 0.5) * dLon, latOf(y)]
 
-  const legs = points.slice(1).map((to, li) => {
-    const from = points[li]
-    const a = cellOf(from), b = cellOf(to)
-    if (!a || !b) return { path: [from, to], status: 'outside' as const }
-    const legM = Math.hypot((b[0] - a[0]) * dxM[a[1]], (b[1] - a[1]) * dyM)
-    const marginCells = Math.ceil(Math.max(P.minSearchMarginM, P.searchMargin * legM) / dyM)
-    const cells =
-      aStar(a, b, Math.min(a[0], b[0]) - marginCells, Math.min(a[1], b[1]) - marginCells, Math.max(a[0], b[0]) + marginCells, Math.max(a[1], b[1]) + marginCells) ??
-      aStar(a, b, 0, 0, W - 1, H - 1)
-    if (!cells) return { path: [from, to], status: 'blocked' as const }
-    const path = straighten(cells).map(([x, y]) => centre(x, y))
-    path[0] = from
-    path[path.length - 1] = to
-    return { path, status: 'safe' as const }
-  })
+  const route = (costs: Float32Array): LegResult[] =>
+    points.slice(1).map((to, li) => {
+      const from = points[li]
+      const a = cellOf(from), b = cellOf(to)
+      if (!a || !b) return { path: [from, to], status: 'outside' }
+      const legM = Math.hypot((b[0] - a[0]) * dxM[a[1]], (b[1] - a[1]) * dyM)
+      const marginCells = Math.ceil(Math.max(P.minSearchMarginM, P.searchMargin * legM) / dyM)
+      const cells =
+        aStar(costs, a, b, Math.min(a[0], b[0]) - marginCells, Math.min(a[1], b[1]) - marginCells, Math.max(a[0], b[0]) + marginCells, Math.max(a[1], b[1]) + marginCells) ??
+        aStar(costs, a, b, 0, 0, W - 1, H - 1)
+      if (!cells) return { path: [from, to], status: 'blocked' }
+      const path = straighten(costs, cells).map(([x, y]) => centre(x, y))
+      path[0] = from
+      path[path.length - 1] = to
+      return { path, status: 'safe' }
+    })
 
-  return { legs, slope, hazard }
+  const legs: Record<RouteOption, LegResult[]> = { safest: route(cost), direct: route(directCost) }
+  return { legs, slope, hazard, roughness, reach: reach ? envelope(reach.from, reach.budgetM) : null }
+
+  /** The cost of stepping between two neighbouring cells (each cell's cost already includes its penalty) */
+  function stepCost(cx: number, cy: number, nx: number, ny: number, ca: number, cb: number, symmetric: boolean) {
+    const stepM = Math.hypot((nx - cx) * dxM[cy], (ny - cy) * dyM)
+    const dz = z[ny * W + nx] - z[cy * W + cx]
+    // One way, only climbing costs; there and back, every metre of height is climbed once
+    return (stepM * (ca + cb)) / 2 * (symmetric ? 2 : 1) + P.climbM * (symmetric ? Math.abs(dz) : Math.max(0, dz))
+  }
 
   /** A* inside a window of the grid; cells as [x, y], or null when the goal can't be reached. */
-  function aStar(start: number[], goal: number[], wx0: number, wy0: number, wx1: number, wy1: number): number[][] | null {
+  function aStar(costs: Float32Array, start: number[], goal: number[], wx0: number, wy0: number, wx1: number, wy1: number): number[][] | null {
     wx0 = Math.max(0, wx0); wy0 = Math.max(0, wy0); wx1 = Math.min(W - 1, wx1); wy1 = Math.min(H - 1, wy1)
     const ww = wx1 - wx0 + 1, wh = wy1 - wy0 + 1
     const local = (x: number, y: number) => (y - wy0) * ww + (x - wx0)
@@ -126,7 +169,7 @@ function solve({ grid, points }: PathRequest): PathResponse {
     const heap = new MinHeap()
     // Never trapped by the ground under a stop itself: it costs as hazard ground, not a wall
     const walk = (x: number, y: number) => {
-      const c = cost[y * W + x]
+      const c = costs[y * W + x]
       return c === Infinity && ((x === start[0] && y === start[1]) || (x === goal[0] && y === goal[1])) ? 1 + P.slopePenalty.hazard : c
     }
     let dxMin = Infinity
@@ -144,7 +187,6 @@ function solve({ grid, points }: PathRequest): PathResponse {
       closed[cur] = 1
       const cx = (cur % ww) + wx0, cy = Math.floor(cur / ww) + wy0
       const cc = walk(cx, cy)
-      const cz = z[cy * W + cx]
       for (let dy = -1; dy <= 1; dy++) {
         for (let dx = -1; dx <= 1; dx++) {
           if (!dx && !dy) continue
@@ -156,9 +198,7 @@ function solve({ grid, points }: PathRequest): PathResponse {
           if (dx && dy && (walk(cx + dx, cy) === Infinity || walk(cx, cy + dy) === Infinity)) continue
           const n = local(nx, ny)
           if (closed[n]) continue
-          const stepM = Math.hypot(dx * dxM[cy], dy * dyM)
-          const climb = Math.max(0, z[ny * W + nx] - cz)
-          const ng = g[cur] + (stepM * (cc + nc)) / 2 + P.climbM * climb
+          const ng = g[cur] + stepCost(cx, cy, nx, ny, cc, nc, false)
           if (ng < g[n]) {
             g[n] = ng
             came[n] = cur
@@ -174,8 +214,8 @@ function solve({ grid, points }: PathRequest): PathResponse {
   }
 
   /** Grid steps pulled into straight runs wherever the straight line is no harder going than the steps it replaces. */
-  function straighten(cells: number[][]) {
-    const rank = (x: number, y: number) => cost[y * W + x]
+  function straighten(costs: Float32Array, cells: number[][]) {
+    const rank = (x: number, y: number) => costs[y * W + x]
     const out = [cells[0]]
     let i = 0
     while (i < cells.length - 1) {
@@ -183,7 +223,7 @@ function solve({ grid, points }: PathRequest): PathResponse {
       let worst = rank(cells[i + 1][0], cells[i + 1][1])
       for (let j = i + 2; j < cells.length && j <= i + 400; j++) {
         worst = Math.max(worst, rank(cells[j][0], cells[j][1]))
-        if (clearLine(cells[i], cells[j], worst)) best = j
+        if (clearLine(costs, cells[i], cells[j], worst)) best = j
       }
       out.push(cells[best])
       i = best
@@ -192,14 +232,49 @@ function solve({ grid, points }: PathRequest): PathResponse {
   }
 
   /** Every cell on the straight line between two cells costs no more than `limit` (and none is blocked). */
-  function clearLine([x0, y0]: number[], [x1, y1]: number[], limit: number) {
+  function clearLine(costs: Float32Array, [x0, y0]: number[], [x1, y1]: number[], limit: number) {
     const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) * 2
     for (let k = 1; k < n; k++) {
       const x = Math.round(x0 + ((x1 - x0) * k) / n), y = Math.round(y0 + ((y1 - y0) * k) / n)
-      const c = cost[y * W + x]
+      const c = costs[y * W + x]
       if (c === Infinity || c > limit + 1e-6) return false
     }
     return true
+  }
+
+  /** Cells that can be walked to from `from` and back again on the safest costs within the budget. */
+  function envelope(from: [number, number], budgetM: number) {
+    const out = new Uint8Array(W * H)
+    const start = cellOf(from)
+    if (!start) return out
+    const g = new Float64Array(W * H).fill(Infinity)
+    const heap = new MinHeap()
+    const s = start[1] * W + start[0]
+    g[s] = 0
+    heap.push(s, 0)
+    while (heap.size) {
+      const cur = heap.pop()
+      if (out[cur]) continue
+      out[cur] = 1
+      const cx = cur % W, cy = Math.floor(cur / W)
+      const cc = cur === s && cost[cur] === Infinity ? 1 + P.slopePenalty.hazard : cost[cur]
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          if (!dx && !dy) continue
+          const nx = cx + dx, ny = cy + dy
+          if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue
+          const n = ny * W + nx
+          if (out[n] || cost[n] === Infinity) continue
+          if (dx && dy && (cost[cy * W + nx] === Infinity || cost[ny * W + cx] === Infinity)) continue
+          const ng = g[cur] + stepCost(cx, cy, nx, ny, cc, cost[n], true)
+          if (ng <= budgetM && ng < g[n]) {
+            g[n] = ng
+            heap.push(n, ng)
+          }
+        }
+      }
+    }
+    return out
   }
 }
 

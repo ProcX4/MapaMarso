@@ -27,10 +27,7 @@ import { fitTo, flyTo, showArea } from '../../map/mapControl'
 import type { PlanetRoute as MapRoute } from '../../map/planetLayers'
 import { useMarswalk } from '../../hooks/useMarswalk'
 import { useRoute } from '../../hooks/useDerived'
-import { useSafePath, type SafePathState } from '../../hooks/useSafePath'
-import { TERRAIN_NOTE } from '../../data/terrain'
-import { distanceM } from '../../data/mars'
-import { formatKm } from '../../lib/format'
+import { useMissionPath } from '../../hooks/useSafePath'
 import type { LngLat } from '../../state/types'
 import { SITE } from '../../config/site'
 import { LayerPanel, LayersButton } from '../explore/LayerPanel'
@@ -101,20 +98,6 @@ const MISSIONS_OPEN_KEY = 'mapa.globe.missionsOpen'
 const CATALOG_OPEN_KEY = 'mapa.globe.catalogOpen'
 // On a phone the two side panels would cover each other, and the globe: only one opens at a time
 const narrow = () => window.matchMedia('(max-width: 720px)').matches
-
-const samePoint = (a: LngLat, b: LngLat) => Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[1] - b[1]) < 1e-6
-
-/** The mission card's line on its A* safe path */
-function missionPathNote(safe: SafePathState, line: LngLat[] | null) {
-  if (safe.status === 'idle') return undefined
-  if (safe.status === 'error') return 'No elevation data to route by: drawn as straight lines'
-  if (!line || !safe.value) return 'Finding a way round steep and deep ground…'
-  let m = 0
-  for (let i = 1; i < line.length; i++) m += distanceM(line[i - 1], line[i])
-  const stuck = safe.value.legs.filter((l) => l.status !== 'safe').length
-  const how = stuck ? `${stuck} leg${stuck > 1 ? 's' : ''} with no safe way through (straight)` : 'round steep and deep ground'
-  return `${formatKm(m / 1000)} on foot, ${how} · ${TERRAIN_NOTE[safe.value.terrain.source]}`
-}
 
 export function GlobePage() {
   const { user, loading: authLoading } = useAuth()
@@ -253,15 +236,7 @@ export function GlobePage() {
     const pts = r.points.map((p): LngLat => [p.lon, p.lat])
     return r.closed ? [...pts, pts[0]] : pts
   }, [selectedId, fullMapRoutes])
-  const missionSafe = useSafePath(missionPoints)
-  // The last path found stays up while the next is worked out: only use it if it joins this mission's stops
-  const safeLine = useMemo(() => {
-    const legs = missionSafe.value?.legs
-    if (!legs || !missionPoints || legs.length !== missionPoints.length - 1) return null
-    const joins = legs.every((l, i) => samePoint(l.path[0], missionPoints[i]) && samePoint(l.path[l.path.length - 1], missionPoints[i + 1]))
-    return joins ? legs.flatMap((l, i) => (i ? l.path.slice(1) : l.path)) : null
-  }, [missionSafe.value, missionPoints])
-  const pathNote = missionPathNote(missionSafe, safeLine)
+  const { safe: missionSafe, line: safeLine, note: pathNote } = useMissionPath(missionPoints)
 
   // On the 2D map a picked landing site shows as a marker too
   const siteRoutes = useMemo(() => {

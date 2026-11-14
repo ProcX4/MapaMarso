@@ -1,25 +1,37 @@
 import type { LngLat } from '../state/types'
 import { terrainFor, type TerrainGrid } from './terrain'
 import type { SlopeGrid } from './slope'
-import type { LegStatus, PathRequest, PathResponse } from './pathfind'
+import type { LegStatus, PathRequest, PathResponse, RouteOption } from './pathfind'
 
 /*
  * A route's safe path: the terrain under it (terrain.ts), then A* through it in a worker (pathfind.worker.ts).
  * One leg per pair of consecutive points; a leg the finder can't route (off the terrain, or walled in) stays a
- * straight line and says so.
+ * straight line and says so. Each route is found two ways (safest, most direct) so they can be compared.
  */
 
-export type { LegStatus }
+export type { LegStatus, RouteOption }
 export type LegPath = { path: LngLat[]; status: LegStatus }
 export type HazardGrid = Omit<SlopeGrid, 'values'> & { values: Uint8Array }
-export type SafePath = { legs: LegPath[]; terrain: TerrainGrid; slope: SlopeGrid; hazard: HazardGrid }
+export type SafePath = {
+  legs: Record<RouteOption, LegPath[]>
+  terrain: TerrainGrid
+  slope: SlopeGrid
+  hazard: HazardGrid
+  /** Spread of slope nearby, in degrees */
+  roughness: SlopeGrid
+  /** 1 where the first point can be walked to and back from in time (when asked for) */
+  reach: HazardGrid | null
+}
 
-export async function findSafePath(points: LngLat[], signal?: AbortSignal): Promise<SafePath> {
+/** reachBudgetM: the walking budget, in flat-equivalent metres, for the safety envelope round the first point */
+export async function findSafePath(points: LngLat[], reachBudgetM: number | null, signal?: AbortSignal): Promise<SafePath> {
   const terrain = await terrainFor(points)
   signal?.throwIfAborted()
   const request: PathRequest = {
     grid: { width: terrain.width, height: terrain.height, bbox: terrain.bbox, values: terrain.values.slice() },
     points,
+    reach: reachBudgetM ? { from: points[0], budgetM: reachBudgetM } : undefined,
+    obstacles: terrain.obstacles,
   }
   const res = await new Promise<PathResponse>((resolve, reject) => {
     const worker = new Worker(new URL('./pathfind.worker.ts', import.meta.url), { type: 'module' })
@@ -41,5 +53,12 @@ export async function findSafePath(points: LngLat[], signal?: AbortSignal): Prom
     worker.postMessage(request, [request.grid.values.buffer])
   })
   const shape = { width: terrain.width, height: terrain.height, bbox: terrain.bbox }
-  return { legs: res.legs, terrain, slope: { ...shape, values: res.slope }, hazard: { ...shape, values: res.hazard } }
+  return {
+    legs: res.legs,
+    terrain,
+    slope: { ...shape, values: res.slope },
+    hazard: { ...shape, values: res.hazard },
+    roughness: { ...shape, values: res.roughness },
+    reach: res.reach ? { ...shape, values: res.reach } : null,
+  }
 }
