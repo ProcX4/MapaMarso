@@ -78,8 +78,8 @@ Infrared and mineral maps.
 
 ### To do
 - [ ] **CRISM mineralogy layer** (GS Layer 3, GS Data "Mineralogy"). Trek's CRISM/OMEGA hydrous-mineral map serves no tiles; needs another source
-- [ ] **Science targets:** fill `public/data/science-targets.geojson` with real CRISM targets, each with a citable reason (P5); then replace the `TBD` product in the registry and in `docs/data-sources.md`
-- [ ] **Science opportunity cards** come alive once targets exist (built: `ScienceOpportunity.tsx`, detour time, reason) (GS, PS §7)
+- [x] **Science targets** (P5): 27 Perseverance sample sites in `public/data/science-targets.geojson`, each with a reason and source, built by `npm run build-science-targets` from NASA's Mars Rock Samples page and stop list (within about 300 m). Orbital CRISM detections are still to add
+- [x] **Science opportunity cards** (GS, PS §7): list targets within 1 km of the route with a reason and detour time; tested with a walk past the Ha'ahóni and Atsá cores
 - [ ] **Site card mineral / hydration rows**, shown only where the data supports them (PS §5)
 - [x] **Legends for the TES maps:** a colour bar with low and high labels under each (v0.5.3). The labels are words, not numbers; Trek publishes no value range
 
@@ -207,7 +207,7 @@ Each unticked `- [ ]` box and each "TBD" in the spec documents, in the order it 
 ### Gen Spec.md · If time allows
 - [x] Hazard warnings (slope above a threshold along the route) · *Topographic*
 - [x] Terrain-aware routing (avoid steep cells instead of drawing straight lines) · *Topographic*
-- [ ] Science opportunity cards ("hydrated minerals 420 m off route, +11 min detour") · *Spectral: needs target data*
+- [x] Science opportunity cards ("hydrated minerals 420 m off route, +11 min detour") · *Spectral*
 - [x] Traverse safety envelope (how far you can go and still return in time) · *Topographic*
 - [x] EVA mode
 - [x] Rover point-of-view photos at waypoints · *Optical* (site card, Perseverance stops within 250 m)
@@ -230,8 +230,8 @@ Each unticked `- [ ]` box and each "TBD" in the spec documents, in the order it 
 All boxes from §2–§9 are in §8 above, with the same ticks.
 
 ### docs/data-sources.md · TBD
-- [ ] Science targets (`science-targets`): product ID, source URL and licence TBD (CRISM detections); the file is empty · *Spectral*
-- [ ] Same TBD in `src/map/layers/registry.ts` → `science-targets` → `product: 'TBD: CRISM mineral detections for the site'` · *Spectral*
+- [x] Science targets (`science-targets`): row filled in `docs/data-sources.md` · *Spectral*
+- [x] Same TBD in `src/map/layers/registry.ts` replaced with the real product · *Spectral*
 
 ---
 
@@ -240,7 +240,7 @@ All boxes from §2–§9 are in §8 above, with the same ticks.
 The 17 tasks in the three Todo images, with the owner from the section headings above and today's status.
 
 ### Must-do for the challenge
-- [ ] **1. Fill the science targets** · Daril. `public/data/science-targets.geojson` is empty; it needs real points with `name`, `reason` (e.g. "CRISM hydrated signature") and `source`. Makes the science opportunity cards and the site card's nearby targets work (§3).
+- [x] **1. Fill the science targets** · Daril. Done 2026-11-15 with 27 Perseverance sample sites (see §3). `public/data/science-targets.geojson` is empty; it needs real points with `name`, `reason` (e.g. "CRISM hydrated signature") and `source`. Makes the science opportunity cards and the site card's nearby targets work (§3).
 - [ ] **2. Add a radiation / space-weather panel** · everyone (§4). A minimal panel with a cited source, labelled Estimated.
 - [ ] **3. Add point-of-view photos at waypoints and destinations** · Shin (§2). Perseverance raw images near each stop; only the unused `SITE.rawImagesUrl` exists today.
 - [x] **4. Add rock and boulder hazards** · Jim. Done 2026-11-15: HiRISE-derived rocky-ground map (`public/data/site-obstacles.bin`, built by `scripts/build-obstacles.mjs`) with A* costs; Jezero only, where the 1 m DTMs exist
