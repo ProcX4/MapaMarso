@@ -1,4 +1,3 @@
-import { useSyncExternalStore } from 'react'
 import type Map from 'ol/Map'
 import type { LatLon, LngLat } from '../state/types'
 
@@ -8,30 +7,35 @@ import type { LatLon, LngLat } from '../state/types'
  */
 
 let current: Map | null = null
-const zoomListeners = new Set<() => void>()
-const notifyZoom = () => zoomListeners.forEach((l) => l())
+
+/** Where the view settled last (zoom and centre), for panels that react to it; null with no map */
+export type MapViewInfo = { zoom: number; center: LngLat } | null
+let viewInfo: MapViewInfo = null
+const listeners = new Set<() => void>()
+
+function viewChanged() {
+  const view = current?.getView()
+  const center = view?.getCenter()
+  viewInfo = view && center ? { zoom: view.getZoom() ?? 0, center: [center[0], center[1]] } : null
+  listeners.forEach((l) => l())
+}
 
 export function registerMap(map: Map | null) {
-  current?.getView().un('change:resolution', notifyZoom)
+  current?.un('moveend', viewChanged)
   current = map
-  current?.getView().on('change:resolution', notifyZoom)
-  notifyZoom()
+  // Only once a move has finished, so panning doesn't re-render whatever is listening on every frame
+  current?.on('moveend', viewChanged)
+  viewChanged()
 }
 
-/**
- * True while the view is zoomed out too far for a layer with this `minZoom` to draw
- * (OpenLayers draws a layer only above its minZoom). Returns a boolean, so the panel
- * re-renders only when the layer appears or disappears, not on every frame of a zoom.
- */
-export function useBelowMinZoom(minZoom: number | undefined) {
-  return useSyncExternalStore(
-    (onChange) => {
-      zoomListeners.add(onChange)
-      return () => void zoomListeners.delete(onChange)
-    },
-    () => minZoom !== undefined && currentZoom() <= minZoom,
-  )
+/** For useSyncExternalStore: subscribe to the view settling after a move */
+export function subscribeView(listener: () => void) {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
 }
+export const viewSnapshot = () => viewInfo
 
 /** Instant recentre, for following a moving position. */
 export function centerOn(at: LngLat) {
