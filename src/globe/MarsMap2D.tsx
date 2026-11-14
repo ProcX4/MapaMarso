@@ -1,0 +1,433 @@
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
+import { formatLat, formatLon } from '../lib/format'
+import { MARS_RADIUS_KM } from '../data/mars'
+import { sunAt as subsolar, sunElevationAt, terminatorLine, TWILIGHT_DEG } from '../data/daylight'
+import { initialView, toX, toY, type LatLon, type View } from './mapView'
+import { FlagIcon } from '../components/FlagIcon'
+import { getMarsTextures } from './marsTexture'
+import { loadTrekMosaic, MOSAIC_CREDIT } from './trekMosaic'
+import './map2d.css'
+
+/*
+ * The flat map of the whole planet (from MapaMars): pan, zoom, mission routes, and the night side shaded as
+ * it is at a given moment. Imagery is NASA's Viking colour mosaic through MAPA's tile proxy; a generated
+ * texture stands in only until (or if) it can't load.
+ */
+
+export type { LatLon }
+
+/** A marker on the map. Points are drawn in order and joined by the route line. */
+export type MapPoint = LatLon & {
+  key: string
+  /** Short text inside the marker, e.g. "A", "1", "B" */
+  badge: string
+  label: string
+  /** 'finish' shows a flag instead of the badge */
+  variant: 'start' | 'phase' | 'end' | 'finish'
+}
+
+/** Another route shown alongside the one being edited, e.g. every ongoing mission. */
+export type MapRoute = { key: string; points: MapPoint[]; closed?: boolean }
+
+type Props = {
+  points: MapPoint[]
+  /** Draw the route back to the first point (a round trip). */
+  closed?: boolean
+  /** Called when the map is clicked (not dragged). Omit for a read-only map. */
+  onPick?: (point: LatLon) => void
+  /** Move the view here; pass a new object to move again. `span` is the width shown, in degrees. */
+  focus?: (LatLon & { span?: number }) | null
+  label?: string
+  /** More routes to draw; with `onSelectRoute`, clicking one (its line or a marker) picks it */
+  routes?: MapRoute[]
+  selectedRoute?: string | null
+  onSelectRoute?: (key: string) => void
+  /** Fill the parent edge to edge (a full-screen map) instead of sitting in the page as a framed box */
+  fill?: boolean
+  /** Shade the night side as it is at this moment (ms), and mark where the Sun is overhead */
+  sunAt?: number | null
+}
+
+const MIN_SPAN = 0.02 // about 1.2 km across at the equator: Marswalk scale
+// Night shading is worked out on a grid this many screen pixels apart, then smoothed when stretched
+const NIGHT_CELL_PX = 6
+const NIGHT_OPACITY = 0.62
+
+type ImageKind = 'nasa' | 'generated'
+type MapImage = { source: HTMLImageElement | HTMLCanvasElement; width: number; height: number; kind: ImageKind }
+
+/** NASA's mosaic once it has loaded; the generated planet until then (or if it can't load). */
+function useMapImage(): MapImage {
+  const [image, setImage] = useState<MapImage>(() => {
+    const canvas = getMarsTextures().color
+    return { source: canvas, width: canvas.width, height: canvas.height, kind: 'generated' }
+  })
+  useEffect(() => {
+    let alive = true
+    loadTrekMosaic()
+      .then((canvas) => alive && setImage({ source: canvas, width: canvas.width, height: canvas.height, kind: 'nasa' }))
+      .catch(() => {
+        // keep the generated planet
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+  return image
+}
+
+/**
+ * Keeps the view on the planet: longitude wraps around (the map is continuous east–west),
+ * latitude stops at the poles, and you can't zoom out past the planet's full height.
+ */
+function clampView(v: View, size: { w: number; h: number }): View {
+  const aspect = size.h / size.w
+  const maxW = Math.min(360, 180 / aspect)
+  const w = Math.min(maxW, Math.max(MIN_SPAN, v.w))
+  const h = w * aspect
+  const cx = ((v.cx % 360) + 360) % 360
+  const cy = Math.min(180 - h / 2, Math.max(h / 2, v.cy))
+  return { w, cx, cy }
+}
+
+/** The copy of x (x ± 360·k) closest to the view centre, so points near the wrap line show up. */
+const nearest = (x: number, cx: number) => x + 360 * Math.round((cx - x) / 360)
+
+const GRID_STEPS = [30, 10, 5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01, 0.005]
+
+function niceKm(km: number) {
+  const pow = 10 ** Math.floor(Math.log10(km))
+  const n = km / pow
+  return (n >= 5 ? 5 : n >= 2 ? 2 : 1) * pow
+}
+
+export function MarsMap2D({ points, closed = false, onPick, focus, label = 'Map of Mars', routes = [], selectedRoute = null, onSelectRoute, fill = false, sunAt = null }: Props) {
+  const hostRef = useRef<HTMLDivElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const nightRef = useRef<HTMLCanvasElement>(null)
+  const sun = useMemo(() => (sunAt === null ? null : subsolar(sunAt)), [sunAt])
+  const terminator = useMemo(() => (sun ? terminatorLine(sun) : null), [sun])
+  const [size, setSize] = useState({ w: 800, h: 450 })
+  const [rawView, setView] = useState(() => initialView(points))
+  const [hover, setHover] = useState<LatLon | null>(null)
+  const drag = useRef<{ x: number; y: number; cx: number; cy: number; moved: number; route: string | null } | null>(null)
+  const image = useMapImage()
+
+  // Clamp during render too, so a resize or a new focus can never show space off the planet
+  const view = clampView(rawView, size)
+  const h = view.w * (size.h / size.w)
+  const left = view.cx - view.w / 2
+  const top = view.cy - h / 2
+  const unitsPerPx = view.w / size.w
+
+  // Measure before the first paint (layout effect) so markers and the route line never start misaligned,
+  // then keep measuring as the map resizes
+  useLayoutEffect(() => {
+    const el = hostRef.current!
+    const measure = () => setSize({ w: el.clientWidth || 1, h: el.clientHeight || 1 })
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  // Paint only the visible part of the imagery, at screen resolution, before the browser shows the
+  // frame (layout effect), so the image never lags behind the markers while dragging.
+  useLayoutEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    const pw = Math.round(size.w * dpr)
+    const ph = Math.round(size.h * dpr)
+    if (canvas.width !== pw || canvas.height !== ph) {
+      canvas.width = pw
+      canvas.height = ph
+    }
+    const ctx = canvas.getContext('2d')!
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
+    ctx.fillStyle = '#1a0d08'
+    ctx.fillRect(0, 0, pw, ph)
+    const pxPerUnit = pw / view.w
+    ctx.imageSmoothingEnabled = true
+    ctx.imageSmoothingQuality = 'high'
+    const y0 = Math.max(0, top)
+    const y1 = Math.min(180, top + h)
+    // The view can straddle the 180° line, so draw each copy of the planet it overlaps
+    for (let k = Math.floor(left / 360); k * 360 < left + view.w; k++) {
+      const x0 = Math.max(left, k * 360)
+      const x1 = Math.min(left + view.w, (k + 1) * 360)
+      if (x1 <= x0 || y1 <= y0) continue
+      const sx = x0 - k * 360
+      ctx.drawImage(
+        image.source,
+        (sx / 360) * image.width, (y0 / 180) * image.height, ((x1 - x0) / 360) * image.width, ((y1 - y0) / 180) * image.height,
+        (x0 - left) * pxPerUnit, (y0 - top) * pxPerUnit, (x1 - x0) * pxPerUnit, (y1 - y0) * pxPerUnit,
+      )
+    }
+  }, [image, left, top, view.w, h, size])
+
+  // Night side: dark where the Sun is down, fading through twilight to clear daylight. Worked out for
+  // the visible area only, so the edge of night stays sharp at any zoom.
+  useLayoutEffect(() => {
+    const canvas = nightRef.current
+    if (!canvas || !sun) return
+    const cols = Math.max(2, Math.ceil(size.w / NIGHT_CELL_PX))
+    const rows = Math.max(2, Math.ceil(size.h / NIGHT_CELL_PX))
+    if (canvas.width !== cols || canvas.height !== rows) {
+      canvas.width = cols
+      canvas.height = rows
+    }
+    const ctx = canvas.getContext('2d')!
+    const img = ctx.createImageData(cols, rows)
+    for (let j = 0; j < rows; j++) {
+      const lat = 90 - (top + ((j + 0.5) / rows) * h)
+      for (let i = 0; i < cols; i++) {
+        const lon = left + ((i + 0.5) / cols) * view.w - 180
+        const t = Math.min(1, Math.max(0, -sunElevationAt({ lat, lon }, sun) / TWILIGHT_DEG))
+        const k = (j * cols + i) * 4
+        img.data[k] = 4
+        img.data[k + 1] = 8
+        img.data[k + 2] = 30
+        img.data[k + 3] = 255 * NIGHT_OPACITY * t * t * (3 - 2 * t) // smoothstep through twilight
+      }
+    }
+    ctx.putImageData(img, 0, 0)
+  }, [sun, left, top, view.w, h, size])
+
+  // Move the view when a new `focus` arrives (adjusting state during render, not in an effect)
+  const [appliedFocus, setAppliedFocus] = useState(focus)
+  if (focus !== appliedFocus) {
+    setAppliedFocus(focus)
+    if (focus) setView((v) => ({ cx: toX(focus.lon), cy: toY(focus.lat), w: focus.span ?? Math.min(v.w, 10) }))
+  }
+
+  const zoomAt = (factor: number, px = size.w / 2, py = size.h / 2) => {
+    setView((raw) => {
+      const v = clampView(raw, size)
+      const vh = v.w * (size.h / size.w)
+      const mx = v.cx - v.w / 2 + (px / size.w) * v.w
+      const my = v.cy - vh / 2 + (py / size.h) * vh
+      const w = clampView({ ...v, w: v.w * factor }, size).w
+      const nh = w * (size.h / size.w)
+      return clampView({ w, cx: mx - (px / size.w - 0.5) * w, cy: my - (py / size.h - 0.5) * nh }, size)
+    })
+  }
+
+  // Wheel zoom needs a non-passive listener to stop the page from scrolling
+  useEffect(() => {
+    const el = hostRef.current!
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      const rect = el.getBoundingClientRect()
+      zoomAt(e.deltaY > 0 ? 1.25 : 0.8, e.clientX - rect.left, e.clientY - rect.top)
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  })
+
+  const pointAt = (clientX: number, clientY: number): LatLon | null => {
+    const rect = hostRef.current!.getBoundingClientRect()
+    const x = left + ((clientX - rect.left) / rect.width) * view.w
+    const y = top + ((clientY - rect.top) / rect.height) * h
+    if (y < 0 || y > 180) return null
+    const lon = ((((x - 180) % 360) + 540) % 360) - 180 // wrap into -180..180
+    return { lat: 90 - y, lon }
+  }
+
+  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest('button')) return
+    // Pressing on a route line: a click (not a drag) selects that route
+    const route = (e.target as Element).closest('[data-route]')?.getAttribute('data-route') ?? null
+    drag.current = { x: e.clientX, y: e.clientY, cx: view.cx, cy: view.cy, moved: 0, route }
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    setHover(pointAt(e.clientX, e.clientY))
+    const d = drag.current
+    if (!d) return
+    const dx = e.clientX - d.x
+    const dy = e.clientY - d.y
+    d.moved = Math.max(d.moved, Math.hypot(dx, dy))
+    setView((v) => clampView({ ...v, cx: d.cx - dx * unitsPerPx, cy: d.cy - dy * unitsPerPx }, size))
+  }
+  const onPointerUp = (e: PointerEvent<HTMLDivElement>) => {
+    const d = drag.current
+    drag.current = null
+    if (!d || d.moved >= 4) return
+    if (d.route && onSelectRoute) onSelectRoute(d.route)
+    else if (onPick) {
+      const p = pointAt(e.clientX, e.clientY)
+      if (p) onPick(p)
+    }
+  }
+
+  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    const step = view.w * 0.1
+    const moves: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }
+    if (moves[e.key]) {
+      e.preventDefault()
+      setView((v) => clampView({ ...v, cx: v.cx + moves[e.key][0], cy: v.cy + moves[e.key][1] }, size))
+    } else if (e.key === '+' || e.key === '=') zoomAt(0.8)
+    else if (e.key === '-') zoomAt(1.25)
+  }
+
+  // Grid lines at a spacing that suits the zoom level: the finest step that still gives at most
+  // about 12 lines across. The cap is a safety net: a grid never needs more than a few dozen lines.
+  const grid = useMemo(() => {
+    const step = [...GRID_STEPS].reverse().find((s) => view.w / s <= 12) ?? GRID_STEPS[0]
+    const xs: number[] = []
+    const ys: number[] = []
+    for (let x = Math.ceil(left / step) * step; x <= left + view.w && xs.length < 60; x += step) xs.push(x)
+    for (let y = Math.ceil(Math.max(0, top) / step) * step; y <= Math.min(180, top + h) && ys.length < 60; y += step) ys.push(y)
+    return { xs, ys }
+  }, [left, top, view.w, h])
+
+  // Scale bar sized for about 110px, measured at the view's centre latitude
+  const scale = useMemo(() => {
+    const lat = 90 - view.cy
+    const kmPerDeg = ((2 * Math.PI * MARS_RADIUS_KM) / 360) * Math.max(0.05, Math.cos((lat * Math.PI) / 180))
+    const km = niceKm(110 * unitsPerPx * kmPerDeg)
+    return { km, px: km / (unitsPerPx * kmPerDeg) }
+  }, [view.cy, unitsPerPx])
+
+  // Map position of a point, using whichever copy of the planet is on screen
+  const mapX = (p: LatLon) => nearest(toX(p.lon), view.cx)
+  // Marker positions as percentages of the map, exactly like the SVG route and grid scale,
+  // so they stay aligned even if a size measurement is momentarily out of date
+  const toPct = (p: LatLon) => ({ x: ((mapX(p) - left) / view.w) * 100, y: ((toY(p.lat) - top) / h) * 100 })
+  // The day/night line, split into its sunrise and sunset halves, repeated on each copy of the planet in view.
+  // On this flat map the line (a circle on the globe) becomes a wave.
+  const terminatorPaths = useMemo(() => {
+    if (!terminator) return []
+    const paths: { side: string; points: string }[] = []
+    const first = Math.floor((left - terminator[0].lon - 180) / 360) - 1
+    for (let k = first; (k - 1) * 360 + terminator[0].lon + 180 < left + view.w; k++) {
+      let run: string[] = []
+      terminator.forEach((p, i) => {
+        run.push(`${p.lon + 180 + k * 360},${90 - p.lat}`)
+        const next = terminator[i + 1]
+        if (!next || next.side !== p.side) {
+          paths.push({ side: p.side, points: run.join(' ') })
+          run = next ? [run[run.length - 1]] : []
+        }
+      })
+    }
+    return paths
+  }, [terminator, left, view.w])
+
+  const pathOf = (pts: MapPoint[], isClosed?: boolean) => (isClosed ? [...pts, pts[0]] : pts).map((p) => `${mapX(p)},${toY(p.lat)}`).join(' ')
+  const pin = (p: MapPoint) => (
+    <>
+      <span className="map2d-pin">{p.variant === 'finish' ? <FlagIcon /> : p.badge}</span>
+      <span className="map2d-label">{p.label}</span>
+    </>
+  )
+
+  return (
+    <div className={`map2d${fill ? ' is-fill' : ''}`}>
+      <div
+        ref={hostRef}
+        className={`map2d-surface${onPick ? ' is-pickable' : ''}`}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerLeave={() => setHover(null)}
+        onKeyDown={onKeyDown}
+        tabIndex={0}
+        role="application"
+        aria-label={`${label}. Drag or use arrow keys to pan, scroll or plus and minus to zoom${onPick ? ', click to place a point' : ''}.`}
+      >
+        <canvas ref={canvasRef} className="map2d-image" aria-hidden="true" />
+        {sun && <canvas ref={nightRef} className="map2d-night" aria-hidden="true" />}
+        <svg viewBox={`${left} ${top} ${view.w} ${h}`} preserveAspectRatio="none" aria-hidden="true">
+          <g className="map2d-grid">
+            {grid.xs.map((x) => (
+              <line key={`x${x}`} x1={x} x2={x} y1={0} y2={180} />
+            ))}
+            {grid.ys.map((y) => (
+              <line key={`y${y}`} x1={left} x2={left + view.w} y1={y} y2={y} />
+            ))}
+          </g>
+          {terminatorPaths.map((t, i) => (
+            <polyline key={i} className={`map2d-terminator is-${t.side}`} points={t.points} />
+          ))}
+          {routes.map(
+            (r) =>
+              r.points.length > 1 && (
+                <g key={r.key} className={`map2d-other${r.key === selectedRoute ? ' is-selected' : ''}`}>
+                  <polyline className="map2d-route" points={pathOf(r.points, r.closed)} />
+                  {/* A wider invisible line, so the route is easy to click */}
+                  {onSelectRoute && <polyline className="map2d-route-hit" data-route={r.key} points={pathOf(r.points, r.closed)} />}
+                </g>
+              ),
+          )}
+          {points.length > 1 && <polyline className="map2d-route" points={pathOf(points, closed)} />}
+        </svg>
+
+        {routes.map((r) =>
+          r.points.map((p) => {
+            const at = toPct(p)
+            const className = `map2d-marker is-${p.variant} is-other${r.key === selectedRoute ? ' is-selected' : ''}`
+            const style = { left: `${at.x}%`, top: `${at.y}%` }
+            return onSelectRoute ? (
+              <button key={`${r.key}:${p.key}`} type="button" className={className} style={style} onClick={() => onSelectRoute(r.key)} aria-label={p.label}>
+                {pin(p)}
+              </button>
+            ) : (
+              <div key={`${r.key}:${p.key}`} className={className} style={style}>
+                {pin(p)}
+              </div>
+            )
+          }),
+        )}
+
+        {points.map((p) => {
+          const at = toPct(p)
+          return (
+            <div key={p.key} className={`map2d-marker is-${p.variant}`} style={{ left: `${at.x}%`, top: `${at.y}%` }}>
+              {pin(p)}
+            </div>
+          )
+        })}
+
+        {sun &&
+          ([['sunrise', -90, 'Sunrise line'], ['sunset', 90, 'Sunset line']] as const).map(([side, offset, text]) => {
+            // Labelled where each half crosses the equator, 90° either side of the Sun
+            const at = toPct({ lat: 0, lon: sun.lon + offset })
+            return (
+              <span key={side} className={`map2d-terminator-label is-${side}`} style={{ left: `${at.x}%`, top: `${at.y}%` }}>
+                {text} <span aria-hidden="true">← west</span>
+              </span>
+            )
+          })}
+        {sun &&
+          (() => {
+            const at = toPct(sun)
+            return (
+              <div className="map2d-sun" style={{ left: `${at.x}%`, top: `${at.y}%` }} title="The Sun is overhead here">
+                <span className="map2d-sun-disk" />
+                <span className="map2d-label">Sun overhead</span>
+              </div>
+            )
+          })()}
+
+        <div className="map2d-zoom">
+          <button type="button" onClick={() => zoomAt(0.5)} aria-label="Zoom in">+</button>
+          <button type="button" onClick={() => zoomAt(2)} aria-label="Zoom out">−</button>
+          <button type="button" onClick={() => setView(initialView(points))} aria-label="Reset view" title="Reset view">⤢</button>
+        </div>
+
+        <div className="map2d-scale" aria-hidden="true">
+          <span style={{ width: scale.px }} />
+          {scale.km >= 1 ? `${scale.km} km` : `${Math.round(scale.km * 1000)} m`}
+        </div>
+        <div className="map2d-readout" aria-hidden="true">
+          {hover ? `${formatLat(hover.lat, 3)}  ${formatLon(hover.lon, 3)}` : ''}
+        </div>
+      </div>
+      <p className="map2d-source muted">
+        Imagery: {image.kind === 'nasa' ? `${MOSAIC_CREDIT} · OBSERVED` : 'loading NASA imagery… (generated stand-in shown, not NASA data)'}
+      </p>
+    </div>
+  )
+}

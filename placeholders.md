@@ -5,7 +5,7 @@ Each item says where it lives and what "done" looks like. In the app, stand-in l
 
 When you replace one, tick it here **and** add an entry to [changes.md](changes.md).
 
-Last updated: 2026-11-14 (v0.2.0, idea bank merged)
+Last updated: 2026-11-14 (v0.3.0, full idea bank merged)
 
 ---
 
@@ -34,6 +34,7 @@ Last updated: 2026-11-14 (v0.2.0, idea bank merged)
 | P7 | **Thermal (THEMIS) / mineralogy (CRISM) map layers** | Not in the layer registry yet (only CRISM-sourced *targets* are planned) | `src/map/layers/registry.ts` | Added if they help the demo story, with full provenance |
 | P8 | **Rover traverse layer** | Not started (stretch goal) | — | Perseverance traverse from PDS added as a `route`-group vector layer |
 | P9 | **Data sources record** | Only the three Trek layers are recorded | `docs/data-sources.md` | Every layer in use has product ID, resolution, URL and licence |
+| P11 | **Landing-site close-ups** | Only Viking 1 (`vl1`) has a 3D close-up, with procedural terrain around NASA's lander model | `src/data/siteScenes.ts` | Add scenes for other sites (e.g. Perseverance at Jezero) if the demo needs them |
 | P10 | **Elevation layer styling** | Plain grey ramp (low = dark, high = white) from the in-memory grid | `src/map/MapView.tsx` (site-dtm effect) | Decide on a hillshade or colour ramp once real data is in |
 
 ## 3. Assumptions (all ESTIMATED, none validated)
@@ -64,4 +65,6 @@ All in `src/config/assumptions.ts` unless noted. Shown in the UI on hover of eve
 | ~~V2~~ | ~~`api/tiles.ts` imports `src/config/trekLayers.ts`~~ **Resolved v0.1.2:** the import crashed the function on Vercel; the allow-list now lives in `api/tiles.ts` | `api/tiles.ts` | Done |
 | ~~V3~~ | ~~CSP in `vercel.json`~~ **Resolved v0.1.2:** headers present and the map, imagery and fonts render on mapamarso.vercel.app (headless Chrome) | `vercel.json` | Done. Re-check if a new external host is added |
 | V4 | Fonts from Google Fonts | `src/styles/tokens.css` | Keep, or self-host and drop the Google entries from the CSP |
+| V6 | Draco-compressed orbiter models under the deployed CSP (`wasm-unsafe-eval`) | `vercel.json` | Open an MRO or TGO card on the live globe and see the model, with no CSP error in the console |
+| V7 | JPL Horizons proxy on Vercel | `api/horizons.ts` | `/api/horizons?body=phobos&day=<yesterday>` returns a table on the live site |
 | V5 | Repo settings: secret scanning, push protection, Dependabot, branch protection on `main` | GitHub | Pushed to https://github.com/S-Urchin/MapaMarso. Still to do: turn these on in the repo settings (Security Spec §2, §6) |

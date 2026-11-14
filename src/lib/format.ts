@@ -57,3 +57,18 @@ const PH_TIME = new Intl.DateTimeFormat('en-CA', {
 export function formatPhTime(ms: number) {
   return PH_TIME.format(ms).replace(',', '') + ' PHT'
 }
+
+/** 18.44 → "18.44°N" */
+export function formatLat(lat: number, digits = 2) {
+  return `${Math.abs(lat).toFixed(digits)}°${lat >= 0 ? 'N' : 'S'}`
+}
+
+/** -47.95 → "47.95°W" */
+export function formatLon(lon: number, digits = 2) {
+  return `${Math.abs(lon).toFixed(digits)}°${lon >= 0 ? 'E' : 'W'}`
+}
+
+/** Distance given in km: metres under 1 km, two decimals under 10 km (the MapaMars style), else one. */
+export function formatDistanceKm(km: number) {
+  return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(km < 10 ? 2 : 1)} km`
+}

@@ -17,3 +17,19 @@ NASA data is used under NASA's media and data guidelines: https://www.nasa.gov/n
 Tile grid for all Trek EQ layers verified against `WMTSCapabilities.xml` on 2026-11-14: TopLeftCorner `-180 90`, 256 px tiles, level 0 = 2 × 1 tiles. Deepest zoom with tiles at Jezero checked by requesting tiles directly.
 
 Offline copies of the Trek tiles around the demo site live in `public/tiles/` (`npm run prefetch-tiles`).
+
+## Globe and flat map (from the MapaMars idea bank)
+
+| Data | Source | Licence / credit | Category |
+|---|---|---|---|
+| Mars 3D model | NASA/JPL-Caltech, science.nasa.gov/resource/planet-mars-3d-model | NASA, public | Observed |
+| Flat-map imagery | Viking MDIM 2.1 colour mosaic via Mars Trek (`Mars_Viking_MDIM21_ClrMosaic_global_232m`, zoom 2) | NASA, public | Observed |
+| Phobos and Deimos shapes | Ernst et al. 2023, JHU/APL Small Body Mapping Tool | Cited in public/resources/README.md | Observed |
+| Moon and orbiter positions | NASA JPL Horizons (live, via `api/horizons.ts`) | NASA, public | Observed (orbit figures Derived) |
+| Moon positions (fallback) | JPL SSD mean orbital elements (MAR099) | NASA, public | Derived |
+| Viking lander model | NASA / Michael D. Carbajal (NASA 3D Resources) | NASA, public | Observed |
+| MRO, Odyssey, TGO models | NASA 3D Resources; NASA Visualization Technology Applications and Development | NASA, public | Observed |
+| Mars Express, Hope | Stand-in shapes of their real size (no published model) | Labelled on their cards | Estimated |
+| Stars | Yale Bright Star Catalogue, 5th ed. (Hoffleit & Warren 1991) | Public | Observed |
+| Landing sites | Published landing coordinates (`src/data/mars.ts`) | Public | Observed |
+| Viking 1 close-up terrain | Procedural ground around the real lander and trench positions | MAPA/MapaMars | Estimated |

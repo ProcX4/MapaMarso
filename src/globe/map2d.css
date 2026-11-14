@@ -1,0 +1,120 @@
+/* ---------- The flat map of Mars (MarsMap2D, from MapaMars) ---------- */
+
+.map2d { display: flex; flex-direction: column; gap: 6px; }
+.map2d-surface {
+  position: relative;
+  height: min(620px, calc(100vh - 190px));
+  min-height: 340px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #000;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.map2d-surface:active { cursor: grabbing; }
+.map2d-surface.is-pickable { cursor: crosshair; }
+.map2d-surface:focus-visible { outline: 2px solid var(--white); outline-offset: 2px; }
+.map2d-surface svg,
+.map2d-image { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.map2d-grid line { stroke: rgba(255, 255, 255, 0.14); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.map2d-route { fill: none; stroke: var(--white); stroke-width: 2; stroke-dasharray: 6 5; vector-effect: non-scaling-stroke; }
+.map2d-marker { position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 6px; margin: -12px 0 0 -12px; pointer-events: none; }
+.map2d-pin {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  font: 600 12px var(--sans);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.55);
+}
+.map2d-marker.is-start .map2d-pin { color: var(--black); background: var(--white); }
+.map2d-marker.is-end .map2d-pin { color: var(--white); background: var(--black); border: 2px solid var(--white); }
+.map2d-marker.is-phase .map2d-pin { width: 20px; height: 20px; margin: 2px; font-size: 11px; color: var(--black); background: rgba(255, 255, 255, 0.85); }
+.map2d-label { padding: 2px 7px; font-size: 12px; color: var(--white); background: rgba(0, 0, 0, 0.72); border-radius: 4px; white-space: nowrap; }
+.map2d-zoom { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 4px; }
+.map2d-zoom button {
+  width: 32px;
+  height: 32px;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--white);
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.map2d-zoom button:hover { border-color: var(--white); }
+.map2d-scale { position: absolute; left: 12px; bottom: 10px; display: flex; flex-direction: column; gap: 3px; font: 11px var(--mono); color: var(--white); text-shadow: 0 1px 2px #000; pointer-events: none; }
+.map2d-scale span { display: block; height: 6px; border: 2px solid var(--white); border-top: 0; }
+.map2d-readout { position: absolute; right: 12px; bottom: 10px; font: 12px var(--mono); color: var(--white); text-shadow: 0 1px 2px #000; white-space: pre; pointer-events: none; }
+.map2d-source { margin: 0; font-size: 12px; }
+
+/* Filling the window (the globe's flat view and the full-screen planner) */
+.map2d.is-fill { position: absolute; inset: 0; gap: 0; }
+.map2d.is-fill .map2d-surface { height: 100%; min-height: 0; border: 0; border-radius: 0; }
+.map2d.is-fill .map2d-surface:focus-visible { outline-offset: -3px; }
+.map2d.is-fill .map2d-zoom { top: auto; bottom: 84px; right: 24px; }
+.map2d.is-fill .map2d-source { position: absolute; left: 24px; bottom: 8px; font-size: 11px; pointer-events: none; text-shadow: 0 1px 3px #000; }
+
+/* Every ongoing mission, in the same green as on the globe */
+.map2d-other { --mission: #8be3a8; }
+.map2d-other .map2d-route { stroke: var(--mission); opacity: 0.6; }
+.map2d-other.is-selected .map2d-route { opacity: 1; stroke-width: 2.5; animation: dash-march 0.7s linear infinite; }
+@keyframes dash-march { to { stroke-dashoffset: -11; } }
+.map2d-route-hit { fill: none; stroke: transparent; stroke-width: 14; vector-effect: non-scaling-stroke; pointer-events: stroke; cursor: pointer; }
+.map2d-marker.is-other { --mission: #8be3a8; padding: 0; color: inherit; background: none; border: 0; font: inherit; }
+button.map2d-marker.is-other { pointer-events: auto; cursor: pointer; }
+.map2d-marker.is-other .map2d-pin { color: var(--mission); background: rgba(0, 0, 0, 0.72); border: 1.5px solid var(--mission); }
+.map2d-marker.is-other.is-phase .map2d-pin { width: 20px; height: 20px; margin: 2px; }
+.map2d-marker.is-other.is-finish .map2d-pin { width: 20px; height: 20px; margin: 2px; color: var(--black); background: var(--mission); }
+/* A mission's start is a green diamond, as on the globe */
+.map2d-marker.is-other.is-start .map2d-pin { width: 13px; height: 13px; margin: 5.5px; background: var(--mission); border-radius: 2px; transform: rotate(45deg); }
+.map2d-marker.is-other .map2d-label { color: var(--mission); }
+.map2d-marker.is-other:not(.is-selected, :hover) .map2d-label { display: none; }
+.map2d-marker.is-other:hover { z-index: 1; }
+.map2d-marker.is-other.is-selected .map2d-pin { color: var(--black); background: var(--mission); }
+.map2d-marker.is-other.is-selected .map2d-label { color: var(--black); background: var(--mission); }
+
+/* Day and night: the night side, stretched smoothly over the imagery from a coarse grid */
+.map2d-night { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+
+/* Where the Sun stands overhead */
+.map2d-sun { position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 6px; margin: -9px 0 0 -9px; pointer-events: none; }
+.map2d-sun-disk {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff6d6 0 35%, #ffc861 60%, #ff9d3b);
+  box-shadow: 0 0 0 3px rgba(255, 190, 90, 0.25), 0 0 18px 6px rgba(255, 180, 80, 0.45);
+}
+.map2d-sun .map2d-label { color: #ffd98a; }
+
+/* The day/night line as a wave: warm on the sunrise half, dashed on the sunset half */
+.map2d-terminator { fill: none; stroke-width: 1.5; vector-effect: non-scaling-stroke; pointer-events: none; }
+.map2d-terminator.is-sunrise { stroke: var(--caution); }
+.map2d-terminator.is-sunset { stroke: var(--hazard); stroke-dasharray: 5 4; }
+.map2d-terminator-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 2px 7px;
+  font-size: 11px;
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.72);
+  border-radius: 4px;
+  transform: translate(-50%, -150%);
+  pointer-events: none;
+}
+.map2d-terminator-label.is-sunrise { color: var(--caution); }
+.map2d-terminator-label.is-sunset { color: var(--hazard); }
+
+@media (max-width: 720px) {
+  .map2d.is-fill .map2d-zoom { bottom: 76px; right: 16px; }
+  .map2d-terminator-label { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .map2d-other.is-selected .map2d-route { animation: none; }
+}

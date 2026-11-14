@@ -21,6 +21,51 @@ Entry template:
 
 ---
 
+## 2026-11-14 · v0.3.0 · Everything from the MapaMars idea bank, merged
+
+The rest of [S-Urchin/MapaMars](https://github.com/S-Urchin/MapaMars) brought in: the 3D globe, moons, orbiters, landing-site close-up, hyperspace jump, flat map, home page and the full missions system. Code was written into MAPA's own structure, not copied in as files; where both apps had the same job, the two were merged into one. Real data from both was kept.
+
+**Added: pages**
+- `#/home`: the MapaMars home (hero, hyperspace jump into the globe, numbered features, "Right now on Mars"), with MAPA's planner listed alongside. It preloads the 3D models in idle moments.
+- `#/globe`, `#/globe/2d`, `#/globe/new`: the MapaMars globe page. 3D Mars (NASA model), Phobos and Deimos (measured shapes, live positions), five orbiters (live from JPL Horizons, cards with 3D models), landing sites, mission routes, catalog, day/night playback through a sol, the Viking 1 landing-site close-up (descent, lighting, real stars and Earth, night flashlight, points of interest), flat map, tools, tour, clear view.
+- `#/missions/...`: find by code, browse (open/completed, all/others/mine), your missions, mission view with crew (join, leave, remove), mission log, mark complete / reopen, edit, delete, and the three-step mission planner.
+- Menu: Home, Globe, Explore, Plan Marswalk, EVA, Missions, About & data.
+
+**Added: code** (in `src/globe/` for three.js and the flat map, `src/data/` for science, `src/features/globe|missions|home/` for pages)
+- `globe/`: `MarsGlobe`, `SiteTerrain`, `siteSceneBuild`, `siteSky`, `skyObjects`, `marsModel`, `marsTexture`, `moonModel`, `landerModel`, `orbiterModel`, `surfaceDetail`, `adaptiveResolution`, `Hyperspace`, `MarsMap2D`, `mapView`, `missionRoute`.
+- `data/`: `marsSky` (full sky model: Sun, planets, moons, transits, seasons), `marsMoons`, `moonEphemeris`, `orbiters`, `siteScenes`; landing sites and landmarks in `data/mars.ts`.
+- `api/horizons.ts`: JPL Horizons proxy (fixed bodies, day within a year, GET only, cached a day, no local imports). Served by Vite in dev/preview like the tile proxy.
+- `services/missionEntries.ts`, `hooks/useMissions.ts` (live reload on database broadcast, every minute, and on tab return), `lib/missionPaths.ts`, `lib/warp.ts`, `components/SearchBox`, `components/FlagIcon`.
+- `public/resources/`: NASA's Mars, Viking lander and orbiter models, the Phobos/Deimos shape files, the Yale Bright Star Catalogue and the Draco decoder (binary data, copied as-is: 22 MB).
+- Dependency: `three` (+ `@types/three`).
+
+**Merged (one version instead of two)**
+- Missions: one `services/missions.ts`. A `Mission` carries both the MapaMars fields (start, phases, end, crew count, completion) and MAPA `stops`, built from the same row. The flat-map planner, the mission pages and MAPA's route planner all save through the same `toRow`, so a walk planned in one opens in the others (`#/plan/<code>` ↔ `#/missions/<code>`).
+- Sky maths: MAPA's cut-down `marsSun.ts` removed; `daylight.ts` uses the full `marsSky.ts`, and now also has the MapaMars terminator, `sunAt`/`sunElevationAt`, `formatAhead`/`formatOffset`.
+- Icons and tools dock: one `Icon` set (menu + globe icons) and the MapaMars `ToolDock` (tour, show/hide interface) used by every page.
+- Tour steps: all tours (site map, globe, flat-map planner) in `config/tourSteps.ts`.
+- Flat map imagery: **real NASA data instead of the MapaMars placeholder**. The whole-planet picture is stitched from the Viking MDIM 2.1 colour mosaic (32 Trek tiles through `api/tiles.ts`, offline copies as fallback); the generated texture shows only until it loads.
+- Live clock: the globe uses MAPA's `LiveClock` (PHT, MTC, sol, plus local time and daylight at the demo site).
+- Landing-site card has "Open on the site map" (to MAPA's NASA-layer map); mission card and view have "Open in the route planner".
+
+**Changed**
+- CSP `script-src` gains `'wasm-unsafe-eval'`: the Draco decoder for two orbiter models compiles WebAssembly. It does not allow JavaScript `eval`.
+- `.oxlintrc.json` ignores `public/**` (the minified Draco decoder) and `dist/**`.
+
+**Spec deviations**
+- The Gen Spec leaves the 3D globe, moons and orbiters out of scope; they are in at the team's request. The Marswalk core (`#/`, `#/plan`, `#/eva`) is unchanged.
+- `features/globe/GlobePage` imports `features/missions/MissionForm` (the full-screen planner), as MapaMars does; this is the one feature-to-feature import. Everything else shared moved to `lib/` and `components/`.
+- MapaMars's `config/nasaData.ts` (empty "connect a URL" placeholders) was not brought over: MAPA's layer registry and `api/tiles.ts` already serve the real data it was waiting for.
+
+**Verified**
+- `npm run lint` clean, `npm run build` passes, `npm audit` 0 vulnerabilities.
+- Horizons proxy on `npm run preview`: Phobos and MRO tables load live (200); unknown body or a day outside ±1 year → 400; POST → 405.
+- Screenshots (headless Chrome, software WebGL): the globe with NASA's model, landing sites, live orbiters (Odyssey, TGO, MRO) and orbit lines; the flat map with the Viking mosaic, night side and day/night line; home; missions hub.
+- Mission conversion, route, slope, format and Sun tests still pass.
+
+**Not verified**
+- Clicking through in a real browser: the landing-site descent, moon fly-to, orbiter model cards, mission create/join/log against Supabase, and the Draco-compressed models under the deployed CSP.
+
 ## 2026-11-14 · v0.2.1 · Supabase connected on the live site
 
 **Changed**

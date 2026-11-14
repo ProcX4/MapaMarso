@@ -1,0 +1,147 @@
+import { useCallback, useEffect, useState, type MouseEvent } from 'react'
+import { Hyperspace } from '../../globe/Hyperspace'
+import { loadVikingLander } from '../../globe/landerModel'
+import { loadStars } from '../../globe/skyObjects'
+import { loadMarsModel } from '../../globe/marsModel'
+import { getMarsTextures } from '../../globe/marsTexture'
+import { loadMoonGeometry } from '../../globe/moonModel'
+import { AU_LIGHT_MIN, earthMarsDistanceAU, landingSites, marsClock } from '../../data/mars'
+import { formatHours } from '../../lib/format'
+import { useNow } from '../../hooks/useNow'
+import { markWarpArrival } from '../../lib/warp'
+import './home.css'
+
+/* The home page (from MapaMars pages/HomePage.tsx), with MAPA's own tools listed alongside the globe. */
+
+const features = [
+  {
+    title: 'Explore Mars in 3D',
+    text: 'Drag to spin the planet and scroll to zoom. Hover anywhere on the surface to read its latitude and longitude.',
+    href: '#/globe',
+  },
+  {
+    title: 'Visit landing sites',
+    text: `${landingSites.length} NASA landers and rovers, from Viking 1 to Perseverance, placed at their published coordinates. Pick one to fly the camera there.`,
+    href: '#/globe',
+  },
+  {
+    title: 'Plan a safe Marswalk',
+    text: 'NASA imagery, elevation, slope and science layers at walking scale, with distance, climb, hazards and the way home.',
+    href: '#/plan',
+  },
+  {
+    title: 'Log a mission',
+    text: 'Save a walk with a code like MRS-204. Browse other missions and their crews, join one with its code, and keep a shared log.',
+    href: '#/missions',
+  },
+]
+
+// Matches the text-recede animation in home.css.
+const LEAVE_MS = 900
+
+export function HomePage() {
+  const now = useNow()
+  const { msd, mtc } = marsClock(now)
+  const lightMinutes = earthMarsDistanceAU(now) * AU_LIGHT_MIN
+  const [phase, setPhase] = useState<'idle' | 'leaving' | 'warping'>('idle')
+
+  useEffect(() => {
+    if (phase !== 'leaving') return
+    const id = setTimeout(() => setPhase('warping'), LEAVE_MS)
+    return () => clearTimeout(id)
+  }, [phase])
+
+  // Build the globe texture and moon shapes ahead of time so the globe can appear the instant the jump
+  // ends. One piece per idle moment, so no single task holds up a click.
+  useEffect(() => {
+    // NASA's Mars model starts downloading first; it decodes in the background while the rest are built
+    const jobs = [
+      () => void loadMarsModel().catch(() => {}),
+      getMarsTextures,
+      () => void loadMoonGeometry('phobos').catch(() => {}),
+      () => void loadMoonGeometry('deimos').catch(() => {}),
+      () => void loadVikingLander().catch(() => {}),
+      // The real sky's star catalogue
+      () => void loadStars().catch(() => {}),
+    ]
+    // Safari has no requestIdleCallback; a short timeout does the same job there
+    const hasIdle = 'requestIdleCallback' in window
+    const idle = (cb: () => void) => (hasIdle ? window.requestIdleCallback(cb, { timeout: 1000 }) : window.setTimeout(cb, 50))
+    const cancelIdle = (id: number) => (hasIdle ? window.cancelIdleCallback(id) : window.clearTimeout(id))
+    let idleId = 0
+    const next = () => {
+      const job = jobs.shift()
+      if (!job) return
+      job()
+      idleId = idle(next)
+    }
+    const startId = window.setTimeout(() => {
+      idleId = idle(next)
+    }, 300)
+    return () => {
+      clearTimeout(startId)
+      cancelIdle(idleId)
+    }
+  }, [])
+
+  const openGlobe = (e: MouseEvent<HTMLAnchorElement>) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    e.preventDefault()
+    setPhase('leaving')
+  }
+
+  const arrive = useCallback(() => {
+    markWarpArrival()
+    window.location.hash = '#/globe'
+  }, [])
+
+  return (
+    <main className={`home${phase !== 'idle' ? ' is-leaving' : ''}`}>
+      <section className="hero">
+        <div className="hero-copy">
+          <h1>Mars, up close.</h1>
+          <p>An interactive 3D globe of the red planet, and a NASA-data map for planning a walk on it. Find where every lander touched down and see what time it is there right now.</p>
+          <div className="hero-actions">
+            <a className="button" href="#/globe" onClick={openGlobe}>
+              Open the globe →
+            </a>
+            <a className="button-outline" href="#/plan">
+              Plan a Marswalk
+            </a>
+          </div>
+        </div>
+      </section>
+      {phase === 'warping' && <Hyperspace onDone={arrive} />}
+
+      <section className="features" aria-label="What you can do">
+        {features.map((f, i) => (
+          <a key={f.title} className="feature" href={f.href}>
+            <span className="feature-num">0{i + 1}</span>
+            <h2>{f.title}</h2>
+            <p>{f.text}</p>
+          </a>
+        ))}
+      </section>
+
+      <section className="now" aria-label="Right now on Mars">
+        <h2>Right now on Mars</h2>
+        <dl className="stats">
+          <div>
+            <dt>Sol</dt>
+            <dd>{Math.floor(msd).toLocaleString('en-US')}</dd>
+          </div>
+          <div>
+            <dt>Mars time</dt>
+            <dd>{formatHours(mtc)}</dd>
+          </div>
+          <div>
+            <dt>Signal delay</dt>
+            <dd>~{lightMinutes.toFixed(1)} min</dd>
+          </div>
+        </dl>
+        <p className="note">Mars time is Coordinated Mars Time, the Martian equivalent of UTC. Signal delay is an estimate.</p>
+      </section>
+    </main>
+  )
+}

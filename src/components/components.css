@@ -220,3 +220,21 @@
   background: transparent;
   cursor: text;
 }
+
+/* A white pill "back" button (the globe's close-up and the missions pages) */
+.site-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 16px 0 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--black);
+  background: var(--white);
+  border: 0;
+  border-radius: 999px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.site-back:hover { background: var(--gray-1); }
