@@ -346,6 +346,12 @@ function MissionSummary({ mission, knownCode, shown, onChanged, onDeleted }: Pro
           </ol>
 
           <dl className="kv mission-dates">
+            <dt>Crew</dt>
+            <dd>
+              <button type="button" className="link-button mission-crew-link" onClick={() => setTab('crew')}>
+                {[`${mission.commander} (lead)`, ...(crew ?? []).map((c) => c.username)].join(', ')}
+              </button>
+            </dd>
             {mission.date && (
               <>
                 <dt>Planned</dt>

@@ -61,6 +61,17 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.13 · Clicking a mission on the map opens its view
+
+**Changed**
+- On the 2D map, clicking a mission (its marker, its route, or its name in the missions list) opens the mission view straight away: the map locks onto its route, with Walk it in EVA, Edit route, the summary, crew and log. The 3D globe keeps its mission card, which flies there first.
+- The mission view shows only that mission's route; other missions' markers are left off.
+- The summary names the people involved (the lead and the crew); clicking them opens the Crew tab.
+
+**Not yet verified in a browser**; type check and lint pass.
+
+---
+
 ## 2026-11-15 · v0.5.12 · Missions open on the planning map
 
 **Changed**
