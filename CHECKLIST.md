@@ -245,7 +245,7 @@ The 17 tasks in the three Todo images, with the owner from the section headings 
 - [ ] **3. Add point-of-view photos at waypoints and destinations** · Shin (§2). Perseverance raw images near each stop; only the unused `SITE.rawImagesUrl` exists today.
 - [x] **4. Add rock and boulder hazards** · Jim. Done 2026-11-15: HiRISE-derived rocky-ground map (`public/data/site-obstacles.bin`, built by `scripts/build-obstacles.mjs`) with A* costs; Jezero only, where the 1 m DTMs exist
 - [ ] **5. Get sharper imagery at walking scale** · Shin (§2). THEMIS 100 m/px is the sharpest; needs a CTX or HiRISE source that serves tiles, or a local tile set (P3).
-- [ ] **6. Source the mobility and safety assumptions** · everyone, with Jim for the A* costs. Walking speed 2 km/h, climb penalty, slope bands, 6 h EVA and the A* costs need citations or a team decision (A1–A4).
+- [ ] **6. Source the mobility and safety assumptions** · everyone, with Jim for the A* costs. Researched 2026-11-15 in `docs/assumptions-sources.md`: 2 km/h and 6 h are in line with Apollo and ISS figures, the climb penalty has no source, and NASA's 20° suit slope figure conflicts with the 25° impassable limit. **Still needs the team's decision** (A1–A4); two figures need opening and confirming.
 
 ### Decisions the team still has to make
 - [ ] **7. Confirm the demo site** · Jastini (§5). Jezero is a placeholder; Gale and its boxwork is the alternative (D1).
