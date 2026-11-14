@@ -11,6 +11,7 @@ import { formatDistance } from '../../lib/format'
 import { NextWaypoint } from './NextWaypoint'
 import { ReturnEstimate } from './ReturnEstimate'
 import { HazardAlert } from './HazardAlert'
+import { MAP_PLAN } from '../../lib/missionPaths'
 import './eva.css'
 
 const KEY_STEP_M = 50
@@ -51,7 +52,7 @@ export function EvaView() {
     return (
       <div className="eva eva-empty">
         <p className="eva-empty-text">No route planned yet.</p>
-        <Button size="large" onClick={() => (window.location.hash = '#/plan')}>Plan a Marswalk</Button>
+        <Button size="large" onClick={() => (window.location.hash = MAP_PLAN)}>Plan a Marswalk</Button>
       </div>
     )
   }
@@ -96,7 +97,7 @@ export function EvaView() {
         <div className="eva-actions">
           <Button size="large" onClick={() => { setReturning(false); jumpToNext() }}>Next</Button>
           <Button size="large" variant="ghost" onClick={() => { setReturning(false); jumpToNext('science') }}>Science</Button>
-          <Button size="large" variant="ghost" onClick={() => (window.location.hash = '#/plan')}>Route</Button>
+          <Button size="large" variant="ghost" onClick={() => (window.location.hash = MAP_PLAN)}>Route</Button>
           <Button size="large" variant="ghost" aria-pressed={returning} onClick={() => setReturning((r) => !r)}>
             {returning ? 'Resume route' : 'Return to base'}
           </Button>

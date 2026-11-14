@@ -28,29 +28,6 @@
 .page-account .nav { background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
 .nav-brand { color: var(--white); text-decoration: none; font-weight: 600; letter-spacing: 0.2em; font-size: 14px; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8); }
 
-/* Explore / Plan Marswalk / EVA: a segmented pill, lit on the current mode */
-.mode-switch {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: auto;
-  padding: 3px;
-  background: rgba(10, 10, 10, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 999px;
-}
-.mode-switch a {
-  padding: 7px 14px;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: var(--gray-1);
-  text-decoration: none;
-  border-radius: 999px;
-}
-.mode-switch a:hover { color: var(--white); }
-.mode-switch a.is-on { color: var(--black); background: var(--white); }
-
 /* The menu: a round button at the top right that slides a sidebar in from the right (NavMenu) */
 .nav-menu-btn {
   display: inline-flex;
@@ -430,8 +407,6 @@
 
 @media (max-width: 720px) {
   .nav { flex-wrap: wrap; row-gap: 10px; padding: 12px 16px; }
-  .mode-switch { order: 3; width: 100%; grid-auto-columns: 1fr; }
-  .mode-switch a { padding: 7px 6px; font-size: 10px; text-align: center; }
   .live-clock { top: 108px; left: 16px; }
   /* On phones the card sits above the tools instead of beside the map */
   .info-card { top: auto; bottom: 86px; right: 16px; left: 16px; width: auto; max-height: 45%; }
@@ -453,9 +428,8 @@
 .mode-eva .tool-dock { top: 72px; bottom: auto; left: auto; right: 24px; align-items: flex-end; }
 .mode-eva .tool-dock-row { display: none; }
 
-/* Over the globe and the site map the menu sits closer to the edge, as on the idea bank's globe page */
-.page-globe .nav,
-.page-map .nav { padding-right: 24px; }
+/* Over the globe the menu sits closer to the edge, as on the idea bank's globe page */
+.page-globe .nav { padding-right: 24px; }
 
 /* Scrolling pages: the idea bank's 4 px scroll bar runs beside its menu bar, so the ☰ sits 4 px further in */
 .page-home .nav,

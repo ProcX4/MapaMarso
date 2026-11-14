@@ -20,12 +20,12 @@ export const toOpenMission = (m: Mission): OpenMission => ({
 
 export type CodeLoad = { code: string | null; status: 'idle' | 'loading' | 'ready' | 'notfound' | 'error' | 'off'; error?: string }
 
-/** Opens the mission named in the address (#/plan/ABC-123) and puts its route on the map. */
+/** Opens the mission named in the address (#/globe/2d/plan/ABC-123) and puts its route on the map. */
 export function useMissionFromCode(): CodeLoad {
   const hash = useHash()
   const { state, dispatch } = useMarswalk()
   const { available } = useAuth()
-  const raw = hash.match(/^#\/plan\/([A-Za-z0-9-]{1,12})$/)?.[1]?.toUpperCase() ?? null
+  const raw = hash.match(/^#\/globe\/2d\/plan\/([A-Za-z0-9-]{1,12})$/)?.[1]?.toUpperCase() ?? null
   const code = raw && MISSION_CODE_PATTERN.test(raw) ? raw : null
   const loaded = state.mission?.code === code
   const [result, setResult] = useState<CodeLoad>({ code: null, status: 'idle' })

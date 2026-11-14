@@ -31,7 +31,7 @@ export function AboutPage() {
             MAPA, the Marswalk Analysis &amp; Planning Assistant, turns NASA's separate Mars datasets into one layered map for planning a safe,
             scientifically useful walk around the habitat, then following it on foot.
           </p>
-          <a className="button" href="#/plan">Plan a Marswalk →</a>
+          <a className="button" href="#/globe/2d/plan">Plan a Marswalk →</a>
         </div>
       </section>
 

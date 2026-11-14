@@ -1,16 +1,42 @@
 import { landingSites, landmarks } from '../data/mars'
+import type { Mode } from '../state/types'
 
 /*
  * Addresses and list helpers shared by the globe and the missions pages (from MapaMars pages/missions/shared.ts
  * and pages/globe/paths.ts). Kept in lib/ because features may not import from each other (Frontend Spec §3).
  */
 
-// #/globe      the 3D globe
-// #/globe/2d   the flat map
-// #/globe/new  plan a new mission on the flat map, full screen
+// #/globe                 the 3D globe
+// #/globe/2d              the 2D map: the whole planet on NASA's layers, with site analysis (Explore)
+// #/globe/2d/plan[/CODE]  the same map with the Marswalk planner open (and a saved mission's route)
+// #/globe/2d/eva          the same map following the planned route on foot
+// #/globe/new             plan a new mission on the flat map, full screen
 export const GLOBE_3D = '#/globe'
 export const GLOBE_2D = '#/globe/2d'
+export const MAP_PLAN = '#/globe/2d/plan'
+export const MAP_EVA = '#/globe/2d/eva'
 export const GLOBE_PLAN = '#/globe/new'
+
+/** Where a saved Marswalk opens: the 2D map with its route in the planner. */
+export const planPath = (code: string) => `${MAP_PLAN}/${code}`
+
+/** Which of the 2D map's tools an address opens: site analysis, the Marswalk planner or EVA. */
+export function mapModeOf(hash: string): Mode {
+  if (hash === MAP_PLAN || hash.startsWith(`${MAP_PLAN}/`)) return 'plan'
+  if (hash === MAP_EVA) return 'eva'
+  return 'explore'
+}
+
+/**
+ * The site map used to be its own tab (#/explore, #/plan, #/plan/CODE, #/eva); it now lives in the globe's
+ * 2D view. Old addresses, such as shared mission links, are read as their new ones.
+ */
+export function currentAddress(hash: string) {
+  if (hash === '#/explore') return GLOBE_2D
+  if (hash === '#/eva') return MAP_EVA
+  if (hash === '#/plan' || hash.startsWith('#/plan/')) return MAP_PLAN + hash.slice('#/plan'.length)
+  return hash
+}
 
 /** Places to start a mission from: the famous landmarks, then every landing site. */
 export const presets = [

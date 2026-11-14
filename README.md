@@ -23,7 +23,7 @@ Tracking files:
 
 ```bash
 npm install
-npm run dev             # http://localhost:5173  (#/ home, #/explore site map; proxies run inside Vite)
+npm run dev             # http://localhost:5173  (#/ home, #/globe/2d NASA map and planner; proxies run inside Vite)
 npm run lint
 npm run build
 npm run preview         # test the production build + CSP locally
@@ -53,7 +53,7 @@ api/horizons.ts            JPL Horizons proxy (moon and orbiter positions)
 supabase/schema.sql        Accounts and missions tables, with Row Level Security
 src/config/                Demo site, assumptions, Trek allow-list, tour steps
 src/state/                 Reducer (the one place state changes), auth and derived contexts
-src/map/                   The single OpenLayers site map, Mars projection, layer registry
+src/map/                   The OpenLayers NASA map (the globe page's 2D view), Mars projection, layer registry
 src/globe/                 three.js globe, moons, orbiters, landing-site close-up, flat map of Mars
 src/data/                  Elevation (COG), slope worker, route maths, Mars time, Sun and daylight
 src/services/              Supabase calls: accounts and missions

@@ -50,6 +50,8 @@ export const LAYERS: LayerDef[] = [
     },
     defaultVisible: true,
     defaultOpacity: 1,
+    // Site-scale imagery: zoomed out to the whole planet, the colour backdrop shows instead
+    minZoom: 5,
     placeholder: 'Regional stand-in until a HiRISE/CTX site mosaic is chosen',
   },
   {

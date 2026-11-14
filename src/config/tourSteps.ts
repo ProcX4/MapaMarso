@@ -15,8 +15,8 @@ export function tourSteps(mode: Mode): TourStep[] {
       { target: '.planner-panel .segmented', title: 'Round trip or one way', text: 'A round trip finishes back at the habitat; the return walk then counts towards the EVA time.' },
       { target: '.plan-stats', title: 'Route stats', text: 'Distance, walking time, climb and the steepest slope. Hover a tag to see what an estimate assumes.' },
       { target: '.plan-bottom', title: 'Elevation profile', text: 'Hover the profile to see the matching point on the map, and the other way round. Steep sections are drawn in caution colours.' },
-      { target: '.mission-save', title: 'Save and share', text: 'Sign in to save the route as a mission with a code like MRS-204, then open it anywhere at #/plan/MRS-204.' },
-      { target: '.mode-switch', title: 'Walk it', text: 'Switch to EVA to follow the route in a simplified, high-contrast view.' },
+      { target: '.mission-save', title: 'Save and share', text: 'Sign in to save the route as a mission with a code like MRS-204, then open it anywhere at #/globe/2d/plan/MRS-204.' },
+      { target: '.tool-dock-toggle', title: 'Walk it', text: 'EVA in the tools follows the route in a simplified, high-contrast view; Plan Marswalk closes the planner.' },
       ...end,
     ]
   }
@@ -34,7 +34,7 @@ export function tourSteps(mode: Mode): TourStep[] {
     { target: '.layers-link', title: 'Layers', text: 'Turn NASA layers on and off: imagery, elevation, slope and science. Each one says where its data comes from.' },
     { target: '.explore-search', title: 'Search', text: 'Find a named place at the site and fly to it.' },
     { target: '.map', title: 'Site analysis', text: 'Click anywhere on the map for its coordinates, elevation, slope, geology and hazards, then add it to your route.' },
-    { target: '.mode-switch', title: 'Modes', text: 'Explore the site, plan a Marswalk, then walk it in EVA mode.' },
+    { target: '.tool-dock-toggle', title: 'Modes', text: 'Plan a Marswalk or walk it in EVA mode from the tools.' },
     ...end,
   ]
 }
@@ -76,11 +76,15 @@ export function globeTourSteps(view: 'globe' | 'map' | 'site', credits: string[]
   }
   if (view === 'map') {
     return [
-      { title: 'The flat map', text: 'All of Mars at once. Drag to pan, scroll to zoom, and click a mission route to see it.' },
+      { title: 'The 2D map', text: 'All of Mars at once on NASA layers. Drag to pan, scroll to zoom right down to the demo site, and click a mission route to see it.' },
+      { target: '.layers-link', title: 'Layers', text: 'Turn NASA layers on and off: imagery, elevation, slope and science. Each one says where its data comes from.' },
+      { target: '.explore-search', title: 'Search', text: 'Find a named place at the demo site and fly to it.' },
+      { target: '.map', title: 'Site analysis', text: 'Click open ground for its coordinates, elevation, slope, geology and hazards, then add it to your route.' },
       { target: '.view-switch', title: '3D or 2D', text: 'Switch back to the globe.' },
       { target: '.daylight-bar', title: 'Day and night', text: 'Play day and night, or drag the ring along the line through the next sol; Now returns to the present.' },
       { target: '.catalog-link', title: 'Catalog', text: 'Mars, its moons and every landing site, with filters and a search. Pick one to go to it.' },
       { target: '.missions-link', title: 'Missions', text: 'Lists ongoing or completed missions, with a search. Pick one to see its route; All routes in the tools shows every route at once.' },
+      { target: '.tool-dock-toggle', title: 'Tools', text: 'All mission routes, Plan Marswalk (stops, profile, hazards and science), EVA, recentring on the demo site and fitting the route.' },
       ...end.slice(1),
     ]
   }

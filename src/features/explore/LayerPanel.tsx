@@ -59,23 +59,42 @@ function LayerRow({ def }: { def: LayerDef }) {
   )
 }
 
+type PanelProps = {
+  /** Open state kept by the page, so it can make way for the page's other panels; left out, the panel keeps its own */
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  /** Leave out the panel's own button (the page shows LayersButton elsewhere) */
+  button?: boolean
+  /** Another card has the corner, so the list stays tucked away */
+  blocked?: boolean
+}
+
+/** The Layers button, lit while the list is out. */
+export function LayersButton({ open, onClick }: { open: boolean; onClick: () => void }) {
+  return (
+    <button type="button" className={`hud-link layers-link${open ? ' is-open' : ''}`} aria-expanded={open} aria-controls="layers-panel" onClick={onClick}>
+      <Icon name="layers" size={17} />
+      Layers
+    </button>
+  )
+}
+
 /**
  * Layers, top right under the menu (the MapaMars Missions-panel pattern): a button that slides the list
  * out. The list makes way for the site card, which opens in the same corner.
  */
-export function LayerPanel() {
+export function LayerPanel({ open: openProp, onOpenChange, button = true, blocked = false }: PanelProps) {
   const { state } = useMarswalk()
   // Open by default on wide screens, so first-time visitors see the NASA layers straight away
-  const [open, setOpen] = useState(() => !window.matchMedia('(max-width: 720px)').matches)
-  const shown = open && !state.selected
+  const [ownOpen, setOwnOpen] = useState(() => !window.matchMedia('(max-width: 720px)').matches)
+  const open = openProp ?? ownOpen
+  const setOpen = onOpenChange ?? setOwnOpen
+  const shown = open && !state.selected && !blocked
   const visible = state.layers.filter((l) => l.visible).length
 
   return (
-    <div className="layers-hud">
-      <button type="button" className={`hud-link layers-link${shown ? ' is-open' : ''}`} aria-expanded={shown} aria-controls="layers-panel" onClick={() => setOpen(!shown)}>
-        <Icon name="layers" size={17} />
-        Layers
-      </button>
+    <div className={`layers-hud${button ? '' : ' is-buttonless'}`}>
+      {button && <LayersButton open={shown} onClick={() => setOpen(!shown)} />}
       <section id="layers-panel" className={`hud-panel layers-panel${shown ? ' is-open' : ''}`} aria-label="Layers" inert={!shown}>
         <div className="hud-panel-head">
           <span>NASA layers</span>

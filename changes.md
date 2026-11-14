@@ -21,6 +21,41 @@ Entry template:
 
 ---
 
+## 2026-11-14 · v0.4.0 · Site map merged into the globe's 2D map; its tab removed
+
+The site map (Explore / Plan Marswalk / EVA) was a separate tab with its own map. Its functions now all live on the globe's 2D map, and the tab is gone.
+
+**Changed: the 2D map is MAPA's NASA map**
+- `#/globe/2d` now uses the OpenLayers NASA map (Mars Trek tiles, site DTM and slope, geology, science targets) instead of the canvas flat map. It opens on the whole planet and zooms right down to the demo site.
+- What the 2D map already did is kept on the new map:
+  - every mission's start diamond, and its route when picked (or All routes);
+  - a picked landing site's marker;
+  - the night side for the time shown, the sunrise/sunset line and where the Sun is overhead;
+  - Catalog, Missions, day-and-night playback and the 3D/2D switch.
+- Under every layer sits a global colour backdrop, the Viking MDIM mosaic as the old flat map used, so the planet is never blank. The THEMIS layer shows from zoom 5 (site scale) up. The view wraps east–west and stops at the poles.
+
+**Added on the 2D map (from the removed tab)**
+- **Layers** button in the missions row, opening the NASA layers list. One of the two lists opens at a time.
+- **Search** (site place names) beside Catalog.
+- Clicking open ground opens the **site analysis** card, which is where you add waypoints. Clicking a route still picks its mission.
+- Tools: **Plan Marswalk** opens the planner (stops, round trip, stats, EVA limit, science opportunities, save, elevation profile) over the same map. The other tools are **EVA**, **Recentre on site**, **Fit route** and **New route**.
+- New addresses: `#/globe/2d/plan`, `#/globe/2d/plan/<code>` for saved missions, and `#/globe/2d/eva`. The tour covers the new controls.
+
+**Removed**
+- The Explore / Plan Marswalk / EVA pill, and their menu entries. `#/explore`, `#/plan`, `#/plan/<code>` and `#/eva` still work: they open the matching 2D-map address, and the address bar is rewritten.
+- The site map mounted under every page in `App.tsx`. It is now mounted only by the 2D view.
+
+**Spec deviations**
+- Frontend Spec routes: the site map is no longer a page of its own, and the modes are reached from the 2D map's tools instead of a mode switch.
+- Frontend Spec §3: `GlobePage` imports the explore, plan and EVA panels, a feature importing features. It already did this for `MissionForm`.
+
+**Verified**
+- Type check, lint and production build pass.
+- Screenshots at 1400 × 900:
+  - `#/globe/2d`: whole planet, night side, terminator, habitat marker, Layers / Search / Catalog / Missions;
+  - `#/globe/2d/plan` and the old `#/plan`: planner panel, NASA layers and elevation profile;
+  - `#/globe/2d/eva`: the "No route planned yet" screen.
+
 ## 2026-11-14 · v0.3.1 · UI matched 1:1 with the reference site (mapa-mars.vercel.app)
 
 Compared screenshot by screenshot against the reference (its deployed site and its repository build, which are the same) and fixed every difference on the pages they share. MAPA's own screens and functions from the specs are all kept.
