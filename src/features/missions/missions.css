@@ -193,3 +193,10 @@
 .mission-panel .mission-log-panel h2 { display: none; }
 .mission-lead { margin-top: 0; padding-bottom: 16px; }
 .mission-crew-link { font: inherit; text-align: left; }
+.mission-layers { display: flex; flex-direction: column; gap: 14px; }
+.mission-layers fieldset { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; border: 0; }
+.mission-layers legend { margin-bottom: 6px; padding: 0; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-2); }
+.mission-layers label { display: flex; align-items: flex-start; gap: 10px; padding: 6px 8px; font-size: 13px; line-height: 1.4; color: var(--gray-1); border-radius: 8px; cursor: pointer; }
+.mission-layers label:hover { background: rgba(255, 255, 255, 0.04); }
+.mission-layers label.is-on { color: var(--white); }
+.mission-layers input { flex: none; margin-top: 2px; accent-color: var(--ok); }

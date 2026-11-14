@@ -67,6 +67,7 @@ Entry template:
 - On the 2D map, clicking a mission (its marker, its route, or its name in the missions list) opens the mission view straight away: the map locks onto its route, with Walk it in EVA, Edit route, the summary, crew and log. The 3D globe keeps its mission card, which flies there first.
 - The mission view shows only that mission's route; other missions' markers are left off.
 - The summary names the people involved (the lead and the crew); clicking them opens the Crew tab.
+- A **Layers** tab in the mission panel switches the NASA layers over the route on and off, grouped as Topographic, Optical and Spectral (the full layer list with opacity and sources stays behind the Layers button).
 
 **Not yet verified in a browser**; type check and lint pass.
 
