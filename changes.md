@@ -21,6 +21,25 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.3 · Plain-language layer instructions; zoom for rover photos
+
+**Changed: the layer panel explains itself**
+- Every layer has a short **how to use** line in plain words under its name: what the colours mean, when it shows, what to do with it (`howTo` in `src/map/layers/registry.ts`). The three group notes are rewritten the same way.
+- **Live hints** when a switched-on layer can't be seen from where you are: "Zoomed out too far to show it: zoom in closer", "Too blurry this close: zoom out to read it", or, for HiRISE away from Jezero, "Not in this part of Mars" with a **Go to Jezero** button that flies there.
+- The technical details (instrument, mission, resolution, coverage) are folded under a **Source** toggle on each row.
+
+**Added: zoom in the rover photo viewer**
+- Scroll or pinch to zoom toward the pointer, drag to look round, double-click to zoom in or back out, − / + / Fit buttons, and the + − 0 keys. Arrows still step between photos.
+- The viewer opens on NASA's 1,200 px copy and swaps in the **full-resolution original** the first time you zoom (`fullUrl`, from the feed's `full_res`). Zoom stops at twice the photo's own detail, so it never goes blocky.
+
+**Verified (headless Chrome, real mouse and keys)**
+- Optical layers through the proxy at Jezero: Viking (zoom 0–7), MOC (0–6), CTX (6–12), HiRISE (12–17) all serve images; flying in, CTX takes over at zoom 10 and HiRISE at zoom 12+, with no failed tiles.
+- CTX has gaps at its sharpest zoom (Esri answers 404 itself, e.g. parts of Valles Marineris and ~70°N); the layer underneath shows there, and its instructions say so.
+- Panel zoomed out: CTX says to zoom in; HiRISE says it only covers one area and offers Go to Jezero, which flies there and the hints clear.
+- Photo viewer: wheel zoom to the cap, drag, Fit, double-click, + button and 0 key all work; the original (1648 × 1200 for a Mastcam-Z frame) replaces the 1200 px copy and the cap rises from 239 % to 329 %.
+
+---
+
 ## 2026-11-15 · v0.5.2 · Topographic: route options, safety envelope, roughness, safer return
 
 **Added**

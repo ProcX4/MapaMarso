@@ -8,9 +8,33 @@ import type { LatLon, LngLat } from '../state/types'
 
 let current: Map | null = null
 
+/** Where the view settled last (zoom and centre), for panels that react to it; null with no map */
+export type MapViewInfo = { zoom: number; center: LngLat } | null
+let viewInfo: MapViewInfo = null
+const listeners = new Set<() => void>()
+
+function viewChanged() {
+  const view = current?.getView()
+  const center = view?.getCenter()
+  viewInfo = view && center ? { zoom: view.getZoom() ?? 0, center: [center[0], center[1]] } : null
+  listeners.forEach((l) => l())
+}
+
 export function registerMap(map: Map | null) {
   current = map
+  // Only once a move has finished, so panning doesn't re-render whatever is listening on every frame
+  map?.on('moveend', viewChanged)
+  viewChanged()
 }
+
+/** For useSyncExternalStore: subscribe to the view settling after a move */
+export function subscribeView(listener: () => void) {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
+}
+export const viewSnapshot = () => viewInfo
 
 /** Instant recentre, for following a moving position. */
 export function centerOn(at: LngLat) {

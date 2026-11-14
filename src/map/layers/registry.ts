@@ -10,6 +10,8 @@ export const ROCK_COLOURS = { soft: '#d9b38c', rocky: '#9c6b3c' }
 export type LayerDef = {
   id: string
   name: string // "Slope"
+  /** What it shows and how to use it, in a sentence or two of plain words (the layer panel's first line) */
+  howTo: string
   group: 'topographic' | 'optical' | 'spectral'
   kind: 'wmts' | 'xyz' | 'cog' | 'vector'
   source: string // Trek layer ID, or a path under public/
@@ -31,7 +33,12 @@ export type LayerDef = {
   minZoom?: number // e.g. HiRISE only when zoomed in (exclusive: shows from minZoom + 1)
   maxZoom?: number // deepest zoom the source has tiles for; deeper is upscaled
   /** A layer that covers only part of Mars: the panel says where, and the map asks for no tiles outside bbox */
-  coverage?: { note: string; bbox?: [west: number, south: number, east: number, north: number] }
+  coverage?: {
+    note: string
+    bbox?: [west: number, south: number, east: number, north: number]
+    /** A button that flies there, for a layer that only covers one place */
+    goTo?: { label: string; at: [lon: number, lat: number]; zoom: number }
+  }
   /** Walking-scale imagery: drawn above the other imagery, which it only replaces once zoomed in past minZoom */
   walkScale?: boolean
   legend?: { label: string; color: string }[]
@@ -40,9 +47,9 @@ export type LayerDef = {
 }
 
 export const GROUPS: { id: LayerDef['group']; label: string; note: string }[] = [
-  { id: 'topographic', label: 'Topographic', note: 'Height and shape of the ground, and the A* safe path round steep and deep terrain' },
-  { id: 'optical', label: 'Optical', note: 'The surface in visible light' },
-  { id: 'spectral', label: 'Spectral', note: 'Infrared, mineral, dust and albedo maps' },
+  { id: 'topographic', label: 'Topographic', note: 'The shape of the ground: how high, how steep, and the safest way across it' },
+  { id: 'optical', label: 'Optical', note: 'Photos of the surface. Zoom in and sharper photos take over by themselves' },
+  { id: 'spectral', label: 'Spectral', note: 'What the ground is made of and how warm it is: heat, mineral and dust maps' },
 ]
 
 const trek = (id: TrekLayerId) => ({ kind: 'xyz' as const, source: id, maxZoom: TREK_LAYERS[id].maxZoom })
@@ -54,6 +61,7 @@ export const LAYERS: LayerDef[] = [
   {
     id: 'elevation-color',
     name: 'Elevation (MOLA + HRSC colour hillshade)',
+    howTo: 'Colours show height: blue is low ground, then green, yellow and red, up to white on the highest. Lower the opacity to see the surface through it.',
     group: 'topographic',
     ...trek('Mars_MOLA_blend200ppx_HRSC_ClrShade_clon0dd_200mpp_lzw'),
     category: 'observed',
@@ -69,6 +77,7 @@ export const LAYERS: LayerDef[] = [
   {
     id: 'slope',
     name: 'Steep, deep and rocky ground',
+    howTo: 'Shows where walking gets hard around your route. Yellow and orange are steep, red is too steep to cross, blue is low-lying ground, tan and brown are rocky. Add stops in Plan Marswalk to see it along your walk.',
     group: 'topographic',
     kind: 'cog',
     source: 'route',
@@ -93,6 +102,7 @@ export const LAYERS: LayerDef[] = [
   {
     id: 'reach',
     name: 'Safety envelope',
+    howTo: 'The green area is how far you can walk from the habitat and still get back before the EVA ends. A stop outside it is too far for one walk.',
     group: 'topographic',
     kind: 'cog',
     source: 'route',
@@ -108,6 +118,7 @@ export const LAYERS: LayerDef[] = [
   {
     id: 'mola-roughness',
     name: 'Surface roughness (MOLA)',
+    howTo: 'Shows which regions are bumpy and which are smooth, kilometre by kilometre. Best for comparing regions when zoomed out; it blurs as you zoom in.',
     group: 'topographic',
     ...trek('mola_roughness'),
     category: 'observed',
@@ -122,6 +133,7 @@ export const LAYERS: LayerDef[] = [
   {
     id: 'route',
     name: 'Safe path (A*)',
+    howTo: 'The path MAPA plans between your stops, going round steep, deep and rocky ground. Add stops from the site card (click the map) or in Plan Marswalk, then choose Safest or Most direct there.',
     group: 'topographic',
     kind: 'vector',
     source: 'state',
@@ -136,6 +148,7 @@ export const LAYERS: LayerDef[] = [
   {
     id: 'viking-color',
     name: 'Colour mosaic (Viking MDIM 2.1)',
+    howTo: 'A colour photo of the whole planet. Best when zoomed out; as you zoom in to a site it blurs and the sharper CTX and HiRISE photos take over.',
     group: 'optical',
     ...trek('Mars_Viking_MDIM21_ClrMosaic_global_232m'),
     category: 'observed',
@@ -151,6 +164,7 @@ export const LAYERS: LayerDef[] = [
   {
     id: 'moc-color',
     name: 'Colour atlas (MGS MOC)',
+    howTo: 'Another colour photo of the whole planet, from a later orbiter. Best when zoomed out; it blurs as you zoom in.',
     group: 'optical',
     ...trek('msss_atlas_simp_clon'),
     category: 'observed',
@@ -166,6 +180,7 @@ export const LAYERS: LayerDef[] = [
   {
     id: 'ctx',
     name: 'MRO CTX mosaic (~5 m/px)',
+    howTo: 'Black-and-white photos sharp enough to see small craters, dunes and channels. It appears by itself once you zoom in to about the size of a single crater. A few small patches have no photo yet; the layer underneath shows there.',
     group: 'optical',
     ...esri('OnMars_CTX'),
     category: 'observed',
@@ -190,6 +205,7 @@ export const LAYERS: LayerDef[] = [
   {
     id: 'hirise',
     name: 'MRO HiRISE (25 cm/px, Jezero only)',
+    howTo: 'The sharpest photos MAPA has: ripples, cracks and boulders a metre across. Only over the Jezero landing area: go there and keep zooming in.',
     group: 'optical',
     ...trek('JEZ_hirise_soc_006_orthoMosaic_25cm_Eqc_latTs0_lon0_first_dd'),
     category: 'observed',
@@ -211,6 +227,7 @@ export const LAYERS: LayerDef[] = [
     coverage: {
       note: 'Jezero landing area only (77.22–77.58°E, 18.31–18.67°N); elsewhere CTX shows. Shows from zoom 12.',
       bbox: [77.2229331, 18.3067994, 77.583964, 18.669315],
+      goTo: { label: 'Go to Jezero', at: [77.4508, 18.4447], zoom: 14 },
     },
     walkScale: true,
   },
@@ -218,6 +235,7 @@ export const LAYERS: LayerDef[] = [
   {
     id: 'themis-day-ir',
     name: 'Daytime infrared (THEMIS)',
+    howTo: 'A daytime heat picture: bright ground is warmer, dark ground cooler, which brings out slopes and textures. Appears once you zoom in a little.',
     group: 'spectral',
     ...trek('THEMIS_DayIR_ControlledMosaics_100m_v2_oct2018'),
     category: 'observed',
@@ -235,6 +253,7 @@ export const LAYERS: LayerDef[] = [
   {
     id: 'themis-night-ir',
     name: 'Night-time infrared (THEMIS)',
+    howTo: 'A night-time heat picture: bright ground holds its heat after dark, which usually means rock; dark ground is dust or sand. Appears once you zoom in a little.',
     group: 'spectral',
     ...trek('THEMIS_NightIR_ControlledMosaics_100m_v2_oct2018'),
     category: 'observed',
@@ -248,16 +267,17 @@ export const LAYERS: LayerDef[] = [
     defaultOpacity: 1,
     minZoom: 5,
   },
-  tes('tes-thermal-inertia', 'Thermal inertia (TES)', 'TES_Thermal_Inertia'),
-  tes('tes-pyroxene', 'High-calcium pyroxene (TES)', 'TES_Clinopyroxene'),
-  tes('tes-plagioclase', 'Plagioclase (TES)', 'TES_Plagioclase'),
-  tes('tes-sheet-silicates', 'Sheet silicates and glass (TES)', 'TES_Glass_Clay'),
-  tes('tes-dust', 'Dust cover index (TES)', 'TES_Dust', '3.5 km/px'),
-  tes('tes-dust-relief', 'Dust cover index over relief (TES)', 'tes_ruffdust', '3.5 km/px'),
-  tes('tes-albedo', 'Surface albedo (TES)', 'Mars_MGS_TES_Albedo_mosaic_global_7410m', '7.4 km/px'),
+  tes('tes-thermal-inertia', 'Thermal inertia (TES)', 'TES_Thermal_Inertia', 'How fast the ground heats up and cools down: high means rock and bedrock, low means loose dust.'),
+  tes('tes-pyroxene', 'High-calcium pyroxene (TES)', 'TES_Clinopyroxene', 'Where pyroxene, a mineral of volcanic rock, is common.'),
+  tes('tes-plagioclase', 'Plagioclase (TES)', 'TES_Plagioclase', 'Where plagioclase feldspar, a common mineral in volcanic rock, is common.'),
+  tes('tes-sheet-silicates', 'Sheet silicates and glass (TES)', 'TES_Glass_Clay', 'Where clay-like minerals and volcanic glass show up; clays can point to water in the past.'),
+  tes('tes-dust', 'Dust cover index (TES)', 'TES_Dust', 'Where dust blankets the surface and hides the rock underneath.', '3.5 km/px'),
+  tes('tes-dust-relief', 'Dust cover index over relief (TES)', 'tes_ruffdust', 'The dust map laid over shaded relief, so you can see which landforms are dusty.', '3.5 km/px'),
+  tes('tes-albedo', 'Surface albedo (TES)', 'Mars_MGS_TES_Albedo_mosaic_global_7410m', 'How bright the ground is: bright areas are usually dusty, dark areas sand or bare rock.', '7.4 km/px'),
   {
     id: 'science-targets',
     name: 'Science targets',
+    howTo: 'Green dots mark places worth visiting, each with a reason. Click one to see why, and add it to your route as a science stop.',
     group: 'spectral',
     kind: 'vector',
     source: '/data/science-targets.geojson',
@@ -275,10 +295,11 @@ export const LAYERS: LayerDef[] = [
 ]
 
 /** A global TES map: coarse (Trek serves it to zoom 1, or 2 for the dust-over-relief map), so it's laid over the others half see-through */
-function tes(id: string, name: string, product: TrekLayerId, resolution?: string): LayerDef {
+function tes(id: string, name: string, product: TrekLayerId, howTo: string, resolution?: string): LayerDef {
   return {
     id,
     name,
+    howTo: `${howTo} A whole-planet map: zoom out to read it, it is very blurry close up.`,
     group: 'spectral',
     ...trek(product),
     category: 'observed',
