@@ -13,7 +13,7 @@ import { EVA } from '../../config/assumptions'
 import { NextWaypoint } from './NextWaypoint'
 import { ReturnEstimate } from './ReturnEstimate'
 import { HazardAlert } from './HazardAlert'
-import { MAP_PLAN } from '../../lib/missionPaths'
+import { go, MAP_PLAN, type BackTo } from '../../lib/missionPaths'
 import './eva.css'
 
 const KEY_STEP_M = 50
@@ -38,7 +38,8 @@ type Walk = { alongM: number; elapsedMin: number }
  * as the crew walks, the status bar says when it next sets or rises, and the map's night side follows it.
  * MAPA never asks for the device's real location.
  */
-export function EvaView() {
+/** `back`: where EVA was opened from (a mission's view, the planner or the map), for its Back button */
+export function EvaView({ back }: { back: BackTo }) {
   const { state, dispatch } = useMarswalk()
   const route = useRoute()
   const [walk, setWalk] = useState<Walk>({ alongM: 0, elapsedMin: 0 })
@@ -159,7 +160,12 @@ export function EvaView() {
     return (
       <div className="eva eva-empty">
         <p className="eva-empty-text">No route planned yet.</p>
-        <Button size="large" onClick={() => (window.location.hash = MAP_PLAN)}>Plan a Marswalk</Button>
+        <Button size="large" onClick={() => go(MAP_PLAN)}>Plan a Marswalk</Button>
+        {back.hash !== MAP_PLAN && (
+          <Button size="large" variant="ghost" onClick={() => go(back.hash)}>
+            {back.label}
+          </Button>
+        )}
       </div>
     )
   }
@@ -269,7 +275,7 @@ export function EvaView() {
           <Button size="large" variant="ghost" aria-pressed={returning} onClick={() => setReturning((r) => !r)}>
             {returning ? 'Resume route' : 'Return to base'}
           </Button>
-          <Button size="large" variant="ghost" onClick={() => (window.location.hash = MAP_PLAN)}>Back to plan</Button>
+          <Button size="large" variant="ghost" onClick={() => go(back.hash)}>{back.label}</Button>
         </div>
         <details className="eva-practice">
           <summary>Practice: drift off the route</summary>

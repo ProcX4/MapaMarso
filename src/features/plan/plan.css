@@ -26,6 +26,10 @@
 @keyframes card-in-left { from { opacity: 0; transform: translateX(-24px); } }
 .planner-panel > * + * { padding-top: 16px; border-top: 1px solid var(--line); }
 .planner-panel > .form-footer { padding-top: 12px; }
+.map-back { align-self: flex-start; padding: 4px 0; font: inherit; font-size: 13px; color: var(--gray-1); background: none; border: 0; cursor: pointer; }
+.map-back:hover { color: var(--white); }
+.map-back:focus-visible { outline: 2px solid var(--white); outline-offset: 2px; border-radius: 4px; }
+.planner-panel > .map-back + * { border-top: 0; padding-top: 0; }
 .planner-head { display: flex; align-items: flex-start; gap: 8px; }
 .planner-head > div { flex: 1; min-width: 0; }
 .planner-head h1 { margin: 2px 0 0; font-size: 22px; font-weight: 500; overflow-wrap: anywhere; }

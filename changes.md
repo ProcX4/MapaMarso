@@ -61,6 +61,20 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.14 · Back buttons that remember where you came from; readable tool buttons
+
+**Fixed**
+- EVA's back button always went to the planner, even when EVA was opened from a mission's view. The 2D map now remembers the addresses visited, so EVA's button says and does **Back to mission**, **Back to plan** or **Back to map**, whichever you came from. Clicking the EVA or Plan Marswalk tool again to close it goes back the same way.
+- The planner shows a Back link at the top of its panel when it was opened from somewhere (e.g. **Edit route** on a mission goes back to the mission).
+- Opened straight from a link, EVA goes back to the planner and the planner to the map.
+
+**Changed**
+- Tool buttons (Plan Marswalk, EVA, Recentre on site, Fit route, and the round buttons) have near-solid backs, brighter borders and a shadow, so they stay readable over bright layers; they are slightly larger (44 px) with 14 px labels, and show a white focus ring for keyboard users.
+
+**Not yet verified in a browser**; type check and lint pass.
+
+---
+
 ## 2026-11-15 · v0.5.13 · Clicking a mission on the map opens its view
 
 **Changed**

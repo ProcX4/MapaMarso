@@ -12,6 +12,7 @@ import { SaveMission } from './SaveMission'
 import { ExportRoute } from './ExportRoute'
 import { RadiationEstimate } from './RadiationEstimate'
 import { useMissionFromCode } from './useMissionFromCode'
+import { go, type BackTo } from '../../lib/missionPaths'
 import './plan.css'
 
 /** The planner in three steps (the old mission form's layout): one showing at a time, any one a click away */
@@ -29,7 +30,8 @@ const STEPS: { id: Step; label: string }[] = [
  *   2. Review: distance, time, slope, the EVA margin, radiation, science opportunities, export
  *   3. Save: name, code and details
  */
-export function PlanPanel() {
+/** `back`: where the planner was opened from (a mission's view, EVA or the map), for its Back link */
+export function PlanPanel({ back = null }: { back?: BackTo | null }) {
   const { state } = useMarswalk()
   const route = useRoute()
   const load = useMissionFromCode()
@@ -42,6 +44,11 @@ export function PlanPanel() {
   return (
     <>
       <section className="planner-panel" aria-label="Route planner">
+        {back && (
+          <button type="button" className="map-back" onClick={() => go(back.hash)}>
+            ← {back.label}
+          </button>
+        )}
         <div className="planner-head">
           <div>
             <p className="info-card-kicker">{m ? `Mission · ${m.commander}` : 'Plan Marswalk'}</p>
