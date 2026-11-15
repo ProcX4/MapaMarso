@@ -353,15 +353,16 @@
 
 /* ---------- Guided tour ---------- */
 
-/* A ring around one control at a time, the rest of the screen lightly shaded around it, and a card beside
-   it. Clicks pass through everything but the card, so the control can be tried. */
+/* A ring around one control at a time and a card beside it. The rest of the screen keeps its full light
+   (a shade over it made night scenes too dark to follow). Clicks pass through everything but the card, so
+   the control can be tried. */
 .tour { position: fixed; inset: 0; z-index: 50; pointer-events: none; }
 .tour-ring {
   position: fixed;
   border: 2px solid var(--white);
   border-radius: 14px;
-  /* The shade is the ring's own shadow, spread to the screen edges: only the ringed control stays bright */
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35), 0 0 18px 2px rgba(255, 255, 255, 0.35);
+  /* A dark edge outside the white line keeps the ring visible on light backgrounds too, with no shade */
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.45), 0 0 18px 2px rgba(255, 255, 255, 0.35);
 }
 .tour-ring::after {
   content: '';
@@ -405,6 +406,45 @@
 .tour-actions button:hover { border-color: rgba(255, 255, 255, 0.6); }
 .tour-skip { margin-right: auto; border-color: transparent !important; color: var(--gray-2) !important; padding: 0 4px !important; }
 .tour-actions .tour-next { color: var(--black); background: var(--white); border-color: var(--white); }
+
+/* The full guided tour: a wider card with its chapter, progress, a feature list, a "Try it" line and jump dots */
+.tour.is-guided .tour-card { width: min(340px, calc(100vw - 24px)); padding-top: 0; overflow: hidden; }
+.tour.is-guided .tour-card.is-centred { width: min(420px, calc(100vw - 24px)); }
+.tour.is-guided .tour-card-body { padding-top: 16px; }
+.tour-progress { height: 3px; margin: 0 -18px; background: rgba(255, 255, 255, 0.1); }
+.tour-progress span { display: block; height: 100%; background: var(--white); transition: width 300ms ease; }
+.tour-count { display: flex; justify-content: space-between; gap: 12px; }
+.tour-chapter { letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-1); }
+.tour-points { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 5px; }
+.tour-points li { position: relative; padding-left: 16px; font-size: 13px; line-height: 1.45; color: var(--gray-1); }
+.tour-points li::before { content: ''; position: absolute; left: 3px; top: 0.6em; width: 5px; height: 5px; border-radius: 50%; background: var(--ok); }
+.tour-try { margin: 10px 0 0; padding: 8px 10px; font-size: 12.5px; line-height: 1.45; color: var(--gray-1); background: rgba(255, 255, 255, 0.06); border-radius: 8px; }
+.tour-try span { margin-right: 4px; font: 10px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ok); }
+.tour-action {
+  margin-top: 10px;
+  height: 30px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--white);
+  background: rgba(139, 227, 168, 0.12);
+  border: 1px solid rgba(139, 227, 168, 0.5);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.tour-action:disabled { cursor: default; color: var(--ok); background: none; border-color: transparent; padding: 0; }
+.tour-chapters { display: flex; gap: 6px; margin-top: 14px; }
+.tour-chapters button {
+  flex: 1;
+  height: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+}
+.tour-chapters button:hover { background: rgba(255, 255, 255, 0.45); }
+.tour-chapters button.is-on { background: var(--white); }
 
 @keyframes fade-in { from { opacity: 0; } }
 

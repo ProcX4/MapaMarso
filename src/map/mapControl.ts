@@ -41,6 +41,12 @@ export function showArea(at: LatLon & { span?: number }) {
 /** Zoom level the view is at now (0 when there is no map). */
 export const currentZoom = () => current?.getView().getZoom() ?? 0
 
+/** Run once the 2D map is on screen: straight away, or after switching to it (gives up after ~3 s) */
+export function whenMapReady(fn: () => void, tries = 30) {
+  if (current) fn()
+  else if (tries > 0) setTimeout(() => whenMapReady(fn, tries - 1), 100)
+}
+
 /** Zooms to show every point, with room for the floating panels. */
 export function fitTo(points: LngLat[]) {
   const view = current?.getView()

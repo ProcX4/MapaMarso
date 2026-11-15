@@ -23,7 +23,7 @@ import type { MissionStatus } from '../../services/missions'
 import { clearWarpArrival, isWarpArrival } from '../../lib/warp'
 import { byOwner, GLOBE_2D, GLOBE_3D, GLOBE_PLAN, go, MAP_EVA, MAP_PLAN, mapModeOf, missionPath, type OwnerFilter } from '../../lib/missionPaths'
 import { MapView } from '../../map/MapView'
-import { fitTo, flyTo, showArea } from '../../map/mapControl'
+import { fitTo, flyTo, showArea, whenMapReady } from '../../map/mapControl'
 import type { PlanetRoute as MapRoute } from '../../map/planetLayers'
 import { useMarswalk } from '../../hooks/useMarswalk'
 import { useRoute } from '../../hooks/useDerived'
@@ -47,7 +47,7 @@ import { Icon } from '../../components/Icon'
 import { LiveClock } from '../../components/LiveClock'
 import { ToolDock, type Tool } from '../../components/ToolDock'
 import { Tour } from '../../components/Tour'
-import { globeTourSteps, tourSteps } from '../../config/tourSteps'
+import { fullTourSteps, TOUR_CHAPTERS, tourStartFor, type TourActions } from '../../config/tourSteps'
 import { MissionForm } from '../missions/MissionForm'
 import './globe.css'
 
@@ -99,6 +99,8 @@ const MISSION_PREFIX = 'mission:'
 // Whether each side panel was left open, remembered between visits
 const MISSIONS_OPEN_KEY = 'mapa.globe.missionsOpen'
 const CATALOG_OPEN_KEY = 'mapa.globe.catalogOpen'
+// Set once the full tour has opened by itself on a first visit, so it never does again
+const TOUR_SEEN_KEY = 'mapa.tour.seen'
 // On a phone the two side panels would cover each other, and the globe: only one opens at a time
 const narrow = () => window.matchMedia('(max-width: 720px)').matches
 
@@ -455,6 +457,122 @@ export function GlobePage() {
     if (site) setZoomOut({ lat: site.lat, lon: site.lon })
   }
 
+  // What the full tour does to the page as it goes (see fullTourSteps): rebuilt each render, so it always acts
+  // on the current state
+  const tidyPanels = () => {
+    setLayersOpen(false)
+    setMissionsOpen(false)
+    setCatalogOpen(false)
+    setToolsOpen(false)
+    setUiHidden(false)
+  }
+  const tourActions: TourActions = {
+    globe: () => {
+      resetSite()
+      closeCard()
+      clearSiteCard()
+      tidyPanels()
+      if (hash !== GLOBE_3D) go(GLOBE_3D)
+    },
+    resetGlobe: () => setResetKey((k) => k + 1),
+    openCatalog: () => {
+      setCatalogOpen(true)
+      setMissionsOpen(false)
+    },
+    site: (id) => {
+      if (hash !== GLOBE_3D) go(GLOBE_3D)
+      setCatalogOpen(false)
+      setMissionsOpen(false)
+      select(id)
+    },
+    inSite: () => inSite,
+    map: () => {
+      resetSite()
+      closeCard()
+      clearSiteCard()
+      tidyPanels()
+      if (hash !== GLOBE_2D) go(GLOBE_2D)
+      whenMapReady(() => showArea({ lat: 0, lon: 0, span: 360 }))
+    },
+    openLayers: () => {
+      clearSiteCard()
+      closeCard()
+      setMissionsOpen(false)
+      setLayersOpen(true)
+    },
+    zoomToSite: (zoom) => {
+      if (hash !== GLOBE_2D) go(GLOBE_2D)
+      closeCard()
+      clearSiteCard()
+      tidyPanels()
+      whenMapReady(() => flyTo(SITE.base, zoom))
+    },
+    pickGround: () => {
+      if (hash !== GLOBE_2D) go(GLOBE_2D)
+      closeCard()
+      tidyPanels()
+      // Open ground a few tens of metres from the habitat, where Perseverance stopped after landing
+      const at: [number, number] = [SITE.base[0] + 0.0006, SITE.base[1] - 0.0004]
+      dispatch({ type: 'select', at })
+      whenMapReady(() => flyTo(at, 14))
+    },
+    openMissions: () => {
+      if (hash !== GLOBE_2D) go(GLOBE_2D)
+      closeCard()
+      clearSiteCard()
+      setLayersOpen(false)
+      setMissionsOpen(true)
+    },
+    plan: () => {
+      closeCard()
+      clearSiteCard()
+      tidyPanels()
+      if (mapMode !== 'plan') go(MAP_PLAN)
+    },
+    eva: () => {
+      closeCard()
+      clearSiteCard()
+      tidyPanels()
+      if (mapMode !== 'eva') go(MAP_EVA)
+    },
+    hasRoute: () => walk.stops.length >= 2,
+    sampleRoute: () => {
+      if (walk.stops.length >= 2) return
+      // Two stops a few hundred metres west of the habitat, on walkable ground near the landing site
+      const [lon, lat] = SITE.base
+      const stops: { kind: 'waypoint' | 'science'; name: string; at: [number, number] }[] = [
+        { kind: 'waypoint', name: 'Sample waypoint', at: [lon - 0.0046, lat + 0.0025] },
+        { kind: 'science', name: 'Sample science stop', at: [lon - 0.0083, lat - 0.0011] },
+      ]
+      for (const s of stops) dispatch({ type: 'addStop', stop: { id: crypto.randomUUID(), ...s } })
+      whenMapReady(() => fitTo([SITE.base, ...stops.map((s) => s.at)]))
+    },
+  }
+  const tourSteps = fullTourSteps(tourActions, [
+    MARS_MODEL_CREDIT,
+    VIKING_MODEL_CREDIT,
+    MOON_SHAPE_CREDIT,
+    SKY_CREDIT,
+    moonsFromHorizons() ? 'Moon positions: JPL Horizons (live)' : 'Moon positions: built-in orbit model',
+  ])
+  // Started from a view, the tour opens at that view's chapter; from the globe, at the beginning
+  const [tourStart, setTourStart] = useState(0)
+  const startTour = () => {
+    const chapter = mapMode === 'plan' ? TOUR_CHAPTERS.plan : mapMode === 'eva' ? TOUR_CHAPTERS.eva : flat ? TOUR_CHAPTERS.map : TOUR_CHAPTERS.welcome
+    // In a landing-site close-up, at its own steps (light, points of interest) rather than pulled back out
+    const siteStep = tourSteps.findIndex((s) => s.when === tourActions.inSite)
+    setTourStart(inSite && siteStep >= 0 ? siteStep : tourStartFor(tourSteps, chapter))
+    setTourOpen(true)
+  }
+
+  // A first visit opens the full tour by itself, once, when the globe has landed
+  useEffect(() => {
+    if (!landed || flat || planning || readFlag(TOUR_SEEN_KEY, false)) return
+    writeFlag(TOUR_SEEN_KEY, true)
+    setTourStart(0)
+    setTourOpen(true)
+  }, [landed, flat, planning])
+
   // Esc closes whatever is open: the tour or a hidden interface first, then the close-up or info card,
   // then the tools. H hides or brings back the interface. Re-registered every render so it always acts on
   // the current selection.
@@ -642,23 +760,14 @@ export function GlobePage() {
               // and fold the tools away
               setUiHidden(false)
               setToolsOpen(false)
-              setTourOpen((o) => !o)
+              if (tourOpen) setTourOpen(false)
+              else startTour()
             }}
           />
         </>
       )}
       {tourOpen && (
-        <Tour
-          key={mapMode}
-          steps={!exploring ? tourSteps(mapMode) : globeTourSteps(flat ? 'map' : inSite ? 'site' : 'globe', [
-            MARS_MODEL_CREDIT,
-            VIKING_MODEL_CREDIT,
-            MOON_SHAPE_CREDIT,
-            SKY_CREDIT,
-            moonsFromHorizons() ? 'Moon positions: JPL Horizons (live)' : 'Moon positions: built-in orbit model',
-          ])}
-          onClose={() => setTourOpen(false)}
-        />
+        <Tour guided steps={tourSteps} startAt={tourStart} onClose={() => setTourOpen(false)} />
       )}
 
       {/* Keyed so each new selection slides its card in afresh; the landing-site close-up has none */}
