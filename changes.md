@@ -21,6 +21,18 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.16 · Gen Spec brought up to date: demo site, checklist, team, licence
+
+**Changed**
+- `Gen Spec.md`: the demo site is recorded as Jezero (was "Decision needed"); the MVP and "If time allows" checklists are ticked to match the build, with notes where Layer 3 and the site card differ (see its Deviations); the Team table lists Jim, Shin, Daril and Jastini with their roles; the code licence is MIT.
+- About page: "Team: TBD" now names the team and the licence.
+- `CHECKLIST.md`: D1, D5 and D6 ticked.
+
+**Added**
+- `LICENSE` (MIT). NASA data is excluded and stays under its own terms.
+
+---
+
 ## 2026-11-15 · v0.5.7 · Place-name search from the IAU gazetteer, and comparing two points
 
 **Added**

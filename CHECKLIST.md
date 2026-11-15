@@ -105,11 +105,11 @@ Infrared and mineral maps.
 
 ## 5. Decisions and docs (GS) · Jastini
 
-- [ ] Demo site: Jezero or Gale (D1)
+- [x] Demo site: Jezero (D1), recorded in Gen Spec 2026-11-15
 - [x] Habitat location (D2): no placeholder any more; every route's planner places its own start
 - [x] Gen Spec tech-stack line says OpenLayers (D3)
-- [ ] Team table: names and roles (D5; also "Team: TBD" on the About page)
-- [ ] Licence: add `LICENSE`, update Gen Spec (D6)
+- [x] Team table: names and roles (D5), in Gen Spec and on the About page
+- [x] Licence: MIT `LICENSE` added, Gen Spec updated (D6)
 - [x] Record the spec deviations in the specs or `changes.md`: written up in a new *Deviations from this spec* section of `Gen Spec.md`:
   - [x] layers are Topographic / Optical / Spectral (GS Layer 3 and FS §5.4 list geology and Base / Safety / Science / Route)
   - [x] whole-planet scope (GS asked for one site)
@@ -248,10 +248,10 @@ The 17 tasks in the three Todo images, with the owner from the section headings 
 - [ ] **6. Source the mobility and safety assumptions** · everyone, with Jim for the A* costs. Researched 2026-11-15 in `docs/assumptions-sources.md`: 2 km/h and 6 h are in line with Apollo and ISS figures, the climb penalty has no source, and NASA's 20° suit slope figure conflicts with the 25° impassable limit. **Still needs the team's decision** (A1–A4); two figures need opening and confirming.
 
 ### Decisions the team still has to make
-- [ ] **7. Confirm the demo site** · Jastini (§5). Jezero is a placeholder; Gale and its boxwork is the alternative (D1).
+- [x] **7. Confirm the demo site** · Done 2026-11-15: Jezero, which all the walking-scale data is built for (D1).
 - [x] **8. Pick a real habitat location** · Done 2026-11-15 differently: there is no fixed habitat; each route's planner places its start (D2).
-- [ ] **9. Fill in the team names and roles** on the About page and in Gen Spec · Jastini (§5) (D5).
-- [ ] **10. Add a licence file** · Jastini (§5) (D6).
+- [x] **9. Fill in the team names and roles** on the About page and in Gen Spec · Done 2026-11-15 (D5).
+- [x] **10. Add a licence file** · Done 2026-11-15: MIT (D6).
 - [ ] **11. Decide whether space sound defaults to on** · Jastini (§5). It plays by default today (D7).
 
 ### Data and content to finish

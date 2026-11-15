@@ -32,11 +32,11 @@ A finished demo lets a user answer these eight questions on one screen:
 
 ### Demo site
 
-> **Decision needed:** pick **one** region and build everything for it.
+> **Decided: Jezero Crater (Perseverance).** Everything at walking scale is built for it: the 20 m CTX elevation model, HiRISE imagery, the rocky-ground map and the 27 sample-site science targets.
 >
 > | Candidate | Why | Ground-level images |
 > |---|---|---|
-> | Jezero Crater (Perseverance) | Delta deposits, clays and carbonates; strong astrobiology story | Mars 2020 raw images |
+> | **Jezero Crater (Perseverance)** ✔ | Delta deposits, clays and carbonates; strong astrobiology story | Mars 2020 raw images |
 > | Gale Crater / Mount Sharp (Curiosity) | Boxwork formations (named in the challenge), layered sediments | MSL raw images |
 >
 > One site means one high-resolution elevation tile instead of global data, and a demo story judges can follow.
@@ -59,27 +59,27 @@ A colony simulator, landing or trajectory planner, rover control, life-support s
 
 Build in this order. Each item should work end to end before starting the next.
 
-- [ ] Map of the demo site with NASA orbital imagery as the base layer
-- [ ] **Layer 1 — Elevation** (HiRISE or CTX elevation model for the site; MOLA as a coarse fallback)
-- [ ] **Layer 2 — Slope** (derived by MAPA from the elevation model)
-- [ ] **Layer 3 — Science** (geologic units or CRISM mineralogy)
-- [ ] Layer toggles and opacity control
-- [ ] Site card on click: coordinates, elevation, slope, geology, source dataset
-- [ ] Route: start, waypoints, science stops, end / round trip
-- [ ] Route stats: distance, elevation gain/loss, max slope, estimated duration
-- [ ] Elevation profile under the map, linked to the route on hover
-- [ ] Data provenance panel for every layer
+- [x] Map of the demo site with NASA orbital imagery as the base layer (CTX, and HiRISE at Jezero)
+- [x] **Layer 1 — Elevation** (CTX elevation model of Jezero at 20 m/px; MOLA elsewhere)
+- [x] **Layer 2 — Slope** (derived by MAPA from the elevation model, plus rocky ground from 1 m HiRISE elevation models)
+- [x] **Layer 3 — Science**: met by the Spectral group instead (TES minerals and dust, THEMIS, Perseverance sample sites); geologic units and CRISM are not in (see Deviations)
+- [x] Layer toggles and opacity control
+- [x] Site card on click: coordinates, elevation, slope, nearby science targets, rover photos, source dataset (no geology row; see Deviations)
+- [x] Route: start, waypoints, science stops, end / round trip
+- [x] Route stats: distance, elevation gain/loss, max slope, estimated duration
+- [x] Elevation profile under the map, linked to the route on hover
+- [x] Data provenance panel for every layer
 
 ### If time allows
 
-- [ ] Hazard warnings (slope above a threshold along the route)
-- [ ] Terrain-aware routing (avoid steep cells instead of drawing straight lines)
-- [ ] Science opportunity cards ("hydrated minerals 420 m off route, +11 min detour")
-- [ ] Traverse safety envelope (how far you can go and still return in time)
-- [ ] EVA mode
-- [ ] Historical rover traverse layer
-- [ ] Rover point-of-view photos at waypoints ("what you'll see when you arrive")
-- [ ] Space weather / radiation panel
+- [x] Hazard warnings (slope above a threshold along the route)
+- [x] Terrain-aware routing (A* round steep, deep and rocky ground)
+- [x] Science opportunity cards ("hydrated minerals 420 m off route, +11 min detour")
+- [x] Traverse safety envelope (how far you can go and still return in time)
+- [x] EVA mode
+- [ ] Historical rover traverse layer (out of scope; see Deviations)
+- [x] Rover point-of-view photos at waypoints ("what you'll see when you arrive")
+- [x] Space weather / radiation panel (an estimate from Curiosity's RAD, not a live feed)
 
 ---
 
@@ -257,8 +257,11 @@ What the build does differently, and why (also recorded in `changes.md`):
 
 | Name | Role |
 |---|---|
-| | |
+| Jim | Topographic: elevation, slope, steep, deep and rocky ground, A* safe-path routing |
+| Shin | Optical, security, and leads the demo |
+| Daril | Spectral: TES, THEMIS and the science targets |
+| Jastini | Decisions and docs |
 
 ## Licence
 
-Code: _TBD_. NASA data is used under NASA's media and data guidelines; see `docs/data-sources.md` for per-dataset credits.
+Code: MIT (see `LICENSE`). NASA data is used under NASA's media and data guidelines; see `docs/data-sources.md` for per-dataset credits.

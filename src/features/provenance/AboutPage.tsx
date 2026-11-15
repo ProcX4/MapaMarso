@@ -96,7 +96,7 @@ export function AboutPage() {
         <p className="about-text">
           NASA data used under NASA's media and data guidelines. Imagery and elevation tiles via{' '}
           <a href="https://trek.nasa.gov/mars/" target="_blank" rel="noopener noreferrer">NASA Mars Trek</a>. Design and Mars time from the team's
-          MapaMars prototype. Team: TBD.
+          MapaMars prototype. Team: Jim, Shin, Daril and Jastini. Code under the MIT licence.
         </p>
       </div>
     </main>
