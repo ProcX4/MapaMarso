@@ -17,10 +17,7 @@ const AU_KM = 149_597_870.7
 
 /** IAU (2009) Mars rotation rate, degrees per day; one turn is the sidereal day. */
 export const MARS_ROTATION_DEG_PER_DAY = 350.89198226
-export const SIDEREAL_DAY_S = (360 / MARS_ROTATION_DEG_PER_DAY) * 86400
 export const SOL_S = 88775.244
-export const AXIAL_TILT_DEG = 25.19
-
 /** Days since J2000.0 in Terrestrial Time (close enough to TDB here). */
 export function daysSinceJ2000(ms: number) {
   return ms / MS_PER_DAY + 2440587.5 + 69.184 / 86400 - J2000_JD
@@ -69,10 +66,6 @@ export const meiToBodyFixed = (v: Vec3, d: number) => rotZ(v, marsRotationDeg(d)
 export function toLatLon(v: Vec3) {
   const n = norm(v)
   return { lat: Math.asin(n[2]) / RAD, lon: Math.atan2(n[1], n[0]) / RAD }
-}
-
-export function latLonToBodyFixed(lat: number, lon: number, r = MARS_RADIUS_KM): Vec3 {
-  return [r * Math.cos(lat * RAD) * Math.cos(lon * RAD), r * Math.cos(lat * RAD) * Math.sin(lon * RAD), r * Math.sin(lat * RAD)]
 }
 
 function solveKepler(M: number, e: number) {
@@ -195,7 +188,6 @@ export const MOON_RADII: Record<MoonId, Vec3> = {
   phobos: [13.0, 11.4, 9.1],
   deimos: [7.8, 6.0, 5.1],
 }
-export const MOON_MEAN_RADIUS_KM: Record<MoonId, number> = { phobos: 11.08, deimos: 6.2 }
 
 /** Moon position relative to Mars's centre, km, MEI. */
 export function moonPosition(id: MoonId, d: number): Vec3 {
@@ -240,89 +232,6 @@ export function sunLocalDirection(lat: number, lon: number, ms: number) {
   return { east: dot(s, east), north: dot(s, north), up: dot(s, up) }
 }
 
-// Seen from a place on the surface
-
-export function sunElevationDeg(lat: number, lon: number, d: number) {
-  const site = latLonToBodyFixed(lat, lon)
-  const sun = meiToBodyFixed(sunFromMars(d).dir, d)
-  return Math.asin(dot(norm(site), sun)) / RAD
-}
-
-/** Angle between the Sun and the moon's centre as seen from the site, degrees, plus the moon's angular radius. */
-function transitGeometry(id: MoonId, siteBf: Vec3, d: number) {
-  const sun = sunFromMars(d)
-  const sunBf = meiToBodyFixed(sun.dir, d)
-  const moonBf = meiToBodyFixed(moonPosition(id, d), d)
-  const toMoon = sub(moonBf, siteBf)
-  const dist = len(toMoon)
-  const sep = Math.acos(Math.max(-1, Math.min(1, dot(norm(toMoon), sunBf)))) / RAD
-  return {
-    sep,
-    moonRadius: Math.asin(MOON_MEAN_RADIUS_KM[id] / dist) / RAD,
-    sunRadius: sunAngularRadiusDeg(sun.au),
-    sunElevation: Math.asin(dot(norm(siteBf), sunBf)) / RAD,
-  }
-}
-
-export type TransitEvent = {
-  moon: MoonId
-  /** Unix ms of first contact, deepest point and last contact */
-  start: number
-  peak: number
-  end: number
-  /** Share of the Sun's disk covered at the deepest point, 0..1 (approximate) */
-  coverage: number
-}
-
-/**
- * Upper bounds on how fast things move across the sky seen from the surface, deg/s: each moon against
- * the Sun (the moon's own motion plus the Sun's), and the Sun's change in elevation.
- */
-const MAX_SKY_RATE: Record<MoonId, number> = { phobos: 0.03, deimos: 0.008 }
-const MAX_SUN_RATE = 0.0045
-
-/** Next time the moon crosses the Sun seen from the site, searched up to `horizonDays` ahead. */
-export function nextTransit(id: MoonId, lat: number, lon: number, fromMs: number, horizonDays = 120): TransitEvent | null {
-  const site = latLonToBodyFixed(lat, lon)
-  const endMs = fromMs + horizonDays * MS_PER_DAY
-  const touching = (ms: number) => {
-    const g = transitGeometry(id, site, daysSinceJ2000(ms))
-    return g.sunElevation > 0 && g.sep < g.sunRadius + g.moonRadius ? g : null
-  }
-  let prev = fromMs
-  for (let t = fromMs; t < endMs; ) {
-    const g = transitGeometry(id, site, daysSinceJ2000(t))
-    // Jump ahead by the least time the Sun needs to rise, or the moon needs to reach the Sun
-    const gap = g.sunElevation <= 0 ? -g.sunElevation / MAX_SUN_RATE : (g.sep - g.sunRadius - g.moonRadius) / MAX_SKY_RATE[id]
-    if (gap > 0) {
-      prev = t
-      t += Math.max(1000, gap * 1000)
-      continue
-    }
-    // Touching: the first contact lies after the last sample, so scan second by second from there
-    let start = 0, end = 0, peak = 0, best = Infinity, peakGeom = g
-    for (let s = prev; ; s += 1000) {
-      const hit = touching(s)
-      if (!hit) {
-        if (start) break
-        continue
-      }
-      if (!start) start = s
-      end = s
-      if (hit.sep < best) {
-        best = hit.sep
-        peak = s
-        peakGeom = hit
-      }
-    }
-    const { sunRadius: rs, moonRadius: rm } = peakGeom
-    // Area of the Sun's disk hidden by the moon's disk at the deepest point
-    const coverage = Math.min(1, overlapArea(rs, rm, best) / (Math.PI * rs * rs))
-    return { moon: id, start, peak, end, coverage }
-  }
-  return null
-}
-
 /** Area where two circles overlap (radii r1, r2, centres dist apart). */
 function overlapArea(r1: number, r2: number, dist: number) {
   if (dist >= r1 + r2) return 0
@@ -331,23 +240,6 @@ function overlapArea(r1: number, r2: number, dist: number) {
   const b = r2 * r2 * Math.acos((dist * dist + r2 * r2 - r1 * r1) / (2 * dist * r2))
   const c = 0.5 * Math.sqrt((-dist + r1 + r2) * (dist + r1 - r2) * (dist - r1 + r2) * (dist + r1 + r2))
   return a + b - c
-}
-
-// Seasons (Mars24, Allison & McEwen 2000)
-
-/** Areocentric solar longitude Ls, degrees 0..360. */
-export function solarLongitude(ms: number) {
-  const dt = daysSinceJ2000(ms)
-  const M = (19.3871 + 0.52402073 * dt) * RAD
-  const alpha = 270.3871 + 0.524038496 * dt
-  const vm = (10.691 + 3e-7 * dt) * Math.sin(M) + 0.623 * Math.sin(2 * M) + 0.05 * Math.sin(3 * M) + 0.005 * Math.sin(4 * M) + 0.0005 * Math.sin(5 * M)
-  return (((alpha + vm) % 360) + 360) % 360
-}
-
-export function seasonName(ls: number) {
-  const north = ['spring', 'summer', 'autumn', 'winter'][Math.floor(ls / 90) % 4]
-  const south = ['autumn', 'winter', 'spring', 'summer'][Math.floor(ls / 90) % 4]
-  return `Northern ${north} · southern ${south}`
 }
 
 /** Sub-solar point on Mars (planetocentric, east longitude). */

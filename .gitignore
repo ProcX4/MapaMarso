@@ -26,3 +26,6 @@ supabase/.branches
 .DS_Store
 *.suo
 *.sw?
+
+# Docs and specs stay local, not in the repo
+*.md

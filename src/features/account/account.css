@@ -7,14 +7,3 @@
 .account-inner .mission-form .button { align-self: flex-start; }
 .account-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 32px; }
 .account-inner .switch-mode { margin: 24px 0 0; font-size: 14px; }
-
-.account-section { display: flex; flex-direction: column; gap: 14px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line); }
-.account-section > p { margin: 0; font-size: 14px; line-height: 1.55; }
-.account-section .button { align-self: flex-start; }
-.account-missions { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
-.account-missions li { display: flex; align-items: center; gap: 8px; }
-.account-missions a { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 9px 8px; color: var(--white); text-decoration: none; border-radius: 8px; }
-.account-missions a:hover { background: rgba(255, 255, 255, 0.08); }
-.account-mission-name { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
-.account-mission-name .mono-code { flex: none; font-size: 12px; }
-.account-missions small { font-size: 12px; }

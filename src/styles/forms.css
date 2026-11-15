@@ -1,56 +1,6 @@
 /* ---------- Mission planner (MissionForm, from MapaMars) ---------- */
 
-/* On its own page: the form beside the map */
-.missions-page {
-  flex: 1;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: minmax(300px, 400px) minmax(0, 1fr);
-  grid-template-areas: 'form globe';
-  align-content: start;
-  gap: 32px;
-  padding: 32px clamp(16px, 3vw, 32px) 64px;
-}
-.mission-form-wrap { grid-area: form; }
-.mission-form-wrap h1 { margin: 0 0 8px; font-size: 32px; font-weight: 500; letter-spacing: -0.01em; }
-.mission-form-wrap > p { margin: 0 0 24px; line-height: 1.55; }
-/* The map stays in view while the long form scrolls */
-.mission-map { grid-area: globe; min-width: 0; display: flex; flex-direction: column; gap: 10px; position: sticky; top: 76px; align-self: start; }
-/* The route on the shared NASA map: a framed box the map fills */
-.mission-olmap { position: relative; height: min(560px, 70vh); overflow: hidden; background: var(--black); border: 1px solid var(--line); border-radius: 14px; }
-.mission-map-credit { margin: 0; font-size: 11px; }
-.map-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-.jump-to select { padding: 6px 12px; font: 13px var(--sans); color: var(--white); background: var(--black); border: 1px solid var(--line); border-radius: 999px; }
-.jump-to select option,
-.jump-to select optgroup { background: var(--black); }
-.map-hint { margin: 0; font-size: 12px; }
 .form-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-
-/* Point letters: A (start), numbered stops, B (finish) */
-.point-letter { width: 20px; height: 20px; display: inline-grid; place-items: center; font-size: 11px; font-weight: 600; border-radius: 50%; }
-.point-letter.is-start { color: var(--black); background: var(--white); }
-.point-letter.is-end { color: var(--white); border: 1.5px solid var(--white); }
-.point-letter.is-phase { color: var(--white); background: rgba(255, 255, 255, 0.18); }
-
-/* The walk form: a step bar, one step at a time, compact stop rows, pinned footer */
-.walk-form { gap: 16px; }
-.planner-form .planner-head { display: flex; align-items: center; gap: 4px; margin-bottom: 16px; }
-.planner-form .planner-head h1 { flex: 1; margin: 0; font-size: 22px; }
-.planner-icon {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  color: var(--gray-1);
-  background: none;
-  border: 0;
-  border-radius: 50%;
-  cursor: pointer;
-}
-.planner-icon:hover { color: var(--white); background: rgba(255, 255, 255, 0.1); }
 
 /* The step bar: three numbered tabs, a tick on the ones that are done */
 .planner-steps { display: flex; gap: 4px; margin: 0; padding: 0; list-style: none; border-bottom: 1px solid var(--line); }
@@ -87,37 +37,12 @@
 
 .planner-stage { display: flex; flex-direction: column; gap: 14px; animation: fade-in 200ms ease both; }
 .planner-stage .code-field { padding: 4px 0 0; border: 0; }
-.planner-note { margin: 0; font-size: 12px; }
 
 /* Stops placed on the map */
-.walk-form .stop-row.is-placing { background: rgba(255, 255, 255, 0.08); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35); }
-.walk-form .stop-pick { flex: none; position: relative; width: 24px; height: 24px; margin-top: 3px; padding: 0; font-family: var(--sans); border: 0; cursor: pointer; }
-.walk-form .stop-pick.is-phase { background: rgb(40, 40, 40); }
-.walk-form .stop-pick.is-end { background: rgb(8, 8, 8); }
-.walk-form .stop-row.is-placing .stop-pick { box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25); }
-.walk-form .stop-row.is-placing:not(.is-set) .stop-coords { color: var(--gray-1); }
-.walk-form .stop-row.is-placing .stop-actions { opacity: 1; }
 .mission-form .stop-name { width: 100%; padding: 4px 0; font: 500 14px var(--sans); color: var(--white); background: none; border: 0; border-radius: 0; outline: none; }
 .mission-form .stop-name:focus { border: 0; box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45); }
-.stop-coord-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-.stop-coord-inputs label { gap: 4px; font-size: 11px; }
-.stop-coord-inputs input { padding: 6px 8px !important; font-size: 13px !important; }
-.add-stop {
-  display: flex;
-  justify-content: space-between;
-  padding: 9px 12px;
-  font: 13px var(--sans);
-  color: var(--gray-1);
-  background: none;
-  border: 1px dashed var(--line);
-  border-radius: 10px;
-  cursor: pointer;
-}
-.add-stop:hover:not(:disabled) { color: var(--white); border-color: rgba(255, 255, 255, 0.5); }
-.add-stop:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* Code field in the create / edit form */
-.walk-form .code-field { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .field-label { align-self: flex-start; font-size: 13px; color: var(--gray-1); }
 .code-status { margin: 0; font-size: 13px; color: var(--gray-2); text-align: center; }
 .code-status.is-available { color: var(--white); }
@@ -127,27 +52,7 @@
 
 /* The map fills the window; the form floats on the left in its own scrolling panel */
 .planner { --panel-w: min(420px, calc(100vw - 32px)); position: absolute; inset: 0; z-index: 26; animation: fade-in 400ms ease both; }
-.planner-map { position: absolute; inset: 0; }
-.planner-map .map-toolbar {
-  position: absolute;
-  top: 72px;
-  left: calc(var(--panel-w) + 32px);
-  right: 72px;
-  z-index: 2;
-  justify-content: flex-start;
-}
-.planner-map .jump-to select { height: 36px; padding: 0 14px; background: rgba(0, 0, 0, 0.78); border-color: rgba(255, 255, 255, 0.22); }
 /* The day/night shading stays, without its labels */
-.planner-map .map-hint {
-  position: absolute;
-  left: calc(var(--panel-w) + 32px);
-  bottom: 20px;
-  z-index: 2;
-  padding: 6px 12px;
-  background: rgba(0, 0, 0, 0.72);
-  border-radius: 999px;
-  pointer-events: none;
-}
 .planner .planner-panel { padding: 16px 18px 0; display: block; }
 .planner .planner-panel > * + * { padding-top: 0; border-top: 0; }
 .planner .planner-panel .form-footer { background: linear-gradient(to bottom, rgba(8, 8, 8, 0.85), rgb(8, 8, 8) 30%); }
@@ -156,11 +61,6 @@
 .planner-panel .code-boxes { gap: 6px; }
 .planner-panel .code-box { width: 40px; height: 52px; font-size: 24px; }
 .planner-panel .code-dash { width: 12px; font-size: 24px; }
-
-@media (max-width: 1000px) {
-  .mission-map { position: static; }
-  .missions-page { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'form' 'globe'; }
-}
 @media (max-width: 720px) {
   /* Planning on a phone: the map on top, the form as a sheet over the bottom half */
   .planner { --panel-w: 100vw; }
@@ -177,9 +77,7 @@
     animation-name: sheet-in;
   }
   @keyframes sheet-in { from { opacity: 0; transform: translateY(24px); } }
-  .planner-map .map-toolbar { top: 64px; left: 16px; right: 60px; }
-    .planner-map .map-hint,
-        .code-boxes { gap: 6px; }
+    .code-boxes { gap: 6px; }
   .code-box { width: 40px; height: 52px; font-size: 24px; }
   .code-dash { width: 12px; font-size: 24px; }
 }

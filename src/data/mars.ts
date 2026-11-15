@@ -110,5 +110,3 @@ export const landmarks: { name: string; lat: number; lon: number }[] = [
 /** Mean radius of Mars in km. */
 export const MARS_RADIUS_KM = MARS_RADIUS_M / 1000
 
-/** Straight-line (great-circle) distance across the surface, in km, for {lat, lon} points. Same sphere as distanceM. */
-export const marsDistanceKm = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) => distanceM([a.lon, a.lat], [b.lon, b.lat]) / 1000

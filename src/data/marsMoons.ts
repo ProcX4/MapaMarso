@@ -60,8 +60,3 @@ export const moonInfo: Record<MoonId, MoonInfo> = {
     fromSurface: 'Looks like a bright star rather than a disk. It rises in the east and, because it only just outruns the planet’s spin, stays above the horizon for about two and a half sols.',
   },
 }
-
-export const rotationInfo = [
-  'Mars spins once every 24 h 37 min 23 s relative to the stars (a sidereal day). A solar day, called a sol, is a little longer at 24 h 39 min 35 s because Mars also moves along its orbit.',
-  'Its axis is tilted about 25°, close to Earth’s 23.4°, so Mars has seasons. They last roughly twice as long as Earth’s because a Mars year is 687 Earth days. Seasons are tracked with Ls, the Sun’s position along Mars’s orbit (0° is northern spring).',
-]

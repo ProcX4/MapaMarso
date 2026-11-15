@@ -24,15 +24,3 @@ export function isLngLat(v: unknown): v is LngLat {
 export function cleanText(input: string, max: number) {
   return input.replace(/\s+/g, ' ').trim().slice(0, max)
 }
-
-/** Only https: links (http: for localhost) built from data; everything else is dropped. */
-export function safeUrl(input: string): string | null {
-  try {
-    const url = new URL(input)
-    if (url.protocol === 'https:') return url.href
-    if (url.protocol === 'http:' && (url.hostname === 'localhost' || url.hostname === '127.0.0.1')) return url.href
-  } catch {
-    // not a URL
-  }
-  return null
-}

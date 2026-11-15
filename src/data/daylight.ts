@@ -81,38 +81,3 @@ export function formatOffset(h: number) {
   const text = aheadText(h)
   return text && `+${text}`
 }
-
-/** One point of the day/night line, and whether it's the sunrise (morning) or sunset (evening) side. */
-export type TerminatorPoint = LatLon & { side: 'sunrise' | 'sunset' }
-
-/**
- * The terminator: the circle 90° from where the Sun is overhead. It's a perfect circle on the globe;
- * drawn on a flat latitude/longitude map it becomes a wave, deepest at the solstices and almost straight
- * at the equinoxes. Longitudes are unwrapped so the line runs continuously once round the planet.
- * Mars turns eastward, so the sunrise half lies 90° west of the Sun and the sunset half 90° east.
- */
-export function terminatorLine(sun: LatLon, steps = 720): TerminatorPoint[] {
-  // At an exact equinox the circle runs through the poles; nudge it so longitudes stay continuous
-  const la = (Math.abs(sun.lat) < 0.05 ? 0.05 : sun.lat) * RAD
-  const lo = sun.lon * RAD
-  const s = [Math.cos(la) * Math.cos(lo), Math.cos(la) * Math.sin(lo), Math.sin(la)]
-  // Two directions at right angles to the Sun: due east of it, and the one completing the set
-  const u = [-Math.sin(lo), Math.cos(lo), 0]
-  const v = [s[1] * u[2] - s[2] * u[1], s[2] * u[0] - s[0] * u[2], s[0] * u[1] - s[1] * u[0]]
-  const points: TerminatorPoint[] = []
-  let prevLon = 0
-  for (let i = 0; i <= steps; i++) {
-    const t = (i / steps) * 2 * Math.PI
-    const p = [0, 1, 2].map((k) => Math.cos(t) * u[k] + Math.sin(t) * v[k])
-    let lon = Math.atan2(p[1], p[0]) / RAD
-    if (i > 0) lon += 360 * Math.round((prevLon - lon) / 360)
-    prevLon = lon
-    // East of the Sun's longitude it's afternoon heading to sunset; west of it, morning after sunrise
-    const rel = ((((lon - sun.lon) % 360) + 540) % 360) - 180
-    points.push({ lat: Math.asin(Math.max(-1, Math.min(1, p[2]))) / RAD, lon, side: rel > 0 ? 'sunset' : 'sunrise' })
-  }
-  return points
-}
-
-/** Degrees of longitude the day/night line drifts west each Earth hour: 360° per sol (Earth: 15°). */
-export const TERMINATOR_DEG_PER_HOUR = 360 / (SOL_S / 3600)

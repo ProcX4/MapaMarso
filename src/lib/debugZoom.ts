@@ -10,8 +10,6 @@ const KEY = 'mapa.debugZoom'
 let on = readFlag(KEY, false)
 const listeners = new Set<(on: boolean) => void>()
 
-export const isDebugZoomOn = () => on
-
 export function setDebugZoom(value: boolean) {
   on = value
   writeFlag(KEY, value)

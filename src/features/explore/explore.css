@@ -15,10 +15,6 @@
   animation: fade-in 700ms ease both;
 }
 .layers-link { flex: none; margin-right: 44px; pointer-events: auto; }
-.layer-group + .layer-group { margin-top: 6px; padding-top: 4px; border-top: 1px solid var(--line); }
-.layer-group-head { margin: 10px 8px 0; font-size: 10px; font-weight: 400; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray-2); }
-.layer-group-note { margin: 3px 8px 0; font-size: 11px; line-height: 1.4; color: var(--gray-2); }
-.layer-group ul { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
 .layer-row { padding: 8px; border-radius: 8px; }
 .layer-row:hover { background: rgba(255, 255, 255, 0.04); }
 .layer-row-head { display: flex; align-items: center; gap: 10px; }
@@ -56,8 +52,6 @@
 /* Site card: the info card, plus MAPA's terrain / science / hazards groups */
 .site-card-sun { margin: 0; font-size: 12px; }
 .site-card-group { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--line); }
-.site-card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
-.site-card-note { margin: 8px 0 0; font-size: 12px; }
 /* A science target near the clicked point, with its reason, just above the pictures */
 .site-card-targets { margin: 14px 0 0; font-size: 12.5px; line-height: 1.45; }
 .site-card-targets p { margin: 0 0 8px; }

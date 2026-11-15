@@ -1,4 +1,3 @@
-import { landingSites, landmarks } from '../data/mars'
 import type { Mode } from '../state/types'
 
 /*
@@ -53,16 +52,7 @@ export function currentAddress(hash: string) {
   return hash
 }
 
-/** Places to start a mission from: the famous landmarks, then every landing site. */
-export const presets = [
-  ...landmarks.map((l) => ({ value: `lm:${l.name}`, name: l.name, lat: l.lat, lon: l.lon, group: 'Landmarks' })),
-  ...landingSites.map((s) => ({ value: `ls:${s.id}`, name: `${s.location} (${s.mission})`, lat: s.lat, lon: s.lon, group: 'Landing sites' })),
-]
-
 export const missionPath = (code?: string, action?: 'edit') => ['#/missions', code, action].filter(Boolean).join('/')
-
-/** Address for a mission opened from the browse list, where you don't know its code. */
-export const missionIdPath = (id: string) => `#/missions/m/${id}`
 
 /** Whose missions a list shows: everyone's, other users' only, or only yours (led or joined). */
 export type OwnerFilter = 'all' | 'others' | 'mine'
