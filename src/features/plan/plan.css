@@ -145,7 +145,8 @@
 
 /* In Plan mode (and on a saved mission) the layers column stops above the profile */
 .mode-plan .layers-hud,
-.mode-mission .layers-hud { bottom: 230px; }
+.mode-mission .layers-hud,
+.mode-mission .missions-hud { bottom: 230px; }
 .mode-plan .info-card,
 .mode-mission .info-card { max-height: calc(100% - 360px); }
 

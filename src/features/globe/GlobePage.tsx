@@ -121,9 +121,8 @@ export function GlobePage() {
   }, [newMission, dispatch])
   const walkRoute = useRoute()
   // The NASA layers list shares the top right with the missions list on the 2D map: one opens at a time
-  const [layersOpen, setLayersOpen] = useState(false)
-  // A saved mission's view: its summary and the NASA layers share the right side, one out at a time (or neither)
-  const [missionSide, setMissionSide] = useState<'mission' | 'layers' | null>('mission')
+  // (A saved mission's view opens with its layers out, on wide screens)
+  const [layersOpen, setLayersOpen] = useState(() => mapMode === 'mission' && !narrow())
   // How far ahead of now the globe and flat map show day and night, in hours (0 = live), and the time-lapse
   const [aheadH, setAheadH] = useState(0)
   // Hours of Mars time per second of playback: 0 paused, or PLAY_RATE
@@ -178,7 +177,16 @@ export function GlobePage() {
 
   // The side panels: the catalog of Mars, its moons and landing sites on the left, the missions on the right
   const [catalogOpen, setCatalogOpen] = useState(() => readFlag(CATALOG_OPEN_KEY, false))
-  const [missionsOpen, setMissionsOpen] = useState(() => readFlag(MISSIONS_OPEN_KEY, !narrow()))
+  const [missionsOpen, setMissionsOpen] = useState(() => mapMode !== 'mission' && readFlag(MISSIONS_OPEN_KEY, !narrow()))
+  // Opening a saved mission: its layers out and the missions list tucked away, until Mission is pressed
+  const [shownMode, setShownMode] = useState(mapMode)
+  if (shownMode !== mapMode) {
+    setShownMode(mapMode)
+    if (mapMode === 'mission') {
+      setLayersOpen(!narrow())
+      setMissionsOpen(false)
+    }
+  }
   const toggleCatalog = () => {
     const open = !catalogOpen
     setCatalogOpen(open)
@@ -367,7 +375,7 @@ export function GlobePage() {
     const key = id.startsWith(MISSION_PREFIX) ? id.split('#')[0] : id
     // On the flat map a mission opens its own view: the map locked onto its route, with its summary, crew, log,
     // EVA and edit (the globe keeps its card, to fly there first)
-    const picked = flat && exploring && key.startsWith(MISSION_PREFIX) ? missionList?.find((m) => MISSION_PREFIX + m.id === key) : undefined
+    const picked = flat && (exploring || mapMode === 'mission') && key.startsWith(MISSION_PREFIX) ? missionList?.find((m) => MISSION_PREFIX + m.id === key) : undefined
     if (picked) {
       go(picked.code ? missionMapPath(picked.code) : missionMapIdPath(picked.id))
       return
@@ -714,33 +722,9 @@ export function GlobePage() {
           {mapMode === 'plan' && <LayerPanel />}
           {mapMode === 'plan' && <PlanPanel back={previous} />}
           {/* A saved mission: the planner's map and layers, with its summary, crew and log in place of the steps */}
-          {mapMode === 'mission' && (
-            <LayerPanel
-              open={missionSide === 'layers'}
-              onOpenChange={(open) => setMissionSide(open ? 'layers' : null)}
-              before={
-                <button
-                  type="button"
-                  className={`hud-link layers-link${missionSide === 'mission' && !walk.selected ? ' is-open' : ''}`}
-                  aria-expanded={missionSide === 'mission' && !walk.selected}
-                  aria-controls="mission-side"
-                  onClick={() => {
-                    if (missionSide === 'mission' && !walk.selected) return setMissionSide(null)
-                    clearSiteCard()
-                    setMissionSide('mission')
-                  }}
-                >
-                  <Icon name="missions" size={17} />
-                  Mission
-                </button>
-              }
-            >
-              {/* Kept mounted while tucked away, so the mission isn't fetched again; the site card takes the corner too */}
-              <div id="mission-side" className="mission-side" hidden={missionSide !== 'mission' || !!walk.selected}>
-                <MissionPanel />
-              </div>
-            </LayerPanel>
-          )}
+          {/* Its Layers button sits beside Mission (the missions list), as on the 2D map: one list out at a time */}
+          {mapMode === 'mission' && <LayerPanel button={false} open={layersShown} onOpenChange={setLayersOpen} />}
+          {mapMode === 'mission' && <MissionPanel />}
           {mapMode === 'mission' && (
             <section className="plan-bottom" aria-label="Elevation profile">
               <ElevationProfile />
@@ -759,7 +743,7 @@ export function GlobePage() {
           {!inSite && exploring && (
             <CatalogHud open={catalogOpen} onToggleOpen={toggleCatalog} selectedId={site?.id ?? moonId ?? orbiterId} onPlanet={pickPlanet} onMoon={pickMoon} onOrbiter={pickOrbiter} onSite={pickSite} />
           )}
-          {exploring && <MissionsHud
+          {(exploring || mapMode === 'mission') && <MissionsHud
             before={flat ? <LayersButton open={layersShown} onClick={toggleLayers} /> : undefined}
             missions={{ list: missionList, error: missions.error }}
             status={missionStatus}
