@@ -17,7 +17,7 @@ export function tourSteps(mode: Mode): TourStep[] {
       { target: '.planner-panel .segmented', title: 'Round trip or one way', text: 'A round trip finishes back at the start; the return walk then counts towards the EVA time.' },
       { target: '.plan-stats', title: 'Route stats', text: 'Distance, walking time, climb and the steepest slope. Hover a tag to see what an estimate assumes.' },
       { target: '.plan-bottom', title: 'Elevation profile', text: 'Hover the profile to see the matching point on the map, and the other way round. Steep sections are drawn in caution colours.' },
-      { target: '.mission-save', title: 'Save and share', text: 'Sign in to save the route as a mission with a code like MRS-204, then open it anywhere at #/globe/2d/plan/MRS-204.' },
+      { target: '.mission-save', title: 'Save and share', text: 'Save the route as a mission with a code like MRS-204 (no sign-up needed), then open it anywhere at #/globe/2d/plan/MRS-204.' },
       { target: '.tool-tray', title: 'Walk it', text: 'EVA in the tools follows the route in a simplified, high-contrast view; Plan Marswalk closes the planner.' },
       ...end,
     ]
@@ -91,7 +91,7 @@ export function globeTourSteps(view: 'globe' | 'map' | 'site', credits: string[]
     { target: '.daylight-bar', title: 'Day and night', text: 'Play day and night, or drag the ring along the line through the next sol; Now returns to the present.' },
     { target: '.catalog-link', title: 'Catalog', text: 'Mars, its moons and every landing site, with filters and a search. Pick one to fly to it.' },
     { target: '.view-switch', title: '3D or 2D', text: 'Switch between this globe and a flat map of the whole planet.' },
-    { target: '.missions-add', title: 'New mission', text: 'Plan a new Marswalk mission (you need to be signed in).' },
+    { target: '.missions-add', title: 'New mission', text: 'Plan a new Marswalk mission. No sign-up needed.' },
     { target: '.missions-link', title: 'Missions', text: 'Opens the list of missions: ongoing, or switch to completed, with a search. Pick one to see its route; All routes in the tools shows every route at once.' },
     ...end,
   ]

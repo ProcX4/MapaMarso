@@ -7,3 +7,10 @@
 .account-inner .mission-form .button { align-self: flex-start; }
 .account-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 32px; }
 .account-inner .switch-mode { margin: 24px 0 0; font-size: 14px; }
+.account-inner .mission-form .button-outline { align-self: flex-start; }
+/* The team's password sign-in, folded away under the visitor's own account */
+.account-team { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); }
+.account-team summary { font-size: 13px; color: var(--gray-2); cursor: pointer; }
+.account-team summary:hover { color: var(--white); }
+.account-team[open] summary { margin-bottom: 16px; }
+.account-team p:first-of-type { margin: 0 0 16px; line-height: 1.55; }

@@ -12,6 +12,8 @@ export type AuthState = {
   /** Resolves with needsConfirmation = true when the account must confirm its email first. */
   signUp: (email: string, username: string, password: string) => Promise<{ needsConfirmation: boolean }>
   signOut: () => Promise<void>
+  /** Changes the name shown on your missions and log entries. */
+  rename: (username: string) => Promise<void>
 }
 
 export const AuthContext = createContext<AuthState | null>(null)

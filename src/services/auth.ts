@@ -2,7 +2,8 @@ import { supabase } from '../lib/supabase'
 
 /* Accounts, from MapaMars src/services/auth.ts. Profiles hold a public username; emails stay private. */
 
-export type User = { id: string; username: string; isAdmin: boolean }
+/** isGuest: an invisible account made on the first visit, with no email or password (see AuthProvider). */
+export type User = { id: string; username: string; isAdmin: boolean; isGuest: boolean }
 
 export const USERNAME_PATTERN = /^[A-Za-z0-9_-]{3,24}$/
 
@@ -40,10 +41,29 @@ function fail(error: { message: string }): never {
 }
 
 /** Loads the public profile (username, admin flag) for a signed-in account. */
-export async function fetchProfile(userId: string): Promise<User | null> {
+export async function fetchProfile(userId: string, isGuest = false): Promise<User | null> {
   const { data, error } = await supabase.from('profiles').select('id, username, is_admin').eq('id', userId).maybeSingle()
   if (error) fail(error)
-  return data ? { id: data.id, username: data.username, isAdmin: data.is_admin } : null
+  return data ? { id: data.id, username: data.username, isAdmin: data.is_admin, isGuest } : null
+}
+
+/**
+ * Gives this browser an invisible account, so visitors can save, join and log without signing up.
+ * Needs Supabase -> Authentication -> Sign In / Providers -> "Allow anonymous sign-ins" switched on.
+ */
+export async function signInAsGuest() {
+  const { error } = await supabase.auth.signInAnonymously()
+  if (error) fail(error)
+}
+
+/** Changes the name shown on your missions and log entries. */
+export async function setUsername(username: string) {
+  if (!USERNAME_PATTERN.test(username.trim())) throw new Error('Names are 3–24 letters, numbers, - or _')
+  const { error } = await supabase.rpc('set_username', { p_username: username.trim() })
+  if (error) {
+    if (error.code === 'PGRST202') throw new Error('Renaming needs a database update (supabase/schema.sql).')
+    fail(error)
+  }
 }
 
 async function usernameTaken(username: string) {

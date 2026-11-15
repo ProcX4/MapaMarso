@@ -23,7 +23,8 @@ create table if not exists public.profiles (
 create unique index if not exists profiles_username_lower_idx on public.profiles (lower(username));
 
 -- Create the profile automatically when someone signs up.
--- The app passes the username in the sign-up metadata: { data: { username } }.
+-- The app passes the username in the sign-up metadata: { data: { username } }. Visitors get an invisible
+-- (anonymous) account with no sign-up, and no username, so they are named Explorer-XXXXXXXX from their id.
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -31,7 +32,13 @@ security definer set search_path = ''
 as $$
 begin
   insert into public.profiles (id, username)
-  values (new.id, new.raw_user_meta_data ->> 'username');
+  values (
+    new.id,
+    coalesce(
+      nullif(new.raw_user_meta_data ->> 'username', ''),
+      'Explorer-' || upper(substr(replace(new.id::text, '-', ''), 1, 8))
+    )
+  );
   return new;
 end;
 $$;
@@ -555,6 +562,51 @@ as $$
     );
 $$;
 
+-- ---------- Visitors without a sign-up ----------
+-- The app gives every visitor an invisible (anonymous) account, so anyone can save, join and log without
+-- registering. These keep that open door small.
+
+-- Rename yourself. Only the username changes; is_admin is never touched from the app.
+create or replace function public.set_username(p_username text)
+returns void
+language plpgsql
+security definer set search_path = ''
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'No account' using errcode = '42501';
+  end if;
+  if trim(coalesce(p_username, '')) !~ '^[A-Za-z0-9_-]{3,24}$' then
+    raise exception 'Names are 3–24 letters, numbers, - or _' using errcode = 'P0001';
+  end if;
+  if exists (select 1 from public.profiles where lower(username) = lower(trim(p_username)) and id <> auth.uid()) then
+    raise exception 'That name is taken. Pick another one.' using errcode = 'P0001';
+  end if;
+  update public.profiles set username = trim(p_username) where id = auth.uid();
+end;
+$$;
+
+-- At most 10 missions per person (admins excepted), so one visitor can't flood the list
+create or replace function public.limit_missions_per_owner()
+returns trigger
+language plpgsql
+security definer set search_path = ''
+as $$
+begin
+  if not public.is_admin()
+    and (select count(*) from public.mission_logs where owner_id = new.owner_id) >= 10 then
+    raise exception 'You can keep up to 10 missions. Delete one to save another.' using errcode = 'P0001';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists mission_logs_limit_per_owner on public.mission_logs;
+create trigger mission_logs_limit_per_owner
+  before insert on public.mission_logs
+  for each row execute function public.limit_missions_per_owner();
+
+grant execute on function public.set_username(text) to authenticated;
 grant execute on function public.browse_missions(text) to anon, authenticated;
 grant execute on function public.get_mission(uuid) to anon, authenticated;
 grant execute on function public.get_mission_by_code(text) to anon, authenticated;
