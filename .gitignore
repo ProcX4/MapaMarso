@@ -29,3 +29,4 @@ supabase/.branches
 
 # Docs and specs stay local, not in the repo
 *.md
+!/README.md
