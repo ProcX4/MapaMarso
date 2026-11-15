@@ -165,6 +165,10 @@ type PanelProps = {
   blocked?: boolean
   /** The safe path of the mission picked on the map, which the Topographic rows then describe */
   missionPath?: SafePathState | null
+  /** Another button beside Layers (a saved mission's Mission button) */
+  before?: ReactNode
+  /** Another panel that takes the list's place under the buttons (a saved mission's summary) */
+  children?: ReactNode
 }
 
 /** Which group buttons are open, remembered per browser so the list opens the way it was left */
@@ -217,7 +221,7 @@ export function LayersButton({ open, onClick }: { open: boolean; onClick: () => 
  * Layers, top right under the menu (the MapaMars Missions-panel pattern): a button that slides the list
  * out. The list makes way for the site card, which opens in the same corner.
  */
-export function LayerPanel({ open: openProp, onOpenChange, button = true, blocked = false, missionPath }: PanelProps) {
+export function LayerPanel({ open: openProp, onOpenChange, button = true, blocked = false, missionPath, before, children }: PanelProps) {
   const { state } = useMarswalk()
   const path = usePathInfo(missionPath)
   const view = useMapView()
@@ -230,7 +234,14 @@ export function LayerPanel({ open: openProp, onOpenChange, button = true, blocke
 
   return (
     <div className={`layers-hud${button ? '' : ' is-buttonless'}`}>
-      {button && <LayersButton open={shown} onClick={() => setOpen(!shown)} />}
+      {button && before ? (
+        <div className="layers-buttons">
+          {before}
+          <LayersButton open={shown} onClick={() => setOpen(!shown)} />
+        </div>
+      ) : (
+        button && <LayersButton open={shown} onClick={() => setOpen(!shown)} />
+      )}
       <section id="layers-panel" className={`hud-panel layers-panel${shown ? ' is-open' : ''}`} aria-label="Layers" inert={!shown}>
         <div className="hud-panel-head">
           <span>NASA layers</span>
@@ -264,6 +275,7 @@ export function LayerPanel({ open: openProp, onOpenChange, button = true, blocke
           })}
         </div>
       </section>
+      {children}
     </div>
   )
 }
