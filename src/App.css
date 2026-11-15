@@ -267,8 +267,8 @@
 }
 .info-card-close:hover { color: var(--white); background: rgba(255, 255, 255, 0.1); }
 
-/* Tools: a round button at the bottom left that slides a row of tool buttons out to its right, with the
-   guide and hide-the-interface buttons stacked above it */
+/* Tools: a row of tool buttons at the bottom left, always showing, with the guide and hide-the-interface
+   buttons stacked above it */
 .tool-dock {
   position: absolute;
   left: 24px;
@@ -279,14 +279,12 @@
   align-items: flex-start;
   gap: 10px;
   animation: fade-in 700ms ease both;
-  /* The closed tray still takes up its full width, invisibly, over whatever is beside the dock (the day and
-     night playback): only the buttons themselves take clicks */
+  /* Only the buttons themselves take clicks, not the gaps round them */
   pointer-events: none;
 }
 .tool-dock-mini,
-.tool-dock-toggle { pointer-events: auto; }
+.tool { pointer-events: auto; }
 .tool-dock-row { display: flex; align-items: center; gap: 10px; }
-/* Centred over the 46px tools button */
 .tool-dock-side { display: flex; flex-direction: column; gap: 8px; margin-left: 4px; }
 .tool-dock-mini {
   display: inline-flex;
@@ -304,7 +302,6 @@
   transition: color 150ms, border-color 150ms, opacity 250ms, visibility 250ms;
 }
 .tool-dock-mini:hover { color: var(--white); border-color: rgba(255, 255, 255, 0.6); }
-.tool-dock-toggle,
 .tool {
   display: inline-flex;
   align-items: center;
@@ -317,13 +314,9 @@
   cursor: pointer;
   transition: background 150ms, color 150ms, border-color 150ms;
 }
-.tool-dock-toggle:focus-visible,
 .tool:focus-visible,
 .tool-dock-mini:focus-visible { outline: 2px solid var(--white); outline-offset: 3px; }
-.tool-dock-toggle { justify-content: center; width: 46px; height: 46px; padding: 0; border-radius: 50%; }
-.tool-dock-toggle:hover,
 .tool:hover { border-color: rgba(255, 255, 255, 0.6); }
-.tool-dock.is-open .tool-dock-toggle { background: var(--white); color: var(--black); border-color: var(--white); }
 .tool-tray { display: flex; gap: 8px; }
 .tool {
   height: 44px;
@@ -332,17 +325,6 @@
   font-weight: 500;
   white-space: nowrap;
   border-radius: 999px;
-  opacity: 0;
-  transform: translateX(-16px);
-  pointer-events: none;
-  /* Close in reverse order, open left to right */
-  transition: opacity 180ms ease, transform 220ms ease, background 150ms, color 150ms, border-color 150ms;
-}
-.tool-dock.is-open .tool {
-  opacity: 1;
-  transform: none;
-  pointer-events: auto;
-  transition: opacity 260ms ease calc(var(--i) * 35ms), transform 380ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--i) * 35ms), background 150ms, color 150ms, border-color 150ms;
 }
 .tool.is-on { color: var(--black); background: var(--white); border-color: var(--white); }
 /* In Plan mode, and on a saved mission, the tools sit above the elevation profile */
@@ -425,7 +407,7 @@
   .info-card { top: auto; bottom: 86px; right: 16px; left: 16px; width: auto; max-height: 45%; }
   @keyframes card-in { from { opacity: 0; transform: translateY(24px); } }
   .tool-dock { left: 16px; bottom: 16px; max-width: calc(100vw - 32px); flex-direction: row; align-items: center; }
-  /* In a row with the tools button, so the dock stays one button tall under the info card */
+  /* In a row with the tools, so the dock stays one button tall under the info card */
   .tool-dock-side { flex-direction: row; margin-left: 0; }
   .tool-tray { overflow-x: auto; }
   .mode-plan .tool-dock,
@@ -434,7 +416,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .nav-drawer, .nav-drawer.is-open, .nav-drawer-backdrop, .nav-drawer-backdrop.is-open,
-  .info-card, .tool, .tool-dock.is-open .tool, .hud-panel, .hud-panel.is-open, .live-clock,
+  .info-card, .tool, .hud-panel, .hud-panel.is-open, .live-clock,
   .tour-card, .tour-card-body, .tour-ring::after { animation: none; transition: none; }
 }
 

@@ -4,7 +4,7 @@ import type { Mode } from '../state/types'
 /** The guided tour for each mode, following the demo story in the Gen Spec. */
 export function tourSteps(mode: Mode): TourStep[] {
   const end: TourStep[] = [
-    { target: '.tool-dock-toggle', title: 'Tools', text: 'Recentre on the demo site, fit the whole route in view, or start a new route.' },
+    { target: '.tool-tray', title: 'Tools', text: 'Recentre on the demo site, fit the whole route in view, or start a new route.' },
     { target: '.tool-dock-hide', title: 'Clear view', text: 'Hides every panel for an unobstructed map. Press it again, or H or Esc, to bring them back.' },
     { target: '.tool-dock-guide', title: 'This tour', text: 'Run it again any time from here.' },
   ]
@@ -18,7 +18,7 @@ export function tourSteps(mode: Mode): TourStep[] {
       { target: '.plan-stats', title: 'Route stats', text: 'Distance, walking time, climb and the steepest slope. Hover a tag to see what an estimate assumes.' },
       { target: '.plan-bottom', title: 'Elevation profile', text: 'Hover the profile to see the matching point on the map, and the other way round. Steep sections are drawn in caution colours.' },
       { target: '.mission-save', title: 'Save and share', text: 'Sign in to save the route as a mission with a code like MRS-204, then open it anywhere at #/globe/2d/plan/MRS-204.' },
-      { target: '.tool-dock-toggle', title: 'Walk it', text: 'EVA in the tools follows the route in a simplified, high-contrast view; Plan Marswalk closes the planner.' },
+      { target: '.tool-tray', title: 'Walk it', text: 'EVA in the tools follows the route in a simplified, high-contrast view; Plan Marswalk closes the planner.' },
       ...end,
     ]
   }
@@ -46,7 +46,7 @@ export function tourSteps(mode: Mode): TourStep[] {
     { target: '.layers-link', title: 'Layers', text: 'Turn NASA layers on and off: imagery, elevation, slope and science. Each one says where its data comes from.' },
     { target: '.explore-search', title: 'Search', text: 'Find a named place at the site and fly to it.' },
     { target: '.map', title: 'Site analysis', text: 'Click anywhere on the map for its coordinates, elevation, slope, hazards and any rover photos there. To build a route, open Plan Marswalk in the tools.' },
-    { target: '.tool-dock-toggle', title: 'Modes', text: 'Plan a Marswalk or walk it in EVA mode from the tools.' },
+    { target: '.tool-tray', title: 'Modes', text: 'Plan a Marswalk or walk it in EVA mode from the tools.' },
     ...end,
   ]
 }
@@ -54,7 +54,7 @@ export function tourSteps(mode: Mode): TourStep[] {
 /** The globe page's tour for whichever view is showing (from MapaMars pages/globe/tourSteps.ts). */
 export function globeTourSteps(view: 'globe' | 'map' | 'site', credits: string[]): TourStep[] {
   const end: TourStep[] = [
-    { target: '.tool-dock-toggle', title: 'Tools', text: view === 'site' ? 'Back to the globe, labels on or off, and a slow automatic turn around the site.' : 'Labels, orbit lines, the moons, the orbiters, the latitude grid, all mission routes, and resetting the view.' },
+    { target: '.tool-tray', title: 'Tools', text: view === 'site' ? 'Back to the globe, labels on or off, and a slow automatic turn around the site.' : 'Labels, orbit lines, the moons, the orbiters, the latitude grid, all mission routes, and resetting the view.' },
     { target: '.tool-dock-hide', title: 'Clear view', text: 'Hides every panel and button for an unobstructed view. Press it again, or H or Esc, to bring them back.' },
     { target: '.tool-dock-guide', title: 'This tour', text: `Run it again any time from here. Data and models: ${credits.join(' · ')}.` },
   ]
@@ -78,7 +78,7 @@ export function globeTourSteps(view: 'globe' | 'map' | 'site', credits: string[]
       { target: '.daylight-bar', title: 'Day and night', text: 'Play day and night, or drag the ring along the line through the next sol; Now returns to the present.' },
       { target: '.catalog-link', title: 'Catalog', text: 'Mars, its moons and every landing site, with filters and a search. Pick one to go to it.' },
       { target: '.missions-link', title: 'Missions', text: 'Lists ongoing or completed missions, with a search. Pick one to see its route; All routes in the tools shows every route at once.' },
-      { target: '.tool-dock-toggle', title: 'Tools', text: 'All mission routes, Plan Marswalk (stops, profile, hazards and science), EVA, recentring on the demo site and fitting the route.' },
+      { target: '.tool-tray', title: 'Tools', text: 'All mission routes, Plan Marswalk (stops, profile, hazards and science), EVA, recentring on the demo site and fitting the route.' },
       ...end.slice(1),
     ]
   }

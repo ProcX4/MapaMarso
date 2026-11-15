@@ -601,8 +601,8 @@ a.site-back { text-decoration: none; }
   width: min(460px, calc(100vw - 32px));
   transform: translateX(-50%);
 }
-/* The open tools tray runs along the bottom row: the playback steps up out of its way */
-.globe-page:has(.tool-dock.is-open) .daylight-bar { bottom: 84px; }
+/* The tools run along the bottom row: the playback steps up out of their way */
+.globe-page:has(.tool-tray) .daylight-bar { bottom: 84px; }
 @media (prefers-reduced-motion: no-preference) {
   .daylight-bar { transition: bottom 300ms cubic-bezier(0.22, 1, 0.36, 1); }
 }

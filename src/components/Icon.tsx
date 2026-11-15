@@ -18,7 +18,6 @@ const ICONS: Record<string, ReactNode> = {
   sound: <><path d="M4 10v4h4l5 4V6L8 10H4z" /><path d="M16.5 9a4 4 0 0 1 0 6M19 6.5a7.5 7.5 0 0 1 0 11" /></>,
   mute: <><path d="M4 10v4h4l5 4V6L8 10H4z" /><path d="M17 10l4 4M21 10l-4 4" /></>,
   // Tools
-  tools: <><path d="M4 7h10M18 7h2M4 17h2M10 17h10" /><circle cx="16" cy="7" r="2" /><circle cx="8" cy="17" r="2" /></>,
   help: <><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6" /><circle cx="12" cy="17" r="0.6" fill="currentColor" /></>,
   // Four corners pulling out: clear the screen for a full view of the scene, and corners pulling in to bring it back
   hideUi: <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />,

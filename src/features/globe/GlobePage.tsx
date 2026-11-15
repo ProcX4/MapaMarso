@@ -137,7 +137,6 @@ export function GlobePage() {
   // Orbiters start hidden so the planet itself is the first thing seen; the Orbiters tool shows them
   const [layers, setLayers] = useState<GlobeLayers>({ labels: true, orbits: true, grid: true, terminator: false, orbiters: false, moons: true })
   const [resetKey, setResetKey] = useState(0)
-  const [toolsOpen, setToolsOpen] = useState(false)
   // The 2D map addresses visited, so Back from EVA or the planner returns where you came from (a mission's view,
   // the planner or the map) rather than always to the planner. Going to the one before the last pops it.
   const [trail, setTrail] = useState<string[]>([])
@@ -473,7 +472,6 @@ export function GlobePage() {
         if (inSite) closeSite()
         else closeCard()
       } else if (walk.selected) clearSiteCard()
-      else setToolsOpen(false)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -635,17 +633,13 @@ export function GlobePage() {
           {!inSite && mapMode !== 'eva' && <ViewSwitch flat={flat} onFlat={setFlat} />}
           {!inSite && exploring && <TimeBar aheadH={aheadH} maxH={SOL_H} onChange={setAheadH} rate={rate} playRate={PLAY_RATE} onRate={setRate} onNow={backToNow} />}
           <ToolDock
-            open={toolsOpen}
-            onToggle={() => setToolsOpen((o) => !o)}
             tools={flat ? mapTools : inSite ? siteTools : globeTools}
             uiHidden={uiHidden}
             onHideUi={() => setUiHidden((h) => !h)}
             label="Globe tools"
             onGuide={() => {
               // The tour points at the controls, so they need to be showing: bring back a hidden interface
-              // and fold the tools away
               setUiHidden(false)
-              setToolsOpen(false)
               setTourOpen((o) => !o)
             }}
           />
