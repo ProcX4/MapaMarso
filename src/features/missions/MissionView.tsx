@@ -8,7 +8,7 @@ import { useNow } from '../../hooks/useNow'
 import { useMarswalk } from '../../hooks/useMarswalk'
 import { useRoute } from '../../hooks/useDerived'
 import { fitTo } from '../../map/mapControl'
-import { GROUPS, LAYERS } from '../../map/layers/registry'
+import { GROUPS, LAYERS, MISSION_LAYERS } from '../../map/layers/registry'
 import { formatCode, MISSION_CODE_PATTERN } from '../../lib/missionCode'
 import type { OpenMission, Stop } from '../../state/types'
 import { deleteMission, fetchCrew, fetchMissionByCode, fetchMissionById, joinMission, removeCrewMember, setMissionStatus, type CrewMember, type Mission } from '../../services/missions'
@@ -78,6 +78,7 @@ export function MissionPanel() {
   useEffect(() => {
     if (!mission || shown) return
     dispatch({ type: 'loadRoute', stops: mission.stops, roundTrip: mission.roundTrip, mission: toOpenMission(mission) })
+    dispatch({ type: 'showLayers', ids: MISSION_LAYERS })
     fitTo(mission.stops.map((s) => s.at))
   }, [mission, shown, dispatch])
 

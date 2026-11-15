@@ -47,6 +47,8 @@ type Props = {
   sunAt?: number | null
   /** The picked mission's A* safe path: its steep and deep ground is shaded instead of the planned route's */
   missionPath?: SafePath | null
+  /** True while the picked mission's safe path (and its shading) is being worked out */
+  missionLoading?: boolean
 }
 
 function badgeFor(stop: Stop, index: number) {
@@ -59,7 +61,7 @@ function badgeFor(stop: Stop, index: number) {
  * The single OpenLayers map, the globe page's 2D view of the whole planet. React creates it once and then
  * only talks to it (the map is the TV, React is the remote): layers are toggled, never rebuilt.
  */
-export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRoute, onPick, sunAt = null, missionPath = null }: Props) {
+export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRoute, onPick, sunAt = null, missionPath = null, missionLoading = false }: Props) {
   const el = useRef<HTMLDivElement>(null)
   const map = useRef<Map | null>(null)
   const layers = useRef<Record<string, BaseLayer>>({})
@@ -192,6 +194,10 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
     if (sunAt !== null) src.addFeatures(daylightFeatures(subsolar(sunAt)))
   }, [sunAt])
 
+  // While the shading is worked out (the elevation, slope and rocky-ground maps load, then A* runs), say so
+  const slopeOn = state.layers.some((l) => l.id === 'slope' && l.visible)
+  const terrainLoading = slopeOn && (missionLoading || data.terrainLoading)
+
   // Steep and deep ground round the route on show: the picked mission's, or else the planned route's
   const hazard = missionPath?.hazard ?? data.hazard.value
   useEffect(() => {
@@ -275,6 +281,12 @@ export function MapView({ routes = NO_ROUTES, selectedRoute = null, onSelectRout
       <div ref={el} className="map" tabIndex={0} aria-label="Map of Mars with NASA layers and the demo site. Arrow keys pan, plus and minus zoom." />
       {debugZoom && <ZoomDebug />}
       <MapGuide />
+      {terrainLoading && (
+        <p className="terrain-loading" role="status">
+          <span className="terrain-loading-spin" aria-hidden="true" />
+          Loading steep, deep and rocky ground…
+        </p>
+      )}
     </>
   )
 }

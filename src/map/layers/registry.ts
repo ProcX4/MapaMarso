@@ -75,6 +75,9 @@ const trek = (id: TrekLayerId) => ({ kind: 'xyz' as const, source: id, maxZoom: 
 const esri = (id: EsriLayerId) => ({ kind: 'xyz' as const, source: id, maxZoom: ESRI_LAYERS[id].maxZoom })
 
 /** Every layer MAPA knows about, all covering the whole planet. The layer panel, provenance page and map all read this list. */
+/** Switched on whenever a saved mission opens, whatever the visitor last chose: the route, its hazards and the science round it */
+export const MISSION_LAYERS = ['slope', 'route', 'hirise', 'science-targets', 'themis-day-ir']
+
 export const LAYERS: LayerDef[] = [
   // ---------- Topographic ----------
   {

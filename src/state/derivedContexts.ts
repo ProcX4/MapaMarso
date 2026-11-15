@@ -20,6 +20,8 @@ export type Datasets = {
   /** Spread of slope nearby, degrees */
   roughness: Loaded<SlopeGrid>
   targets: Loaded<ScienceTarget[]>
+  /** True while the terrain round the route (and its steep, deep and rocky shading) is being worked out */
+  terrainLoading: boolean
 }
 
 export const DatasetsContext = createContext<Datasets | null>(null)

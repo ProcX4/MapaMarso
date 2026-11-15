@@ -583,7 +583,7 @@ export function GlobePage() {
 
       {flat && (
         <div className={`flat-view is-${mapMode}`}>
-          <MapView routes={mapMode === 'mission' ? NO_ROUTES : siteRoutes} selectedRoute={mission ? selectedId : null} onSelectRoute={select} onPick={closeCard} sunAt={mapMode === 'eva' && walk.evaTimeMs !== null ? walk.evaTimeMs : nightAt} missionPath={safeLine ? missionSafe.value : null} />
+          <MapView routes={mapMode === 'mission' ? NO_ROUTES : siteRoutes} selectedRoute={mission ? selectedId : null} onSelectRoute={select} onPick={closeCard} sunAt={mapMode === 'eva' && walk.evaTimeMs !== null ? walk.evaTimeMs : nightAt} missionPath={safeLine ? missionSafe.value : null} missionLoading={missionSafe.status === 'loading'} />
         </div>
       )}
 

@@ -7,6 +7,7 @@ import { readJson } from '../lib/storage'
 export type Action =
   | { type: 'setMode'; mode: Mode }
   | { type: 'toggleLayer'; id: string }
+  | { type: 'showLayers'; ids: string[] }
   | { type: 'setOpacity'; id: string; opacity: number }
   | { type: 'select'; at: LngLat | null }
   | { type: 'addStop'; stop: Stop; index?: number }
@@ -85,6 +86,9 @@ export function reducer(state: MarswalkState, action: Action): MarswalkState {
 
     case 'toggleLayer':
       return { ...state, layers: state.layers.map((l) => (l.id === action.id ? { ...l, visible: !l.visible } : l)) }
+
+    case 'showLayers':
+      return { ...state, layers: state.layers.map((l) => (action.ids.includes(l.id) && !l.visible ? { ...l, visible: true } : l)) }
 
     case 'setOpacity':
       if (!Number.isFinite(action.opacity)) return state

@@ -85,3 +85,36 @@
 .map-guide-dismiss:hover { color: var(--white); border-color: rgba(255, 255, 255, 0.5); }
 @media (max-width: 720px) { .map-guide { bottom: 132px; } }
 
+
+/* While the steep, deep and rocky shading is worked out: a small note at the top centre of the map */
+.terrain-loading {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  z-index: 26;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 8px 14px 8px 12px;
+  font-size: 13px;
+  color: var(--white);
+  background: rgb(12, 12, 12);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+  transform: translateX(-50%);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.terrain-loading-spin {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: var(--caution);
+  border-radius: 50%;
+  animation: terrain-spin 800ms linear infinite;
+}
+@keyframes terrain-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .terrain-loading-spin { animation-duration: 2.4s; } }
+@media (max-width: 720px) { .terrain-loading { top: auto; bottom: 200px; font-size: 12px; } }

@@ -47,6 +47,7 @@ export function DerivedProvider({ children }: { children: ReactNode }) {
       hazard: ready(found?.hazard),
       roughness: ready(found?.roughness),
       targets,
+      terrainLoading: safe.status === 'loading',
     }
   }, [found, safe.status, targets])
 
