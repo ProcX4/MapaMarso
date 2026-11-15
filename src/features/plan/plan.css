@@ -150,7 +150,7 @@
 .mode-mission .info-card { max-height: calc(100% - 360px); }
 
 @media (max-width: 720px) {
-  .planner-panel { top: auto; left: 0; right: 0; bottom: 150px; width: auto; max-height: 45%; border-radius: 14px 14px 0 0; }
+  .planner-panel { top: auto; left: 0; right: 0; bottom: 170px; width: auto; max-height: 45%; border-radius: 14px 14px 0 0; }
   .plan-bottom { left: 0; right: 0; bottom: 0; width: auto; height: 170px; border-radius: 0; }
   .mode-plan .info-card,
   .mode-mission .info-card { bottom: 160px; }

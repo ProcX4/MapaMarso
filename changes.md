@@ -61,6 +61,25 @@ Entry template:
 
 ---
 
+## 2026-11-15 · v0.5.15 · Whole-site test pass: fixes and optimizations
+
+**Fixed**
+- Map labels drew on top of each other (science targets such as "Bearwallow (Wildcat Ridge)" over their neighbours): vector layers are now decluttered, so an overlapping name waits until you zoom in; the green dots always show.
+- The guide box ("Click near a green science target…") sat under the tool buttons in the planner and mission view; it now sits at the top of the map, beside the panel.
+- On a phone the elevation profile card collapsed to a 34 px sliver (a desktop width rule won): it spans the bottom of the screen again, in the planner and the mission view.
+- On a phone the planner / mission panel overlapped the top of the profile card; it now stops above it.
+
+**Optimized**
+- Caching on Vercel: hashed build files (`/assets/*`) are cached for a year as immutable, the 3D models (`/resources/*`, about 7 MB) for a day and re-checked in the background, the data files (`/data/*`) for an hour. Before, every visit re-checked everything (`max-age=0`).
+- The home page no longer fetches the 1.8 MB Viking lander model ahead of time (only a landing site's close-up needs it, and it fetches it when picked): the home page's downloads drop from 7.5 MB to 5.6 MB.
+- Nothing is fetched ahead on the home page on a data-saver or 2G/3G connection.
+
+**Verified (headless Chrome on a production build, with a stand-in mission; nothing written to Supabase)**
+- Home, About, Account, Missions, 3D globe, 2D map, new plan, mission view (old address redirects; stats, stops, crew, Layers / Crew / Log tabs), EVA from the mission (plays; Back to mission returns), tool dock, phone layout (no sideways scroll): no page errors, console errors or failed requests.
+- `npm run check-upstreams`: all upstreams OK.
+
+---
+
 ## 2026-11-15 · v0.5.14 · Back buttons that remember where you came from; readable tool buttons
 
 **Fixed**

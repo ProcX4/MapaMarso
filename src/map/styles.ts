@@ -44,7 +44,7 @@ export function stopStyle(feature: FeatureLike) {
 
 export function targetStyle(feature: FeatureLike) {
   return new Style({
-    image: new Circle({ radius: 6, fill: new Fill({ color: cssVar('ok') }), stroke: new Stroke({ color: '#000', width: 1.5 }) }),
+    image: new Circle({ radius: 6, fill: new Fill({ color: cssVar('ok') }), stroke: new Stroke({ color: '#000', width: 1.5 }), declutterMode: 'none' }),
     text: new Text({
       text: String(feature.get('name') ?? ''),
       font: FONT,

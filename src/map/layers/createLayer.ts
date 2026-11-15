@@ -67,7 +67,8 @@ export function createLayer(def: LayerDef): BaseLayer {
       // Source is attached once the DTM (or slope) grid has been computed.
       return new ImageLayer({ ...common })
     case 'vector':
-      return new VectorLayer({ ...common, source: new VectorSource() })
+      // Decluttered: where two labels would overlap, one is left off until you zoom in (the dots always show)
+      return new VectorLayer({ ...common, source: new VectorSource(), declutter: true })
   }
 }
 

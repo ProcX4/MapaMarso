@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState, type MouseEvent } from 'react'
 import { Hyperspace } from '../../globe/Hyperspace'
-import { loadVikingLander } from '../../globe/landerModel'
 import { loadStars } from '../../globe/skyObjects'
 import { loadMarsModel } from '../../globe/marsModel'
 import { getMarsTextures } from '../../globe/marsTexture'
@@ -65,10 +64,12 @@ export function HomePage() {
       getMarsTextures,
       () => void loadMoonGeometry('phobos').catch(() => {}),
       () => void loadMoonGeometry('deimos').catch(() => {}),
-      () => void loadVikingLander().catch(() => {}),
       // The real sky's star catalogue
       () => void loadStars().catch(() => {}),
     ]
+    // On a data-saver or slow (2G/3G) connection nothing is fetched ahead: the globe loads when it's opened
+    const net = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection
+    if (net?.saveData || /(^|-)(2g|3g)$/.test(net?.effectiveType ?? '')) return
     // Safari has no requestIdleCallback; a short timeout does the same job there
     const hasIdle = 'requestIdleCallback' in window
     const idle = (cb: () => void) => (hasIdle ? window.requestIdleCallback(cb, { timeout: 1000 }) : window.setTimeout(cb, 50))
