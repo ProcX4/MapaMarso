@@ -73,10 +73,10 @@ public/resources/    NASA 3D models, moon shapes, star catalogue
 
 | Name | Role |
 |---|---|
-| Jim | Topographic: elevation, slope, hazards, A* safe-path routing |
-| Shin | Optical, security, demo |
-| Daril | Spectral: TES, THEMIS, science targets |
-| Jastini | Decisions and docs |
+| Jimiel | Frontend, Backend & Topographic: map and planner interfaces; terrain-data processing; elevation, slope, hazards, route analysis, and A* safe-path routing |
+| Sean | Frontend, Backend, Optical & Security: UI/UX; imagery and rover-photo integrations; APIs and security; demo preparation and release support |
+| Darryl | Backend & Spectral: spectral-data integration and processing; TES, THEMIS, science targets, provenance, and supporting APIs |
+| Justine | Backend, Decisions & Documentation: Supabase, authentication, mission services, platform configuration, technical decisions, and project documentation |
 
 ## Licence
 
