@@ -136,37 +136,6 @@ export const LAYERS: LayerDef[] = [
     defaultOpacity: 1,
   },
   // ---------- Optical ----------
-  {
-    id: 'viking-color',
-    name: 'Colour mosaic (Viking MDIM 2.1)',
-    howTo: 'A colour photo of the whole planet. Best when zoomed out; as you zoom in to a site it blurs and the sharper CTX and HiRISE photos take over.',
-    group: 'optical',
-    ...trek('Mars_Viking_MDIM21_ClrMosaic_global_232m'),
-    category: 'observed',
-    provenance: {
-      instrument: 'Viking Orbiter cameras',
-      mission: 'Viking 1 & 2',
-      product: 'Mars_Viking_MDIM21_ClrMosaic_global_232m (Mars Trek)',
-      resolution: '232 m/px',
-    },
-    defaultVisible: false,
-    defaultOpacity: 1,
-  },
-  {
-    id: 'moc-color',
-    name: 'Colour atlas (MGS MOC)',
-    howTo: 'Another colour photo of the whole planet, from a later orbiter. Best when zoomed out; it blurs as you zoom in.',
-    group: 'optical',
-    ...trek('msss_atlas_simp_clon'),
-    category: 'observed',
-    provenance: {
-      instrument: 'MOC wide angle',
-      mission: 'Mars Global Surveyor',
-      product: 'msss_atlas_simp_clon (Mars Trek)',
-    },
-    defaultVisible: false,
-    defaultOpacity: 1,
-  },
   // Walking scale: on by default, but each only appears once zoomed in past where the colour mosaics blur
   {
     id: 'ctx',
