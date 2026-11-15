@@ -15,6 +15,21 @@
   animation: fade-in 700ms ease both;
 }
 .layers-link { flex: none; margin-right: 44px; pointer-events: auto; }
+/* A saved mission: Mission and Layers side by side, and its summary in the list's place under them */
+.layers-buttons { flex: none; display: flex; gap: 8px; margin-right: 44px; }
+.layers-buttons .layers-link { margin-right: 0; }
+.mission-side {
+  position: absolute;
+  top: 52px; /* the buttons (38px) and the column's gap */
+  right: 0;
+  bottom: 0;
+  width: var(--panel-w, min(400px, calc(100vw - 32px)));
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+}
+.mission-side[hidden] { display: none; }
+.mission-side .planner-panel { position: static; width: 100%; max-height: 100%; }
 .layer-row { padding: 8px; border-radius: 8px; }
 .layer-row:hover { background: rgba(255, 255, 255, 0.04); }
 .layer-row-head { display: flex; align-items: center; gap: 10px; }
@@ -161,7 +176,7 @@
 
 @media (max-width: 720px) {
   .layers-hud { top: 108px; right: 16px; bottom: 80px; }
-  .layers-link { margin-right: 0; }
+  .layers-link, .layers-buttons { margin-right: 0; }
   .explore-search { top: auto; bottom: 16px; left: auto; right: 16px; width: calc(100vw - 200px); }
 }
 
